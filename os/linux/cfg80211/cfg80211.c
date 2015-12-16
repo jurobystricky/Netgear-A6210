@@ -175,6 +175,7 @@ static const UINT32 CipherSuites[] = {
 /*
 	The driver's regulatory notification callback.
 */
+#if 0 //JB removed
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30))
 static INT32 CFG80211_RegNotifier(
 	IN struct wiphy					*pWiphy,
@@ -184,6 +185,7 @@ static INT32 CFG80211_RegNotifier(
 	IN struct wiphy					*pWiphy,
 	IN enum reg_set_by				Request);
 #endif /* LINUX_VERSION_CODE */
+#endif //0
 
 /* get RALINK pAd control block in 80211 Ops */
 #define MAC80211_PAD_GET(__pAd, __pWiphy)							\
@@ -854,20 +856,18 @@ Return Value:
 Note:
 ========================================================================
 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
-//	int	(*get_station)(struct wiphy *wiphy, struct net_device *dev,
-//			       const u8 *mac, struct station_info *sinfo);
-static int CFG80211_OpsStaGet(
-	struct wiphy *pWiphy, 
-	struct net_device *pNdev,
-	const u8 *pMac, 
-	struct station_info *pSinfo)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
+static int CFG80211_OpsStaGet(struct wiphy *pWiphy, struct net_device *pNdev,
+	const u8 *pMac, struct station_info *pSinfo)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
+static int CFG80211_OpsStaGet(struct wiphy *pWiphy, struct net_device *pNdev,
+	u8 *pMac, struct station_info *pSinfo)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+static int CFG80211_OpsStaGet(struct wiphy *pWiphy, struct net_device *pNdev,
+	const u8 *pMac, struct station_info *pSinfo)
 #else
-static int CFG80211_OpsStaGet(
-	IN struct wiphy						*pWiphy,
-	IN struct net_device				*pNdev,
-	IN const UINT8						*pMac,
-	IN struct station_info				*pSinfo)
+static int CFG80211_OpsStaGet(struct wiphy *pWiphy, struct net_device *pNdev,
+	const UINT8 *pMac, struct station_info *pSinfo)
 #endif
 {
 	VOID *pAd;
@@ -879,7 +879,6 @@ static int CFG80211_OpsStaGet(
 	/* init */
 	memset(pSinfo, 0, sizeof(*pSinfo));
 	memset(&StaInfo, 0, sizeof(StaInfo));
-
 	memcpy(StaInfo.MAC, pMac, 6);
 
 	/* get sta information */
@@ -1930,8 +1929,7 @@ static int CFG80211_OpsMgmtTx(
 	struct wireless_dev *wdev,
 	struct cfg80211_mgmt_tx_params *params,
 	u64 *pCookie)
-#else
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 static int CFG80211_OpsMgmtTx(
 	IN struct wiphy *pWiphy,
 	IN struct wireless_dev *wdev,
@@ -1961,8 +1959,7 @@ static int CFG80211_OpsMgmtTx(
 	IN bool done_wait_for_ack,
 #endif
 	IN u64 *pCookie)
-#endif /* LINUX_VERSION_CODE: 3.6.0 */
-#endif
+#endif /* LINUX_VERSION_CODE: 4.2.0 */
 {
 	VOID *pAd;
 	UINT32 ChanId;
@@ -2259,19 +2256,14 @@ static int CFG80211_OpsChangeBss(struct wiphy *pWiphy, struct net_device *netdev
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
-//struct station_del_parameters {
-//	const u8 *mac;
-//	u8 subtype;
-//	u16 reason_code;
-//};
 static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
 	struct station_del_parameters *params)
-#else 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
-static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev, u8 *pMacAddr)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev, 
+	u8 *pMacAddr)
 #else
-static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,const UINT8 *pMacAddr)
-#endif
+static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
+	const UINT8 *pMacAddr)
 #endif
 {
 	VOID *pAd;
@@ -2294,19 +2286,14 @@ static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,const
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
-//	int	(*add_station)(struct wiphy *wiphy, struct net_device *dev,
-//			       const u8 *mac,
-//			       struct station_parameters *params);
 static int CFG80211_OpsStaAdd(struct wiphy *wiphy, struct net_device *dev,
 	const u8 *mac, struct station_parameters *params)
-#else
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 static int CFG80211_OpsStaAdd(struct wiphy *wiphy, struct net_device *dev,
 	u8 *mac, struct station_parameters *params)
 #else
 static int CFG80211_OpsStaAdd(struct wiphy *wiphy, struct net_device *dev,
 	const UINT8 *mac, struct station_parameters *params)
-#endif
 #endif
 {
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> %s ==>\n", __FUNCTION__));
@@ -2314,20 +2301,14 @@ static int CFG80211_OpsStaAdd(struct wiphy *wiphy, struct net_device *dev,
 }
 
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
-//	int	(*change_station)(struct wiphy *wiphy, struct net_device *dev,
-//				  const u8 *mac,
-//				  struct station_parameters *params);
 static int CFG80211_OpsStaChg(struct wiphy *pWiphy, struct net_device *dev,
 	const u8 *pMacAddr, struct station_parameters *params)
-#else
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#elif(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 static int CFG80211_OpsStaChg(struct wiphy *pWiphy, struct net_device *dev,
 	u8 *pMacAddr, struct station_parameters *params)
 #else
-static int CFG80211_OpsStaChg(
-	struct wiphy *pWiphy, struct net_device *dev, const UINT8 *pMacAddr,
-	struct station_parameters *params)
-#endif
+static int CFG80211_OpsStaChg(struct wiphy *pWiphy, struct net_device *dev, 
+	const UINT8 *pMacAddr, struct station_parameters *params)
 #endif
 {
 	void *pAd;
@@ -2360,21 +2341,18 @@ static int CFG80211_OpsStaChg(
 	return 0;
 }
 
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
-//	struct wireless_dev * (*add_virtual_intf)(struct wiphy *wiphy,
-//						  const char *name,
-//						  unsigned char name_assign_type,
-//						  enum nl80211_iftype type,
-//						  u32 *flags,
-//						  struct vif_params *params);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 static struct wireless_dev* CFG80211_OpsVirtualInfAdd(struct wiphy *pWiphy,
 	const char *name, unsigned char name_assign_type, enum nl80211_iftype Type,
 	u32 *pFlags, struct vif_params *pParams)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+struct wireless_dev * CFG80211_OpsVirtualInfAdd(struct wiphy *pWiphy,
+	const char *name, enum nl80211_iftype Type, u32 *pFlags,
+	struct vif_params *pParams)
 #else
 static struct net_device* CFG80211_OpsVirtualInfAdd(struct wiphy *pWiphy,
 	char *name, enum nl80211_iftype Type, u32 *pFlags, struct vif_params *pParams)
-#endif /* LINUX_VERSION_CODE: 3.6.0 */
+#endif /* LINUX_VERSION_CODE: 4.1.0 */
 {
 	VOID *pAd;
 	CMD_RTPRIV_IOCTL_80211_VIF_SET vifInfo;
@@ -3023,6 +3001,7 @@ Return Value:
 Note:
 ========================================================================
 */
+#if 0 //JB removed
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30))
 static INT32 CFG80211_RegNotifier(struct wiphy *pWiphy, struct regulatory_request *pRequest)
 {
@@ -3226,6 +3205,7 @@ static INT32 CFG80211_RegNotifier(struct wiphy *pWiphy, enum reg_set_by Request)
 
 	return 0;
 }
+#endif //0
 #endif /* LINUX_VERSION_CODE */
 #endif /* RT_CFG80211_SUPPORT */
 #endif /* LINUX_VERSION_CODE */
