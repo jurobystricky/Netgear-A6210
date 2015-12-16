@@ -360,7 +360,7 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 	RTMP_IO_WRITE32(pAd, HT_MAC_ADDR_DW1, csr3.word);
 #endif /* HDR_TRANS_SUPPORT */
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE,("Current MAC: =%02x:%02x:%02x:%02x:%02x:%02x\n",
+	DBGPRINT(RT_DEBUG_TRACE,("Current MAC: =%02x:%02x:%02x:%02x:%02x:%02x\n",
 			PRINT_MAC(pAd->CurrentAddress)));
 
 	/* if not return early. cause fail at emulation.*/
@@ -474,7 +474,7 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 		}
 	}
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s(): AfterAdjust, RxPath = %d, TxPath = %d\n",
+	DBGPRINT(RT_DEBUG_TRACE, ("%s(): AfterAdjust, RxPath = %d, TxPath = %d\n",
 			__FUNCTION__, Antenna.field.RxPath, Antenna.field.TxPath));
 
 
@@ -510,7 +510,7 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 	/* Save value for future using */
 	pAd->NicConfig2.word = NicConfig2.word;
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("NICReadEEPROMParameters: RxPath = %d, TxPath = %d, RfIcType = %d\n",
+	DBGPRINT(RT_DEBUG_TRACE, ("NICReadEEPROMParameters: RxPath = %d, TxPath = %d, RfIcType = %d\n",
 		Antenna.field.RxPath, Antenna.field.TxPath, Antenna.field.RfIcType));
 
 	/* Save the antenna for future use*/
@@ -545,7 +545,7 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 	/* check if the chip supports 5G band */
 	if (WMODE_CAP_5G(pAd->CommonCfg.PhyMode)) {
 		if (!RFIC_IS_5G_BAND(pAd)) {
-			DBGPRINT_RAW(RT_DEBUG_ERROR,
+			DBGPRINT(RT_DEBUG_ERROR,
 					("%s():Err! chip not support 5G band %d!\n",
 					__FUNCTION__, pAd->RfIcType));
 #ifdef DOT11_N_SUPPORT

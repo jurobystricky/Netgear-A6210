@@ -656,7 +656,7 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 #ifdef MFB_SUPPORT
 		if (pMacEntry && pMacEntry->mrqCnt >0 && pMacEntry->toTxMrq == 1) {
 			eTxBf = ~(pTransmit->field.eTxBF);
-			DBGPRINT_RAW(RT_DEBUG_TRACE,("ETxBF in AP_AMPDU_Frame_Tx(): invert eTxBF\n"));
+			DBGPRINT(RT_DEBUG_TRACE,("ETxBF in AP_AMPDU_Frame_Tx(): invert eTxBF\n"));
 		} else
 #endif	/* MFB_SUPPORT */
 			eTxBf = pTransmit->field.eTxBF;

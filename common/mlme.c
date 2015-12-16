@@ -696,7 +696,7 @@ VOID MlmeHandler(RTMP_ADAPTER *pAd)
 		if (MlmeDequeue(&pAd->Mlme.Queue, &Elem)) {
 #ifdef RTMP_MAC_USB
 			if (Elem->MsgType == MT2_RESET_CONF) {
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("!!! reset MLME state machine !!!\n"));
+				DBGPRINT(RT_DEBUG_TRACE, ("!!! reset MLME state machine !!!\n"));
 				MlmeRestartStateMachine(pAd);
 				Elem->Occupied = FALSE;
 				Elem->MsgLen = 0;

@@ -406,8 +406,8 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 			pConfig->BulkInEpAddr = endpoint[i].bEndpointAddress;
 			pConfig->BulkInMaxPacketSize = endpoint[i].wMaxPacketSize;
 
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("BULK IN MaximumPacketSize = %d\n", pConfig->BulkInMaxPacketSize));
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("EP address = 0x%2x  \n", endpoint[i].bEndpointAddress));
+			DBGPRINT(RT_DEBUG_TRACE, ("BULK IN MaximumPacketSize = %d\n", pConfig->BulkInMaxPacketSize));
+			DBGPRINT(RT_DEBUG_TRACE, ("EP address = 0x%2x  \n", endpoint[i].bEndpointAddress));
 		}
 		else if ((endpoint[i].bmAttributes == USB_ENDPOINT_XFER_BULK) && 
 				((endpoint[i].bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_OUT))
@@ -417,8 +417,8 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 			pConfig->BulkOutEpAddr[BulkOutIdx++] = endpoint[i].bEndpointAddress;
 			pConfig->BulkOutMaxPacketSize = endpoint[i].wMaxPacketSize;
 
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("BULK OUT MaximumPacketSize = %d\n", pConfig->BulkOutMaxPacketSize));
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("EP address = 0x%2x  \n", endpoint[i].bEndpointAddress));
+			DBGPRINT(RT_DEBUG_TRACE, ("BULK OUT MaximumPacketSize = %d\n", pConfig->BulkOutMaxPacketSize));
+			DBGPRINT(RT_DEBUG_TRACE, ("EP address = 0x%2x  \n", endpoint[i].bEndpointAddress));
 		}
 	}
 
@@ -613,8 +613,8 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 				pConfig->BulkInMaxPacketSize = iface_desc->endpoint[i].desc.wMaxPacketSize;
 #endif /* LINUX_VERSION_CODE */
 
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("BULK IN MaxPacketSize = %d\n", pConfig->BulkInMaxPacketSize));
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("EP address = 0x%2x\n", iface_desc->endpoint[i].desc.bEndpointAddress));
+				DBGPRINT(RT_DEBUG_TRACE, ("BULK IN MaxPacketSize = %d\n", pConfig->BulkInMaxPacketSize));
+				DBGPRINT(RT_DEBUG_TRACE, ("EP address = 0x%2x\n", iface_desc->endpoint[i].desc.bEndpointAddress));
 				} 
 				else
 				{
@@ -635,8 +635,8 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 				pConfig->BulkOutMaxPacketSize = iface_desc->endpoint[i].desc.wMaxPacketSize;
 #endif
 
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("BULK OUT MaxPacketSize = %d\n", pConfig->BulkOutMaxPacketSize));
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("EP address = 0x%2x  \n", iface_desc->endpoint[i].desc.bEndpointAddress));
+				DBGPRINT(RT_DEBUG_TRACE, ("BULK OUT MaxPacketSize = %d\n", pConfig->BulkOutMaxPacketSize));
+				DBGPRINT(RT_DEBUG_TRACE, ("EP address = 0x%2x  \n", iface_desc->endpoint[i].desc.bEndpointAddress));
 			}
 			else
 			{

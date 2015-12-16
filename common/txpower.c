@@ -1367,7 +1367,7 @@ VOID RTMPReadTxPwrPerRate(RTMP_ADAPTER *pAd)
 
 		if (data != 0xffffffff)
 			RTMP_IO_WRITE32(pAd, TX_PWR_CFG_0 + i*4, data);
-		DBGPRINT_RAW (RT_DEBUG_TRACE, 
+		DBGPRINT (RT_DEBUG_TRACE, 
 				("20MHz BW, 2.4G band-%lx,  Adata = %lx,  Gdata = %lx \n", 
 				data, Adata, Gdata));
 	}

@@ -1091,7 +1091,7 @@ VOID asic_mcs_lut_update(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry)
 		DBGPRINT(RT_DEBUG_INFO, ("%s():MCS_LUT update, write to MAC=0x%08x, Value=0x%04x, WCID=%d\n",
 					__FUNCTION__, wcid_offset, pEntry->HTPhyMode.word, pEntry->wcid));
 
-		DBGPRINT_RAW(RT_DEBUG_INFO, ("\tWcid=%d, APMlmeSetTxRate - CurrTxRateIdx=%d, MCS=%d, STBC=%d, ShortGI=%d, Mode=%d, BW=%d \n"
+		DBGPRINT(RT_DEBUG_INFO, ("\tWcid=%d, APMlmeSetTxRate - CurrTxRateIdx=%d, MCS=%d, STBC=%d, ShortGI=%d, Mode=%d, BW=%d \n"
 			                                     "\                            ETxBf=%d, ITxBf=%d\n\n", 
 			pEntry->wcid,
 			pEntry->CurrTxRateIndex,
@@ -2246,12 +2246,12 @@ VOID MlmeSelectTxRateTable(
 					if (pAd->CommonCfg.TxStream == 1)
 					{
 						*ppTable = RateSwitchTable11N1S;
-						DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 1S AP \n"));
+						DBGPRINT(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 1S AP \n"));
 					}
 					else if (pAd->CommonCfg.TxStream == 2)
 					{
 						*ppTable = RateSwitchTable11N2S;
-						DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 2S AP \n"));	
+						DBGPRINT(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 2S AP \n"));	
 					}
 					else
 					{
@@ -2273,12 +2273,12 @@ VOID MlmeSelectTxRateTable(
 					if (pAd->CommonCfg.TxStream == 1)
 					{
 						*ppTable = RateSwitchTable11N1S;
-						DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 1S AP \n"));
+						DBGPRINT(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 1S AP \n"));
 					}
 					else if (pAd->CommonCfg.TxStream == 2)
 					{
 						*ppTable = RateSwitchTable11N2S;
-						DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 2S AP \n"));	
+						DBGPRINT(RT_DEBUG_ERROR,("DRS: unkown mode,default use 11N 2S AP \n"));	
 					}
 					else
 					{
@@ -2296,7 +2296,7 @@ VOID MlmeSelectTxRateTable(
 				}
 			}
 #endif /* DOT11_N_SUPPORT */
-			DBGPRINT_RAW(RT_DEBUG_ERROR,("DRS: unkown mode (SupRateLen=%d, ExtRateLen=%d, MCSSet[0]=0x%x, MCSSet[1]=0x%x)\n",
+			DBGPRINT(RT_DEBUG_ERROR,("DRS: unkown mode (SupRateLen=%d, ExtRateLen=%d, MCSSet[0]=0x%x, MCSSet[1]=0x%x)\n",
 						pAd->StaActive.SupRateLen,
 						pAd->StaActive.ExtRateLen,
 						pAd->StaActive.SupportedPhyInfo.MCSSet[0],
@@ -2639,7 +2639,7 @@ VOID MlmeRALog(
 #endif /* DBG_CTRL_SUPPORT */
 		)
 		{
-			DBGPRINT_RAW(RT_DEBUG_ERROR,("%s[%d]: M=%d %c%c%c%c%c PER=%ld%% TP=%ld BF=%ld%% ",
+			DBGPRINT(RT_DEBUG_ERROR,("%s[%d]: M=%d %c%c%c%c%c PER=%ld%% TP=%ld BF=%ld%% ",
 				raLogType==RAL_QUICK_DRS? " Q": (raLogType==RAL_NEW_DRS? "\nRA": "\nra"),
 				pEntry->wcid, pEntry->HTPhyMode.field.MCS,
 				pEntry->HTPhyMode.field.MODE==MODE_CCK? 'C': (pEntry->HTPhyMode.field.ShortGI? 'S': 'L'),
@@ -2674,7 +2674,7 @@ VOID MlmeRALog(
 #endif /*  INCLUDE_DEBUG_QUEUE */
 #endif /*  DBG_CTRL_SUPPORT */
 		{
-			DBGPRINT_RAW(RT_DEBUG_ERROR,("%s[%d]: M=%d %c%c%c%c- PER=%ld%% TP=%ld ",
+			DBGPRINT(RT_DEBUG_ERROR,("%s[%d]: M=%d %c%c%c%c- PER=%ld%% TP=%ld ",
 				raLogType==RAL_QUICK_DRS? " Q": (raLogType==RAL_NEW_DRS? "\nRA": "\nra"),
 				pEntry->wcid, pEntry->HTPhyMode.field.MCS,
 				pEntry->HTPhyMode.field.MODE==MODE_CCK? 'C': (pEntry->HTPhyMode.field.ShortGI? 'S': 'L'),
@@ -2753,7 +2753,7 @@ VOID MlmeCheckRDG(
 				RTMP_IO_READ32(pAd, TXOP_THRES_CFG, &TxOpThres);
 				TxOpThres |= 0xff00;
 				RTMP_IO_WRITE32(pAd, TXOP_THRES_CFG, TxOpThres);
-				DBGPRINT_RAW(RT_DEBUG_WARN,("DRS: RDG off!\n"));
+				DBGPRINT(RT_DEBUG_WARN,("DRS: RDG off!\n"));
 			}
 		}
 		else
@@ -2765,7 +2765,7 @@ VOID MlmeCheckRDG(
 				RTMP_IO_READ32(pAd, TXOP_THRES_CFG, &TxOpThres);
 				TxOpThres &= 0xffff00ff;
 				RTMP_IO_WRITE32(pAd, TXOP_THRES_CFG, TxOpThres);
-				DBGPRINT_RAW(RT_DEBUG_WARN,("DRS: RDG on!\n"));
+				DBGPRINT(RT_DEBUG_WARN,("DRS: RDG on!\n"));
 			}
 		}
 	}

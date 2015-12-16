@@ -225,7 +225,7 @@ NTSTATUS RTUSBFirmwareWrite(RTMP_ADAPTER *pAd, UCHAR *pFwImage, ULONG FwLen)
 NTSTATUS RTUSBVenderReset(RTMP_ADAPTER *pAd)
 {
 	NTSTATUS Status;
-	DBGPRINT_RAW(RT_DEBUG_ERROR, ("-->RTUSBVenderReset\n"));
+	DBGPRINT(RT_DEBUG_ERROR, ("-->RTUSBVenderReset\n"));
 	Status = RTUSB_VendorRequest(
 		pAd,
 		USBD_TRANSFER_DIRECTION_OUT,
@@ -236,7 +236,7 @@ NTSTATUS RTUSBVenderReset(RTMP_ADAPTER *pAd)
 		NULL,
 		0);
 
-	DBGPRINT_RAW(RT_DEBUG_ERROR, ("<--RTUSBVenderReset\n"));
+	DBGPRINT(RT_DEBUG_ERROR, ("<--RTUSBVenderReset\n"));
 	return Status;
 }
 
@@ -564,7 +564,7 @@ NTSTATUS RTUSBReadBBPRegister_Direct(RTMP_ADAPTER *pAd, UCHAR Id, UCHAR *buf)
 		/* Read failed then Return Default value.*/
 		*buf = pAd->BbpWriteLatch[Id];
 	  	RTMP_SEM_EVENT_UP(&(pAd->reg_atomic));
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
 		return STATUS_UNSUCCESSFUL;
 	}
 
@@ -680,7 +680,7 @@ NTSTATUS RTUSBWriteBBPRegister_Direct(RTMP_ADAPTER *pAd, UCHAR Id, UCHAR Value)
 	} while ((i < RETRY_LIMIT) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)));
 
 	if ((i == RETRY_LIMIT) || (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
 	  	RTMP_SEM_EVENT_UP(&(pAd->reg_atomic));
 		return STATUS_UNSUCCESSFUL;
 	}
@@ -803,7 +803,7 @@ NTSTATUS RTUSBWriteRFRegister(RTMP_ADAPTER *pAd, UINT32 Value)
 	while ((i < RETRY_LIMIT) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)));
 
 	if ((i == RETRY_LIMIT) || (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
 		goto done;
 	}
 
@@ -905,7 +905,7 @@ VOID RTUSBPutToSleep(RTMP_ADAPTER *pAd)
 	value = (SLEEPCID<<16)+(OWNERMCU<<24)+ (0x40<<8)+1;
 	RTUSBWriteMACRegister(pAd, 0x7010, value, FALSE);
 	RTUSBWriteMACRegister(pAd, 0x404, 0x30, FALSE);
-	DBGPRINT_RAW(RT_DEBUG_ERROR, ("Sleep Mailbox testvalue %x\n", value));
+	DBGPRINT(RT_DEBUG_ERROR, ("Sleep Mailbox testvalue %x\n", value));
 }
 
 
@@ -1163,7 +1163,7 @@ NTSTATUS CheckGPIOHdlr(RTMP_ADAPTER *pAd, PCmdQElmt CMDQelmt)
 
 		if (pAd->StaCfg.bRadio != (pAd->StaCfg.bHwRadio && pAd->StaCfg.bSwRadio)) {
 			pAd->StaCfg.bRadio = (pAd->StaCfg.bHwRadio && pAd->StaCfg.bSwRadio);
-			DBGPRINT_RAW(RT_DEBUG_ERROR, ("!!! Radio %s !!!\n",
+			DBGPRINT(RT_DEBUG_ERROR, ("!!! Radio %s !!!\n",
 							(pAd->StaCfg.bRadio == TRUE ? "On" : "Off")));
 			if (pAd->StaCfg.bRadio == TRUE) {
 				MlmeRadioOn(pAd);
@@ -1325,7 +1325,7 @@ static NTSTATUS ResetBulkOutHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 		/*RTUSBKickBulkOut(pAd);*/
 	}
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("CmdThread : CMDTHREAD_RESET_BULK_OUT<===\n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("CmdThread : CMDTHREAD_RESET_BULK_OUT<===\n"));
 	return NDIS_STATUS_SUCCESS;
 }
 
@@ -1336,7 +1336,7 @@ static NTSTATUS ResetBulkInHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 	UINT32 MACValue;
 	NTSTATUS ntStatus;
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("CmdThread : CMDTHREAD_RESET_BULK_IN === >\n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("CmdThread : CMDTHREAD_RESET_BULK_IN === >\n"));
 
 #ifdef CONFIG_STA_SUPPORT
 	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF)) {
@@ -1353,7 +1353,7 @@ static NTSTATUS ResetBulkInHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 	{
 		/*while ((atomic_read(&pAd->PendingRx) > 0) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) */
 		if ((pAd->PendingRx > 0) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
-			DBGPRINT_RAW(RT_DEBUG_ERROR, ("BulkIn IRP Pending!!!\n"));
+			DBGPRINT(RT_DEBUG_ERROR, ("BulkIn IRP Pending!!!\n"));
 			RTUSBCancelPendingBulkInIRP(pAd);
 			RtmpusecDelay(100000);
 			pAd->PendingRx = 0;
@@ -1425,7 +1425,7 @@ static NTSTATUS ResetBulkInHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 				/* success*/
 				/*DBGPRINT(RT_DEBUG_TRACE, ("BIDone, Pend=%d,BIIdx=%d,BIRIdx=%d!\n", */
 				/*		pAd->PendingRx, pAd->NextRxBulkInIndex, pAd->NextRxBulkInReadIndex));*/
-				DBGPRINT_RAW(RT_DEBUG_TRACE, 
+				DBGPRINT(RT_DEBUG_TRACE, 
 						("CMDTHREAD_RESET_BULK_IN: Submit Rx URB Done, status=%d!\n",
 						RTMP_USB_URB_STATUS_GET(pUrb)));
 				ASSERT((pRxContext->InUse == pRxContext->IRPPending));
@@ -1435,14 +1435,14 @@ static NTSTATUS ResetBulkInHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 		/* Card must be removed*/
 		if (NT_SUCCESS(ntStatus) != TRUE) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
-			DBGPRINT_RAW(RT_DEBUG_ERROR, 
+			DBGPRINT(RT_DEBUG_ERROR, 
 					("CMDTHREAD_RESET_BULK_IN: Read Register Failed!Card must be removed!!\n\n"));
 		} else {
-			DBGPRINT_RAW(RT_DEBUG_ERROR, ("CMDTHREAD_RESET_BULK_IN: Cannot do bulk in because flags(0x%lx) on !\n", pAd->Flags));
+			DBGPRINT(RT_DEBUG_ERROR, ("CMDTHREAD_RESET_BULK_IN: Cannot do bulk in because flags(0x%lx) on !\n", pAd->Flags));
 		}
 	}
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("CmdThread : CMDTHREAD_RESET_BULK_IN <===\n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("CmdThread : CMDTHREAD_RESET_BULK_IN <===\n"));
 	return NDIS_STATUS_SUCCESS;
 }
 
@@ -1459,13 +1459,13 @@ static NTSTATUS SetAsicWcidHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 
 	offset = MAC_WCID_BASE + ((UCHAR)SetAsicWcid.WCID)*HW_WCID_ENTRY_SIZE;
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, 
+	DBGPRINT(RT_DEBUG_TRACE, 
 			("CmdThread : CMDTHREAD_SET_ASIC_WCID : WCID = %ld, SetTid  = %lx, DeleteTid = %lx.\n",
 			SetAsicWcid.WCID, SetAsicWcid.SetTid, SetAsicWcid.DeleteTid));
 
 	MACValue = (pAd->MacTab.Content[SetAsicWcid.WCID].Addr[3]<<24)+(pAd->MacTab.Content[SetAsicWcid.WCID].Addr[2]<<16)+(pAd->MacTab.Content[SetAsicWcid.WCID].Addr[1]<<8)+(pAd->MacTab.Content[SetAsicWcid.WCID].Addr[0]);
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("1-MACValue= %x,\n", MACValue));
+	DBGPRINT(RT_DEBUG_TRACE, ("1-MACValue= %x,\n", MACValue));
 	RTUSBWriteMACRegister(pAd, offset, MACValue, FALSE);
 	/* Read bitmask*/
 	RTUSBReadMACRegister(pAd, offset+4, &MACRValue);
@@ -1479,7 +1479,7 @@ static NTSTATUS SetAsicWcidHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 	MACValue |= MACRValue;
 	RTUSBWriteMACRegister(pAd, offset+4, MACValue, FALSE);
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("2-MACValue= %x,\n", MACValue));
+	DBGPRINT(RT_DEBUG_TRACE, ("2-MACValue= %x,\n", MACValue));
 
 	return NDIS_STATUS_SUCCESS;
 }

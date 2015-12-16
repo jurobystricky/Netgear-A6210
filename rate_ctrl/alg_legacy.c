@@ -1158,7 +1158,7 @@ VOID MlmeDynamicTxRateSwitching(
 				pEntry->CurrTxRateIndex = TxRateIdx;
 				MlmeNewTxRate(pAd, pEntry);
 				if (!pEntry->fLastSecAccordingRSSI)
-					DBGPRINT_RAW(RT_DEBUG_INFO,("DRS: TxTotalCnt <= 15, switch MCS according to RSSI (%d), RssiOffset=%d\n", Rssi, RssiOffset));
+					DBGPRINT(RT_DEBUG_INFO,("DRS: TxTotalCnt <= 15, switch MCS according to RSSI (%d), RssiOffset=%d\n", Rssi, RssiOffset));
 			}
 
 			MlmeClearAllTxQuality(pEntry);
@@ -1535,7 +1535,7 @@ VOID StaQuickResponeForRateUpExec(
 			/* if rate-up happen, clear all bad history of all TX rates */
 			if (pEntry->LastSecTxRateChangeAction == RATE_DOWN)
 			{
-				/* DBGPRINT_RAW(RT_DEBUG_INFO,("   QuickDRS: ++TX rate from %d to %d \n", CurrRateIdx, pEntry->CurrTxRateIndex)); */
+				/* DBGPRINT(RT_DEBUG_INFO,("   QuickDRS: ++TX rate from %d to %d \n", CurrRateIdx, pEntry->CurrTxRateIndex)); */
 
 				pEntry->TxRateUpPenalty = 0;
 				if (pEntry->CurrTxRateIndex != CurrRateIdx)
@@ -1544,7 +1544,7 @@ VOID StaQuickResponeForRateUpExec(
 			/* if rate-down happen, only clear DownRate's bad history */
 			else if (pEntry->LastSecTxRateChangeAction == RATE_UP)
 			{
-				/* DBGPRINT_RAW(RT_DEBUG_INFO,("   QuickDRS: --TX rate from %d to %d \n", CurrRateIdx, pEntry->CurrTxRateIndex)); */
+				/* DBGPRINT(RT_DEBUG_INFO,("   QuickDRS: --TX rate from %d to %d \n", CurrRateIdx, pEntry->CurrTxRateIndex)); */
 
 				pEntry->TxRateUpPenalty = 0;           /* no penalty */
 				MlmeSetTxQuality(pEntry, pEntry->CurrTxRateIndex, 0);
@@ -1614,7 +1614,7 @@ VOID MlmeOldRateAdapt(
 			pEntry->CurrTxRateIndex = pEntry->lastNonBfRate;
 			pEntry->phyETxBf = pEntry->phyITxBf = FALSE;
 			MlmeNewTxRate(pAd, pEntry);
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,("DRS: --TX rate from %d to %d \n", CurrRateIdx, pEntry->CurrTxRateIndex));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,("DRS: --TX rate from %d to %d \n", CurrRateIdx, pEntry->CurrTxRateIndex));
 			return;
 		}
 		else

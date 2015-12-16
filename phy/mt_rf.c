@@ -68,7 +68,7 @@ int mt_rf_write(
 		
 	//if ((i == MAX_BUSY_COUNT) || (RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
 	if ((i == MAX_BUSY_COUNT_US) || (RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
 		ret = STATUS_UNSUCCESSFUL;
 	}
 
@@ -129,7 +129,7 @@ int mt_rf_read(
 	
 	//if ((i == MAX_BUSY_COUNT) || (RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
 	if ((i == MAX_BUSY_COUNT_US) || (RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("Retry count exhausted or device removed!!!\n"));
 		ret = STATUS_UNSUCCESSFUL;
 		goto done;
 	}

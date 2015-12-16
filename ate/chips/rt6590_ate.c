@@ -1909,7 +1909,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t4 << 24) | (t3 << 16) | (t2 << 8) | t1; 
 	pAd->Tx20MPwrCfgGBand[0] = data; /* TX_PWR_CFG_0, MAC 0x1314 */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx20MPwrCfgGBand[0] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx20MPwrCfgGBand[0] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (EEPROM_TXPOWER_BYRATE_20MHZ_2_4G + 4), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40GBand, value, TxPwrBw40GBand, &t1, &t2);
@@ -1923,7 +1923,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t4 << 24) | (t3 << 16) | (t2 << 8) | t1; 
 	pAd->Tx40MPwrCfgGBand[0] = data; /* TX_PWR_CFG_1, MAC 0x1318 */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[0] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[0] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (EEPROM_TXPOWER_BYRATE_20MHZ_2_4G + 8), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40GBand, value, TxPwrBw40GBand, &t1, &t2);
@@ -1933,7 +1933,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t2 << 8) | t1; 
 	pAd->Tx40MPwrCfgGBand[1] = data; /* TX_PWR_CFG_2, MAC 0x131C */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[1] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[1] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (EEPROM_TXPOWER_BYRATE_20MHZ_2_4G + 14), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40GBand, value, TxPwrBw40GBand, &t3, &t4);
@@ -1943,7 +1943,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t4 << 24) | (t3 << 16); 
 	pAd->Tx40MPwrCfgGBand[2] = data; /* TX_PWR_CFG_3, MAC 0x1320 */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[2] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[2] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (EEPROM_TXPOWER_BYRATE_20MHZ_2_4G + 16), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40GBand, value, TxPwrBw40GBand, &t1, &t2);
@@ -1953,7 +1953,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t2 << 8) | t1; 
 	pAd->Tx40MPwrCfgGBand[3] = data; /* TX_PWR_CFG_4, MAC 0x1324 */			
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[3] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgGBand[3] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, ATE_EEPROM_TXPOWER_BYRATE_5G, value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40ABand, value, TxPwrBw40ABand, &t3, &t4);
@@ -1963,7 +1963,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t4 << 24) | (t3 << 16); 
 	pAd->Tx20MPwrCfgABand[0] = data; /* TX_PWR_CFG_0, MAC 0x1314 */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx20MPwrCfgABand[0] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx20MPwrCfgABand[0] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (ATE_EEPROM_TXPOWER_BYRATE_5G + 2), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40ABand, value, TxPwrBw40ABand, &t1, &t2);
@@ -1977,7 +1977,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t4 << 24) | (t3 << 16) | (t2 << 8) | t1; 
 	pAd->Tx40MPwrCfgABand[0] = data; /* TX_PWR_CFG_1, MAC 0x1318 */			
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[0] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[0] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (ATE_EEPROM_TXPOWER_BYRATE_5G + 6), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40ABand, value, TxPwrBw40ABand, &t1, &t2);
@@ -1987,7 +1987,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t2 << 8) | t1; 
 	pAd->Tx40MPwrCfgABand[1] = data; /* TX_PWR_CFG_2, MAC 0x131C */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[1] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[1] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (ATE_EEPROM_TXPOWER_BYRATE_STBC), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40ABand, value, TxPwrBw40ABand, &t3, &t4);
@@ -1997,7 +1997,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t4 << 24) | (t3 << 16); 
 	pAd->Tx40MPwrCfgABand[2] = data; /* TX_PWR_CFG_3, MAC 0x1320 */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[2] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[2] = 0x%X\n", __FUNCTION__, data));
 
 	RT28xx_EEPROM_READ16(pAd, (ATE_EEPROM_TXPOWER_BYRATE_STBC + 2), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw40ABand, value, TxPwrBw40ABand, &t1, &t2);
@@ -2007,7 +2007,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 	*/
 	data = (t2 << 8) | t1; 
 	pAd->Tx40MPwrCfgABand[3] = data; /* TX_PWR_CFG_4, MAC 0x1324 */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[3] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx40MPwrCfgABand[3] = 0x%X\n", __FUNCTION__, data));
 	
 	RT28xx_EEPROM_READ16(pAd, (ATE_EEPROM_TXPOWER_BYRATE_5G + 12), value);
 	MT76x0ATE_CalculateTxpower(bMinusBw80ABand, value, TxPwrBw80ABand, &t3, &t4);
@@ -2019,7 +2019,7 @@ VOID MT76x0AteReadTxPwrPerRate(
 #ifdef DOT11_VHT_AC
 	pAd->Tx80MPwrCfgABand[0] = data; /* TX_PWR_CFG_8, MAC 0x13D8 */
 #endif /* DOT11_VHT_AC */
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: Tx80MPwrCfgABand[0] = 0x%X\n", __FUNCTION__, data));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: Tx80MPwrCfgABand[0] = 0x%X\n", __FUNCTION__, data));
 
 	RTMP_IO_WRITE32(pAd, TX_PWR_CFG_0, pAd->Tx20MPwrCfgABand[0]);
 	RTMP_IO_WRITE32(pAd, TX_PWR_CFG_1, pAd->Tx40MPwrCfgABand[0]);

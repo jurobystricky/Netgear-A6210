@@ -3463,7 +3463,7 @@ VOID APRxErrorHandle(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk)
 #else							
 					ApCliRTMPReportMicError(pAd, pWpaKey, BSS0);
 #endif /* APCLI_WPA_SUPPLICANT_SUPPORT */ 
-					DBGPRINT_RAW(RT_DEBUG_ERROR,("Rx MIC Value error\n"));
+					DBGPRINT(RT_DEBUG_ERROR,("Rx MIC Value error\n"));
 				}
 			}
 			else 
@@ -3604,7 +3604,7 @@ BOOLEAN APCheckTkipMICValue(
 								UserPriority,
 								DataSize) == FALSE)
 	{
-		DBGPRINT_RAW(RT_DEBUG_ERROR,("Rx MIC Value error 2\n"));
+		DBGPRINT(RT_DEBUG_ERROR,("Rx MIC Value error 2\n"));
 
 #ifdef APCLI_SUPPORT
 #ifdef WPA_SUPPLICANT_SUPPORT
@@ -3713,7 +3713,7 @@ VOID APRxEAPOLFrameIndicate(
 			int BssIdx = pAd->ApCfg.BssidNum + MAX_MESH_NUM + pEntry->wdev_idx;
 			WPA_SUPPLICANT_INFO *sup_info = &apcli_entry->wpa_supplicant_info;
 
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("Receive EAP-SUCCESS Packet\n"));
+			DBGPRINT(RT_DEBUG_TRACE, ("Receive EAP-SUCCESS Packet\n"));
 			/* pAd->StaCfg.PortSecured = WPA_802_1X_PORT_SECURED; */
 			/* STA_PORT_SECURED(pAd); */
 			pEntry->PortSecured=WPA_802_1X_PORT_SECURED;

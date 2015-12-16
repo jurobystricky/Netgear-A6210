@@ -270,7 +270,7 @@ VOID BuildChannelList(RTMP_ADAPTER *pAd)
 #ifdef DBG	
 	for (i=0;i<pAd->ChannelListNum;i++)
 	{
-		DBGPRINT_RAW(RT_DEBUG_TRACE,("BuildChannel # %d :: Pwr0 = %d, Pwr1 =%d, Flags = %x\n ", 
+		DBGPRINT(RT_DEBUG_TRACE,("BuildChannel # %d :: Pwr0 = %d, Pwr1 =%d, Flags = %x\n ", 
 									 pAd->ChannelList[i].Channel, 
 									 pAd->ChannelList[i].Power, 
 									 pAd->ChannelList[i].Power2, 

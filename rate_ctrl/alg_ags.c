@@ -234,7 +234,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	CHAR RssiOffset = 0;
 
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("AGS: ---> %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_TRACE, ("AGS: ---> %s\n", __FUNCTION__));
 
 	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: AccuTxTotalCnt = %d, TxSuccess = %d, TxRetransmit = %d, TxFailCount = %d, TxErrorRatio = %d\n",
 		__FUNCTION__, 
@@ -256,7 +256,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	{
 		if (pTable == AGS3x3HTRateTable)
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: pEntry->AGSCtrl.MCSGroup = %d, TxQuality2[%d] = %d,  "
 				"TxQuality1[%d] = %d, TxQuality0[%d] = %d, pCurrTxRate->upMcs1 = %d, "
 				"pCurrTxRate->ItemNo = %d\n",
@@ -313,14 +313,14 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				
 				default:
 				{
-					DBGPRINT_RAW(RT_DEBUG_ERROR,
+					DBGPRINT(RT_DEBUG_ERROR,
 						("%s: AGS: Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n",
 						__FUNCTION__, pEntry->AGSCtrl.MCSGroup));
 				}
 				break;
 			}			
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 							("AGS> Current Group:%d, Select UpRateIdx=%d in group %d\n",
 							pEntry->AGSCtrl.MCSGroup, UpRateIdx, next_grp));
 
@@ -329,9 +329,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			     (((pEntry->TxQuality[pCurrTxRate->upMcs3] > pEntry->TxQuality[pCurrTxRate->upMcs2]) && (pCurrTxRate->upMcs2 != pCurrTxRate->ItemNo)) || 
 			     ((pEntry->TxQuality[pCurrTxRate->upMcs3] > pEntry->TxQuality[pCurrTxRate->upMcs1]) && (pCurrTxRate->upMcs1 != pCurrTxRate->ItemNo))))
 			{
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: ##############\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_TRACE, ("%s: ##############\n", __FUNCTION__));
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: AGS: [3x3 peer device (Adhoc, DLS or AP)], Before - "
 					"pEntry->AGSCtrl.MCSGroup = %d, TxQuality2[%d] = %d,  "
 					"TxQuality1[%d] = %d, TxQuality0[%d] = %d\n",
@@ -351,7 +351,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 #endif /* DOT11_VHT_AC*/
 			)
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: pEntry->AGSCtrl.MCSGroup = %d, TxQuality1[%d] = %d, "
 				"TxQuality0[%d] = %d, pCurrTxRate->upMcs1 = %d, "
 				"pCurrTxRate->ItemNo = %d\n",
@@ -384,7 +384,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				
 				default:
 				{
-					DBGPRINT_RAW(RT_DEBUG_ERROR,
+					DBGPRINT(RT_DEBUG_ERROR,
 						("%s: AGS: [2x2 peer device (Adhoc, DLS or AP)], "
 						"Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 						__FUNCTION__, 
@@ -397,9 +397,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			     ((pEntry->TxQuality[pCurrTxRate->upMcs2] > pEntry->TxQuality[pCurrTxRate->upMcs1]) &&
 					(pCurrTxRate->upMcs1 != pCurrTxRate->ItemNo)))
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: ###########\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: ###########\n", __FUNCTION__));
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: AGS: [2x2 peer device (Adhoc, DLS or AP)], Before - "
 					"pEntry->AGSCtrl.MCSGroup = %d, TxQuality1[%d] = %d, "
 					"TxQuality0[%d] = %d\n",
@@ -423,7 +423,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				
 				default:
 				{
-					DBGPRINT_RAW(RT_DEBUG_ERROR,
+					DBGPRINT(RT_DEBUG_ERROR,
 						("%s: AGS: [1x1 peer device (Adhoc, DLS or AP)], "
 						"Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 						__FUNCTION__, 
@@ -440,7 +440,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			/* current rate is the best one */
 			pEntry->AGSCtrl.MCSGroup = 0; /* Try to escape the local optima */
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> Current rate is the best one!\n"));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> Current rate is the best one!\n"));
 			break;
 		}
 		
@@ -460,7 +460,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	
 	DownRateIdx = pCurrTxRate->downMcs;
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("ags> UpRateIdx = %d, DownRateIdx = %d\n",
 				UpRateIdx, DownRateIdx));
 
@@ -545,7 +545,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 
 			pEntry->AGSCtrl.MCSGroup = 3;
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("ags> Group3 RSSI = %d, TxRateIdx = %d\n",
 					pAGSStatisticsInfo->RSSI, TxRateIdx));
 		}
@@ -560,7 +560,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				RssiOffset = AgsRssiOffsetTable[1][pAd->CommonCfg.BBPCurrentBW];
 #endif /* DOT11_VHT_AC */
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 2*2, RssiOffsetForAgs=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 2*2, RssiOffsetForAgs=%d\n", __FUNCTION__, RssiOffset));
 
 			if (MCS[15 && (pAGSStatisticsInfo->RSSI > (-69 + RssiOffset)))
 				TxRateIdx = MCS[15];
@@ -587,7 +587,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			if (pTable == Ags1x1VhtRateTable)
 				RssiOffset = AgsRssiOffsetTable[0][pAd->CommonCfg.BBPCurrentBW];
 #endif /* DOT11_VHT_AC */
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 			
 			/* 1x1 peer device (Adhoc, DLS or AP) */
 			if (MCS[7] && (pAGSStatisticsInfo->RSSI > (-71 + RssiOffset)))
@@ -633,18 +633,18 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 
 		RESET_ONE_SEC_TX_CNT(pEntry);
 		
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: The MCS selection base on RSSI\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: The MCS selection base on RSSI\n", __FUNCTION__));
 
 		return;
 	}
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: TrainUp:%d, TrainDown:%d\n", __FUNCTION__, TrainUp, TrainDown));
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: TrainUp:%d, TrainDown:%d\n", __FUNCTION__, TrainUp, TrainDown));
 
 	do
 	{
 		BOOLEAN	bTrainUpDown = FALSE;
 
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: AGS: TxQuality[CurrRateIdx(%d)] = %d, UpPenalty:%d\n",
 					__FUNCTION__, CurrRateIdx,
 					pEntry->TxQuality[CurrRateIdx], pEntry->TxRateUpPenalty));
@@ -652,7 +652,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		if (pAGSStatisticsInfo->TxErrorRatio >= TrainDown) /* Poor quality */
 		{
 			/* error ratio too high, do rate down */
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 						("%s: AGS: (DOWN) TxErrorRatio >= TrainDown\n",__FUNCTION__));
 			bTrainUpDown = TRUE;
 			pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
@@ -662,7 +662,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			bTrainUpDown = TRUE;
 			bUpgradeQuality = TRUE;
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: (UP) pEntry->TxQuality[CurrRateIdx] = %d, pEntry->TxRateUpPenalty = %d\n",
 				__FUNCTION__, 
 				pEntry->TxQuality[CurrRateIdx], 
@@ -700,7 +700,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				 if (pEntry->TxQuality[UpRateIdx])
 					pEntry->TxQuality[UpRateIdx]--;
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> not bad and not good\n"));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> not bad and not good\n"));
 			}
 		}
 
@@ -711,7 +711,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		if (bTrainUpDown)
 		{
 			/* need to rate up or down */
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, 
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, 
 				("%s: AGS: bTrainUpDown = %d, CurrRateIdx = %d, DownRateIdx = %d, UpRateIdx = %d, pEntry->TxQuality[CurrRateIdx] = %d, pEntry->TxQuality[UpRateIdx] = %d\n",
 				__FUNCTION__, 
 				bTrainUpDown, CurrRateIdx, DownRateIdx, UpRateIdx, 
@@ -723,19 +723,19 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			{
 				pEntry->CurrTxRateIndex = DownRateIdx;
 				pEntry->LastSecTxRateChangeAction = RATE_DOWN;
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("ags> rate down!\n"));
+				DBGPRINT(RT_DEBUG_TRACE, ("ags> rate down!\n"));
 			}
 			else if ((CurrRateIdx != UpRateIdx) && 
 					(pEntry->TxQuality[UpRateIdx] <= 0)) /* Upgrade Tx rate */
 			{
 				pEntry->CurrTxRateIndex = UpRateIdx;
 				pEntry->LastSecTxRateChangeAction = RATE_UP;
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("ags> rate up!\n"));
+				DBGPRINT(RT_DEBUG_TRACE, ("ags> rate up!\n"));
 			}
 		}
 	} while (FALSE);
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: pEntry->CurrTxRateIndex = %d, CurrRateIdx = %d, pEntry->LastSecTxRateChangeAction = %d\n", 
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: pEntry->CurrTxRateIndex = %d, CurrRateIdx = %d, pEntry->LastSecTxRateChangeAction = %d\n", 
 		__FUNCTION__, 
 		pEntry->CurrTxRateIndex, CurrRateIdx, 
 		pEntry->LastSecTxRateChangeAction));
@@ -744,7 +744,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	     (pEntry->LastSecTxRateChangeAction == RATE_UP))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: ++TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: ++TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));
 		
 		pEntry->LastSecTxRateChangeAction = RATE_UP;
@@ -757,7 +757,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	else if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	             (pEntry->LastSecTxRateChangeAction == RATE_DOWN))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: --TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: --TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));
 		
 		pEntry->LastSecTxRateChangeAction = RATE_DOWN;
@@ -772,7 +772,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	{
 		pEntry->LastSecTxRateChangeAction = RATE_NO_CHANGE; /* Tx rate remains unchanged. */
 		bTxRateChanged = FALSE;
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> no rate up/down!\n"));
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> no rate up/down!\n"));
 	}
 
 	/* Tx rate fast train up/down */
@@ -790,7 +790,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 
 	if ((bTxRateChanged == TRUE) && (pNextTxRate != NULL))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("ags> set new rate MCS = %d!\n", pEntry->CurrTxRateIndex));
 		MlmeSetTxRate(pAd, pEntry, pNextTxRate);
 	}
@@ -818,7 +818,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				TxopThCfg.field.RDG_OUT_THRES = 0x00;
 				RTMP_IO_WRITE32(pAd, TXOP_THRES_CFG, TxopThCfg.word);
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("AGS: %s: RDG_IN_THRES = 0xFF\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("AGS: %s: RDG_IN_THRES = 0xFF\n", __FUNCTION__));
 			}
 			else
 			{
@@ -831,7 +831,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				TxopThCfg.field.RDG_OUT_THRES = 0x00;
 				RTMP_IO_WRITE32(pAd, TXOP_THRES_CFG, TxopThCfg.word);
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("AGS: %s: RDG_IN_THRES = 0x00\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("AGS: %s: RDG_IN_THRES = 0x00\n", __FUNCTION__));
 			}
 		}
 	}
@@ -839,7 +839,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	/* reset all OneSecTx counters */
 	RESET_ONE_SEC_TX_CNT(pEntry);
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("AGS: <--- %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_TRACE, ("AGS: <--- %s\n", __FUNCTION__));
 }
 
 
@@ -873,7 +873,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 	ULONG OneSecTxNoRetryOKRationCount = 0;
 
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("QuickAGS: ---> %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_TRACE, ("QuickAGS: ---> %s\n", __FUNCTION__));
 
 	pAd->StaCfg.StaQuickResponeForRateUpTimerRunning = FALSE;
 
@@ -923,7 +923,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 			pEntry->CurrTxRateIndex = UpRateIdx;
 		}
 
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 			("%s: QuickAGS: AccuTxTotalCnt <= 15, train back to original rate\n", 
 			__FUNCTION__));
 		
@@ -953,13 +953,13 @@ VOID StaQuickResponeForRateUpExecAGS(
 				pEntry->CurrTxRateIndex = DownRateIdx;
 				pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: (UP) bad Tx ok count (Current PER:%d, NewMcs's TrainDown:%d)\n",
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: (UP) bad Tx ok count (Current PER:%d, NewMcs's TrainDown:%d)\n",
 					__FUNCTION__, 
 					pAGSStatisticsInfo->TxErrorRatio, TrainDown));
 			}
 			else /* Good quality */
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: (UP) keep rate-up (Current PER:%d, NewMcs's TrainDown:%d)\n", 
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: (UP) keep rate-up (Current PER:%d, NewMcs's TrainDown:%d)\n", 
 					__FUNCTION__, 
 					pAGSStatisticsInfo->TxErrorRatio,
 					TrainDown));
@@ -985,7 +985,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 		}
 	}while (FALSE);
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("ags> new group = %d\n", pEntry->AGSCtrl.MCSGroup));
 
 	/* Last action is rate-up */
@@ -1019,7 +1019,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 			
 			default: 
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 					__FUNCTION__, pEntry->AGSCtrl.MCSGroup));
 			}
 			break;
@@ -1029,7 +1029,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 		if (UpRateIdx == pEntry->CurrTxRateIndex)
 			pEntry->AGSCtrl.MCSGroup = 0;
 		
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: next MCS group,  pEntry->AGSCtrl.MCSGroup = %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: next MCS group,  pEntry->AGSCtrl.MCSGroup = %d\n", 
 			__FUNCTION__, pEntry->AGSCtrl.MCSGroup));
 		
 	}
@@ -1037,7 +1037,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 	if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	     (pEntry->LastSecTxRateChangeAction == 2)) /* Tx rate up */
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: ++TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: ++TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));	
 		
 		pEntry->TxRateUpPenalty = 0;
@@ -1047,7 +1047,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 	else if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	            (pEntry->LastSecTxRateChangeAction == 1)) /* Tx rate down */
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: --TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: --TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));
 		
 		pEntry->TxRateUpPenalty = 0; /* No penalty */
@@ -1057,14 +1057,14 @@ VOID StaQuickResponeForRateUpExecAGS(
 	else
 	{
 		bTxRateChanged = FALSE;
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: rate is not changed\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: rate is not changed\n", 
 			__FUNCTION__));
 	}
 
 	pNextTxRate = (RTMP_RA_LEGACY_TB *)(&pTable[(pEntry->CurrTxRateIndex + 1) * SIZE_OF_AGS_RATE_TABLE_ENTRY]);
 	if ((bTxRateChanged == TRUE) && (pNextTxRate != NULL))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("ags> confirm current rate MCS = %d!\n", pEntry->CurrTxRateIndex));
 
 		MlmeSetTxRate(pAd, pEntry, pNextTxRate);
@@ -1073,7 +1073,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 	/* reset all OneSecTx counters */
 	RESET_ONE_SEC_TX_CNT(pEntry);
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("QuickAGS: <--- %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("QuickAGS: <--- %s\n", __FUNCTION__));
 }
 #endif /* CONFIG_STA_SUPPORT */
 
@@ -1105,7 +1105,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 	AGS_STATISTICS_INFO AGSStatisticsInfo = {0};
 
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("AGS: ---> %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_TRACE, ("AGS: ---> %s\n", __FUNCTION__));
 	
 	if (pAd->MacTab.Size == 1)
 	{
@@ -1188,7 +1188,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 	{
 		if (pTable == AGS3x3HTRateTable)
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: pEntry->AGSCtrl.MCSGroup = %d, TxQuality2[%d] = %d,  "
 				"TxQuality1[%d] = %d, TxQuality0[%d] = %d, pCurrTxRate->upMcs1 = %d, "
 				"pCurrTxRate->ItemNo = %d\n",
@@ -1245,14 +1245,14 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 				
 				default:
 				{
-					DBGPRINT_RAW(RT_DEBUG_ERROR,
+					DBGPRINT(RT_DEBUG_ERROR,
 						("%s: AGS: Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n",
 						__FUNCTION__, pEntry->AGSCtrl.MCSGroup));
 				}
 				break;
 			}			
 			
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 							("AGS> Current Group:%d, Select UpRateIdx=%d in group %d\n",
 							pEntry->AGSCtrl.MCSGroup, UpRateIdx, next_grp));
 
@@ -1261,9 +1261,9 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 			     (((pEntry->TxQuality[pCurrTxRate->upMcs3] > pEntry->TxQuality[pCurrTxRate->upMcs2]) && (pCurrTxRate->upMcs2 != pCurrTxRate->ItemNo)) || 
 			     ((pEntry->TxQuality[pCurrTxRate->upMcs3] > pEntry->TxQuality[pCurrTxRate->upMcs1]) && (pCurrTxRate->upMcs1 != pCurrTxRate->ItemNo))))
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: ##############\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: ##############\n", __FUNCTION__));
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: AGS: [3x3 Before - "
 					"pEntry->AGSCtrl.MCSGroup = %d, TxQuality2[%d] = %d,  "
 					"TxQuality1[%d] = %d, TxQuality0[%d] = %d\n",
@@ -1283,7 +1283,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 #endif /* DOT11_VHT_AC*/
 			)
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: pEntry->AGSCtrl.MCSGroup = %d, TxQuality1[%d] = %d, "
 				"TxQuality0[%d] = %d, pCurrTxRate->upMcs1 = %d, "
 				"pCurrTxRate->ItemNo = %d\n",
@@ -1316,7 +1316,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 				
 				default:
 				{
-					DBGPRINT_RAW(RT_DEBUG_ERROR,
+					DBGPRINT(RT_DEBUG_ERROR,
 						("%s: AGS: [2x2 peer device (Adhoc, DLS or AP)], "
 						"Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 						__FUNCTION__, 
@@ -1329,9 +1329,9 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 			     ((pEntry->TxQuality[pCurrTxRate->upMcs2] > pEntry->TxQuality[pCurrTxRate->upMcs1]) &&
 					(pCurrTxRate->upMcs1 != pCurrTxRate->ItemNo)))
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: ###########\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: ###########\n", __FUNCTION__));
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: AGS: [2x2 peer device (Adhoc, DLS or AP)], Before - "
 					"pEntry->AGSCtrl.MCSGroup = %d, TxQuality1[%d] = %d, "
 					"TxQuality0[%d] = %d\n",
@@ -1355,7 +1355,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 				
 				default:
 				{
-					DBGPRINT_RAW(RT_DEBUG_ERROR,
+					DBGPRINT(RT_DEBUG_ERROR,
 						("%s: AGS: [1x1 peer device (Adhoc, DLS or AP)], "
 						"Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 						__FUNCTION__, 
@@ -1372,7 +1372,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 			/* current rate is the best one */
 			pEntry->AGSCtrl.MCSGroup = 0; /* Try to escape the local optima */
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> Current rate is the best one!\n"));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> Current rate is the best one!\n"));
 			break;
 		}
 		
@@ -1392,7 +1392,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 
 	DownRateIdx = pCurrTxRate->downMcs;
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("ags> UpRateIdx = %d, DownRateIdx = %d\n",
 				UpRateIdx, DownRateIdx));
 
@@ -1421,7 +1421,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 		AGSStatisticsInfo.TxFailCount, 
 		AGSStatisticsInfo.TxErrorRatio));
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, 
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, 
 		("%s: AGS: Before - CurrTxRateIdx = %d, MCS = %d, STBC = %d, ShortGI = %d, Mode = %d, "
 		"TrainUp = %d, TrainDown = %d, NextUp = %d, NextDown = %d, "
 		"CurrMCS = %d, pEntry->AGSCtrl.MCSGroup = %d, PER = %lu%%, Retry = %lu, NoRetry = %lu\n", 
@@ -1509,7 +1509,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 
 			pEntry->AGSCtrl.MCSGroup = 3;
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("ags> Group3 RSSI = %d, TxRateIdx = %d\n",
 					AGSStatisticsInfo.RSSI, TxRateIdx));
 		}
@@ -1524,7 +1524,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 				RssiOffset = AgsRssiOffsetTable[1][pAd->CommonCfg.BBPCurrentBW];
 #endif /* DOT11_VHT_AC */
 
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: AGS: 2*2, RssiOffsetForAgs=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_TRACE, ("%s: AGS: 2*2, RssiOffsetForAgs=%d\n", __FUNCTION__, RssiOffset));
 			
 			if (MCS[15] && (AGSStatisticsInfo.RSSI > (-69 + RssiOffset)))
 				TxRateIdx = MCS[15];
@@ -1551,7 +1551,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 			if (pTable == Ags1x1VhtRateTable)
 				RssiOffset = AgsRssiOffsetTable[0][pAd->CommonCfg.BBPCurrentBW];
 #endif /* DOT11_VHT_AC */
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 			
 			/* 1x1 peer device (Adhoc, DLS or AP) */
 			if (MCS[7] && (AGSStatisticsInfo.RSSI > (-71 + RssiOffset)))
@@ -1597,18 +1597,18 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 		
 		RESET_ONE_SEC_TX_CNT(pEntry);
 		
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: The MCS selection base on RSSI\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: The MCS selection base on RSSI\n", __FUNCTION__));
 
 		return;
 	}
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: TrainUp:%d, TrainDown:%d\n", __FUNCTION__, TrainUp, TrainDown));
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: TrainUp:%d, TrainDown:%d\n", __FUNCTION__, TrainUp, TrainDown));
 
 	do
 	{
 		BOOLEAN	bTrainUpDown = FALSE;
 		
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: AGS: TxQuality[CurrRateIdx(%d)] = %d, UpPenalty:%d\n",
 					__FUNCTION__, CurrRateIdx,
 					pEntry->TxQuality[CurrRateIdx], pEntry->TxRateUpPenalty));
@@ -1616,7 +1616,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 		if (AGSStatisticsInfo.TxErrorRatio >= TrainDown) /* Poor quality */
 		{
 			/* error ratio too high, do rate down */
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 						("%s: AGS: (DOWN) TxErrorRatio >= TrainDown\n",__FUNCTION__));
 			bTrainUpDown = TRUE;
 			pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
@@ -1626,7 +1626,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 			bTrainUpDown = TRUE;
 			bUpgradeQuality = TRUE;
 			
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: (UP) pEntry->TxQuality[CurrRateIdx] = %d, pEntry->TxRateUpPenalty = %d\n",
 				__FUNCTION__, 
 				pEntry->TxQuality[CurrRateIdx], 
@@ -1664,7 +1664,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 				 if (pEntry->TxQuality[UpRateIdx])
 					pEntry->TxQuality[UpRateIdx]--;
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> not bad and not good\n"));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> not bad and not good\n"));
 			}
 		}
 
@@ -1675,7 +1675,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 		if (bTrainUpDown)
 		{
 			/* need to rate up or down */
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("%s: AGS: bTrainUpDown = %d, CurrRateIdx = %d, DownRateIdx = %d, UpRateIdx = %d, pEntry->TxQuality[CurrRateIdx] = %d, pEntry->TxQuality[UpRateIdx] = %d\n",
 				__FUNCTION__, 
 				bTrainUpDown, CurrRateIdx, DownRateIdx, UpRateIdx, 
@@ -1687,19 +1687,19 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 			{
 				pEntry->CurrTxRateIndex = DownRateIdx;
 				pEntry->LastSecTxRateChangeAction = RATE_DOWN;
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> rate down!\n"));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> rate down!\n"));
 			}
 			else if ((CurrRateIdx != UpRateIdx) && 
 					(pEntry->TxQuality[UpRateIdx] <= 0)) /* Upgrade Tx rate */
 			{
 				pEntry->CurrTxRateIndex = UpRateIdx;
 				pEntry->LastSecTxRateChangeAction = RATE_UP;
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> rate up!\n"));
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> rate up!\n"));
 			}
 		}
 	} while (FALSE);
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: pEntry->CurrTxRateIndex = %d, CurrRateIdx = %d, pEntry->LastSecTxRateChangeAction = %d\n", 
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: pEntry->CurrTxRateIndex = %d, CurrRateIdx = %d, pEntry->LastSecTxRateChangeAction = %d\n", 
 		__FUNCTION__, 
 		pEntry->CurrTxRateIndex, CurrRateIdx, 
 		pEntry->LastSecTxRateChangeAction));
@@ -1708,7 +1708,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 	if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	     (pEntry->LastSecTxRateChangeAction == RATE_UP))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: ++TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: ++TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));
 		
 		pEntry->LastSecTxRateChangeAction = RATE_UP;
@@ -1721,7 +1721,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 	else if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	             (pEntry->LastSecTxRateChangeAction == RATE_DOWN))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: --TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: --TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));
 		
 		pEntry->LastSecTxRateChangeAction = RATE_DOWN;
@@ -1736,7 +1736,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 	{
 		pEntry->LastSecTxRateChangeAction = RATE_NO_CHANGE; /* Tx rate remains unchanged. */
 		bTxRateChanged = FALSE;
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> no rate up/down!\n"));
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> no rate up/down!\n"));
 	}
 
 	/* Tx rate fast train up/down */
@@ -1753,7 +1753,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 
 	if ((bTxRateChanged == TRUE) && (pNextTxRate != NULL))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("ags> set new rate MCS = %d!\n", pEntry->CurrTxRateIndex));
 		APMlmeSetTxRate(pAd, pEntry, pNextTxRate);
 	}
@@ -1761,7 +1761,7 @@ VOID ApMlmeDynamicTxRateSwitchingAGS(
 	/* reset all OneSecTx counters */
 	RESET_ONE_SEC_TX_CNT(pEntry);
 	
-    DBGPRINT_RAW(RT_DEBUG_TRACE, ("AGS: <--- %s\n", __FUNCTION__));
+    DBGPRINT(RT_DEBUG_TRACE, ("AGS: <--- %s\n", __FUNCTION__));
 }
 
 
@@ -1796,7 +1796,7 @@ VOID ApQuickResponeForRateUpExecAGS(
 	ULONG TxSuccess, TxRetransmit, TxFailCount;
 
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("QuickAGS: ---> %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_TRACE, ("QuickAGS: ---> %s\n", __FUNCTION__));
 	pAd->ApCfg.ApQuickResponeForRateUpTimerRunning = FALSE;
 	
 	pEntry = &pAd->MacTab.Content[idx]; /* point to information of the individual station */
@@ -1898,7 +1898,7 @@ VOID ApQuickResponeForRateUpExecAGS(
 			pEntry->CurrTxRateIndex = UpRateIdx;
 		}
 
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 			("%s: QuickAGS: AccuTxTotalCnt <= 15, train back to original rate\n", 
 			__FUNCTION__));
 		
@@ -1928,13 +1928,13 @@ VOID ApQuickResponeForRateUpExecAGS(
 				pEntry->CurrTxRateIndex = DownRateIdx;
 				pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
 
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: QuickAGS: (UP) bad Tx ok count (Current PER:%ld, NewMcs's TrainDown:%d)\n",
 					__FUNCTION__, AGSStatisticsInfo.TxErrorRatio, TrainDown));
 			}
 			else /* Good quality */
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 					("%s: QuickAGS: (UP) keep rate-up (Current PER:%ld, NewMcs's TrainDown:%d)\n", 
 					__FUNCTION__, AGSStatisticsInfo.TxErrorRatio, TrainDown));
 
@@ -1959,7 +1959,7 @@ VOID ApQuickResponeForRateUpExecAGS(
 		}
 	}while (FALSE);
 
-	DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA,
+	DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA,
 				("ags> new group = %d\n", pEntry->AGSCtrl.MCSGroup));
 
 	/* Last action is rate-up */
@@ -1993,7 +1993,7 @@ VOID ApQuickResponeForRateUpExecAGS(
 			
 			default: 
 			{
-				DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
+				DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: Incorrect MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 					__FUNCTION__, 
 					pEntry->AGSCtrl.MCSGroup));
 			}
@@ -2004,14 +2004,14 @@ VOID ApQuickResponeForRateUpExecAGS(
 		if (UpRateIdx == pEntry->CurrTxRateIndex)
 			pEntry->AGSCtrl.MCSGroup = 0;
 		
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: next MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: next MCS group, pEntry->AGSCtrl.MCSGroup = %d\n", 
 			__FUNCTION__, pEntry->AGSCtrl.MCSGroup));
 	}
 
 	if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	     (pEntry->LastSecTxRateChangeAction == 2)) /* Tx rate up */
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: ++TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: ++TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));	
 		
 		pEntry->TxRateUpPenalty = 0;
@@ -2021,7 +2021,7 @@ VOID ApQuickResponeForRateUpExecAGS(
 	else if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	            (pEntry->LastSecTxRateChangeAction == 1)) /* Tx rate down */
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: --TX rate from %d to %d\n", 
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: --TX rate from %d to %d\n", 
 			__FUNCTION__, CurrRateIdx, pEntry->CurrTxRateIndex));
 		
 		pEntry->TxRateUpPenalty = 0; /* No penalty */
@@ -2031,13 +2031,13 @@ VOID ApQuickResponeForRateUpExecAGS(
 	else
 	{
 		bTxRateChanged = FALSE;
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: rate is not changed\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: QuickAGS: rate is not changed\n", __FUNCTION__));
 	}
 
 	pNextTxRate = (RTMP_RA_LEGACY_TB *)(&pTable[(pEntry->CurrTxRateIndex + 1) * SIZE_OF_AGS_RATE_TABLE_ENTRY]);
 	if ((bTxRateChanged == TRUE) && (pNextTxRate != NULL))
 	{
-		DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> confirm current rate MCS = %d!\n", pEntry->CurrTxRateIndex));
+		DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("ags> confirm current rate MCS = %d!\n", pEntry->CurrTxRateIndex));
 
 		APMlmeSetTxRate(pAd, pEntry, pNextTxRate);
 	}
@@ -2045,7 +2045,7 @@ VOID ApQuickResponeForRateUpExecAGS(
 	/* reset all OneSecTx counters */
 	RESET_ONE_SEC_TX_CNT(pEntry);
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("QuickAGS: <--- %s\n", __FUNCTION__));
+	DBGPRINT(RT_DEBUG_TRACE, ("QuickAGS: <--- %s\n", __FUNCTION__));
 }
 #endif /* CONFIG_AP_SUPPORT */
 

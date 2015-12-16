@@ -83,7 +83,7 @@ INT RTMPCheckRxError(RTMP_ADAPTER *pAd, HEADER_802_11 *pHeader, RX_BLK *pRxBlk,
 
 	/* Paul 04-03 for OFDM Rx length issue*/
 	if (pRxBlk->MPDUtotalByteCnt > MAX_AGGREGATION_SIZE) {
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("received packet too long\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("received packet too long\n"));
 		return NDIS_STATUS_FAILURE;
 	}
 
@@ -100,11 +100,11 @@ INT RTMPCheckRxError(RTMP_ADAPTER *pAd, HEADER_802_11 *pHeader, RX_BLK *pRxBlk,
 	if (pRxInfo->Decrypted && pRxInfo->CipherErr) {
 
 		if (pRxInfo->CipherErr == 2)
-			{DBGPRINT_RAW(RT_DEBUG_TRACE,("RxErr: ICV ok but MICErr"));}
+			{DBGPRINT(RT_DEBUG_TRACE,("RxErr: ICV ok but MICErr"));}
 		else if (pRxInfo->CipherErr == 1)
-			{DBGPRINT_RAW(RT_DEBUG_TRACE,("RxErr: ICV Err"));}
+			{DBGPRINT(RT_DEBUG_TRACE,("RxErr: ICV Err"));}
 		else if (pRxInfo->CipherErr == 3)
-			DBGPRINT_RAW(RT_DEBUG_TRACE,("RxErr: Key not valid"));
+			DBGPRINT(RT_DEBUG_TRACE,("RxErr: Key not valid"));
 
 		if (INFRA_ON(pAd) && pRxInfo->MyBss) {
 			if ((pRxInfo->CipherErr & 1) == 1) {
@@ -130,7 +130,7 @@ INT RTMPCheckRxError(RTMP_ADAPTER *pAd, HEADER_802_11 *pHeader, RX_BLK *pRxBlk,
 			}
 		}
 
-		DBGPRINT_RAW(RT_DEBUG_TRACE,
+		DBGPRINT(RT_DEBUG_TRACE,
 				("%s(): %d (len=%d, Mcast=%d, MyBss=%d, Wcid=%d, KeyId=%d)\n",
 				__FUNCTION__, pRxInfo->CipherErr, pRxBlk->MPDUtotalByteCnt,
 				pRxInfo->Mcast | pRxInfo->Bcast, pRxInfo->MyBss, pRxBlk->wcid,

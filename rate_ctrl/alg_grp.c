@@ -118,7 +118,7 @@ UCHAR MlmeSelectUpRate(
 				UpRateIdx = pCurrTxRate->upMcs1;
 				break;
 			default:
-				DBGPRINT_RAW(RT_DEBUG_ERROR, ("3ss:wrong mcsGroup value\n"));
+				DBGPRINT(RT_DEBUG_ERROR, ("3ss:wrong mcsGroup value\n"));
 				break;
 			}
 		} else if (grp_cnt == 2) {
@@ -140,7 +140,7 @@ UCHAR MlmeSelectUpRate(
 					UpRateIdx = pCurrTxRate->upMcs1;
 					break;
 				default:
-					DBGPRINT_RAW(RT_DEBUG_TRACE, ("2ss:wrong mcsGroup value %d\n", pEntry->mcsGroup));
+					DBGPRINT(RT_DEBUG_TRACE, ("2ss:wrong mcsGroup value %d\n", pEntry->mcsGroup));
 					break;
 			}
 		}
@@ -153,11 +153,11 @@ UCHAR MlmeSelectUpRate(
 					UpRateIdx = pCurrTxRate->upMcs1;
 					break;
 				default:
-					DBGPRINT_RAW(RT_DEBUG_TRACE, ("1ss:wrong mcsGroup value %d\n", pEntry->mcsGroup));
+					DBGPRINT(RT_DEBUG_TRACE, ("1ss:wrong mcsGroup value %d\n", pEntry->mcsGroup));
 					break;
 			}
 		} else {
-			DBGPRINT_RAW(RT_DEBUG_TRACE, ("wrong mcsGroup cnt %d\n", grp_cnt));
+			DBGPRINT(RT_DEBUG_TRACE, ("wrong mcsGroup cnt %d\n", grp_cnt));
 		}
 
 		/*  If going up from CCK to MCS32 make sure it's allowed */
@@ -647,7 +647,7 @@ UCHAR MlmeSelectTxRateAdapt(
 		if (pTable == RateTableVht2S || pTable == RateTableVht2S_BW40
 			|| (pTable == RateTableVht2S_2G_BW40))
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 2*2, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 2*2, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 
 			/* 2x2 peer device (Adhoc, DLS or AP) */
 			if (mcs[19] && (Rssi > (-65 + RssiOffset))) {
@@ -693,7 +693,7 @@ UCHAR MlmeSelectTxRateAdapt(
 
 			pEntry->mcsGroup = 2;
 		} else if (pTable == RateTableVht2S_MCS7) {
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 2*2, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 2*2, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 
 			/* 2x2 peer device (Adhoc, DLS or AP) */
 			if (mcs[17] && (Rssi > (-69 + RssiOffset))) {
@@ -735,7 +735,7 @@ UCHAR MlmeSelectTxRateAdapt(
 			|| (pTable == RateTableVht2S_2G_BW20))
 		{
 
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 2*2, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 2*2, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 
 			/* 2x2 peer device (Adhoc, DLS or AP) */
 			if (mcs[18] && (Rssi > (-67 + RssiOffset))) {
@@ -785,7 +785,7 @@ UCHAR MlmeSelectTxRateAdapt(
 		else if ((pTable == RateTableVht1S_MCS9)
 			|| (pTable == RateTableVht1S_2G_BW20) || (pTable == RateTableVht1S_2G_BW40))
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 
 			/* 1x1 peer device (Adhoc, DLS or AP) */
 			if (mcs[9] && (Rssi > (-67 + RssiOffset)))
@@ -813,7 +813,7 @@ UCHAR MlmeSelectTxRateAdapt(
 		}
 		else
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
+			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: GRP: 1*1, RssiOffset=%d\n", __FUNCTION__, RssiOffset));
 
 			/* 1x1 peer device (Adhoc, DLS or AP) */
 			if (mcs[7] && (Rssi > (-71 + RssiOffset)))
@@ -1255,7 +1255,7 @@ VOID MlmeNewRateAdapt(
 	{
 		if (pEntry->LastSecTxRateChangeAction!=RATE_NO_CHANGE)
 		{
-			DBGPRINT_RAW(RT_DEBUG_INFO,("DRS: %sTX rate from %d to %d \n",
+			DBGPRINT(RT_DEBUG_INFO,("DRS: %sTX rate from %d to %d \n",
 				pEntry->LastSecTxRateChangeAction==RATE_UP? "++": "--", CurrRateIdx, pEntry->CurrTxRateIndex));
 		}
 
@@ -2319,7 +2319,7 @@ VOID MlmeDynamicTxRateSwitchingAdapt(
 	{
 		pEntry->fLastChangeAccordingMfb = FALSE;
 		pEntry->LastSecTxRateChangeAction = RATE_NO_CHANGE;
-		DBGPRINT_RAW(RT_DEBUG_TRACE,("DRS: MCS is according to MFB, and ignore tuning this sec \n"));
+		DBGPRINT(RT_DEBUG_TRACE,("DRS: MCS is according to MFB, and ignore tuning this sec \n"));
 
 		/* reset all OneSecTx counters */
 		RESET_ONE_SEC_TX_CNT(pEntry);
@@ -2408,7 +2408,7 @@ VOID MlmeDynamicTxRateSwitchingAdapt(
 				MlmeNewTxRate(pAd, pEntry);
 				if (!pEntry->fLastSecAccordingRSSI)
 				{
-					DBGPRINT_RAW(RT_DEBUG_INFO,("DRS: TxTotalCnt <= 15, switch to MCS%d according to RSSI (%d), RssiOffset=%d\n", pEntry->HTPhyMode.field.MCS, Rssi, RssiOffset));
+					DBGPRINT(RT_DEBUG_INFO,("DRS: TxTotalCnt <= 15, switch to MCS%d according to RSSI (%d), RssiOffset=%d\n", pEntry->HTPhyMode.field.MCS, Rssi, RssiOffset));
 				}
 			}
 
@@ -2444,7 +2444,7 @@ VOID MlmeDynamicTxRateSwitchingAdapt(
 	{
 		pEntry->fLastSecAccordingRSSI = FALSE;
 		pEntry->LastSecTxRateChangeAction = RATE_NO_CHANGE;
-		/* DBGPRINT_RAW(RT_DEBUG_TRACE,("DRS: MCS is according to RSSI, and ignore tuning this sec \n")); */
+		/* DBGPRINT(RT_DEBUG_TRACE,("DRS: MCS is according to RSSI, and ignore tuning this sec \n")); */
 
 		TriggerQuickInitMCSRate(pAd, pEntry, pAd->ra_fast_interval >> 1);
 		DBGPRINT(RT_DEBUG_TRACE ,("Trigger @ RSSI Mapping\n"));

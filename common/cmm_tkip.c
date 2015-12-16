@@ -452,7 +452,7 @@ BOOLEAN	RTMPTkipCompareMICValue(
 	/* Since the MIC value might cross MPDUs.*/
 	if(!NdisEqualMemory(pAd->PrivateInfo.Rx.MIC, OldMic, 8))
 	{
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("RTMPTkipCompareMICValue(): TKIP MIC Error !\n"));  /*MIC error.*/
+		DBGPRINT(RT_DEBUG_ERROR, ("RTMPTkipCompareMICValue(): TKIP MIC Error !\n"));  /*MIC error.*/
 
 		
 		return (FALSE);

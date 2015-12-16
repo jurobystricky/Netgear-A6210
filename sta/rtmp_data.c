@@ -56,7 +56,7 @@ VOID STARxEAPOLFrameIndicate(
 				UCHAR CipherAlg;
 				int idx = 0;
 
-				DBGPRINT_RAW(RT_DEBUG_TRACE, ("Receive EAP-SUCCESS Packet\n"));
+				DBGPRINT(RT_DEBUG_TRACE, ("Receive EAP-SUCCESS Packet\n"));
 				STA_PORT_SECURED(pAd);
 
 				if (pAd->StaCfg.wpa_supplicant_info.IEEE8021x_required_keys == FALSE) {
@@ -118,7 +118,7 @@ VOID STARxEAPOLFrameIndicate(
 						  pRxBlk->rssi[1], pRxBlk->rssi[2],
 						  0,
 						  OPMODE_STA);
-			DBGPRINT_RAW(RT_DEBUG_TRACE,
+			DBGPRINT(RT_DEBUG_TRACE,
 				     ("!!! report EAPOL DATA to MLME (len=%d) !!!\n",
 				      pRxBlk->DataSize));
 		}
@@ -307,7 +307,7 @@ BOOLEAN STACheckTkipMICValue(
 				    pSA,
 				    pWpaKey->RxMic,
 				    UserPriority, DataSize) == FALSE) {
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Rx MIC Value error 2\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("Rx MIC Value error 2\n"));
 
 #ifdef WPA_SUPPLICANT_SUPPORT
 		if (pAd->StaCfg.wpa_supplicant_info.WpaSupplicantUP) {
@@ -3440,7 +3440,7 @@ NDIS_STATUS STAHardTransmit(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk, UCHAR QueIdx)
 	 */
 	if ((pAd->StaCfg.Psm == PWR_SAVE)
 	    && OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE)) {
-		DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicForceWakeup At HardTx\n"));
+		DBGPRINT(RT_DEBUG_INFO, ("AsicForceWakeup At HardTx\n"));
 #ifdef RTMP_MAC_USB
 		RTEnqueueInternalCmd(pAd, CMDTHREAD_FORCE_WAKE_UP, NULL, 0);
 #endif /* RTMP_MAC_USB */

@@ -1070,7 +1070,7 @@ BOOLEAN AsicSetDevMac(RTMP_ADAPTER *pAd, UCHAR *addr)
 
 	RTMP_IO_WRITE32(pAd, MAC_ADDR_DW1, csr3.word);
 
-	DBGPRINT_RAW(RT_DEBUG_TRACE, ("SetDevMAC=%02x:%02x:%02x:%02x:%02x:%02x\n",
+	DBGPRINT(RT_DEBUG_TRACE, ("SetDevMAC=%02x:%02x:%02x:%02x:%02x:%02x\n",
 			PRINT_MAC(addr)));
 
 #ifdef HDR_TRANS_SUPPORT
@@ -1995,14 +1995,14 @@ VOID AsicAddSharedKeyEntry(
 /*============================================================================================*/
 
 	DBGPRINT(RT_DEBUG_TRACE,("AsicAddSharedKeyEntry: %s key #%d\n", CipherName[CipherAlg], BssIndex*4 + KeyIdx));
-	DBGPRINT_RAW(RT_DEBUG_TRACE, (" 	Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+	DBGPRINT(RT_DEBUG_TRACE, (" 	Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
 		pKey[0],pKey[1],pKey[2],pKey[3],pKey[4],pKey[5],pKey[6],pKey[7],pKey[8],pKey[9],pKey[10],pKey[11],pKey[12],pKey[13],pKey[14],pKey[15]));
 	if (pRxMic) {
-		DBGPRINT_RAW(RT_DEBUG_TRACE, (" 	Rx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+		DBGPRINT(RT_DEBUG_TRACE, (" 	Rx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
 			pRxMic[0],pRxMic[1],pRxMic[2],pRxMic[3],pRxMic[4],pRxMic[5],pRxMic[6],pRxMic[7]));
 	}
 	if (pTxMic) {
-		DBGPRINT_RAW(RT_DEBUG_TRACE, (" 	Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+		DBGPRINT(RT_DEBUG_TRACE, (" 	Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
 			pTxMic[0],pTxMic[1],pTxMic[2],pTxMic[3],pTxMic[4],pTxMic[5],pTxMic[6],pTxMic[7]));
 	}
 /*============================================================================================*/

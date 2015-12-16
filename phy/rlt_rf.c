@@ -59,7 +59,7 @@ static inline BOOLEAN rf_csr_poll_idle(RTMP_ADAPTER *pAd, UINT32 *rfcsr)
 
 	if ((i == MAX_BUSY_COUNT) || (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)))
 	{
-		DBGPRINT_RAW(RT_DEBUG_ERROR, ("Retry count exhausted or device removed(cnt=%d)!\n", i));
+		DBGPRINT(RT_DEBUG_ERROR, ("Retry count exhausted or device removed(cnt=%d)!\n", i));
 	}
 
 	return idle;

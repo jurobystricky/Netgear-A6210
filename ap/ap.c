@@ -1400,7 +1400,7 @@ VOID ApLogEvent(
 		RTMP_GetCurrentSystemTime(&pLog->SystemTime);
 		COPY_MAC_ADDR(pLog->Addr, pAddr);
 		pLog->Event = Event;
-		DBGPRINT_RAW(RT_DEBUG_TRACE,("LOG#%ld %02x:%02x:%02x:%02x:%02x:%02x %s\n",
+		DBGPRINT(RT_DEBUG_TRACE,("LOG#%ld %02x:%02x:%02x:%02x:%02x:%02x %s\n",
 			pAd->EventTab.Num, pAddr[0], pAddr[1], pAddr[2], 
 			pAddr[3], pAddr[4], pAddr[5], pEventText[Event]));
 		pAd->EventTab.Num += 1;
