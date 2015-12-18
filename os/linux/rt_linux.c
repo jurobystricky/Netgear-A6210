@@ -980,30 +980,11 @@ static inline void __RtmpOSTaskCustomize(OS_TASK *pTask)
 {
 #ifndef KTHREAD_SUPPORT
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 	daemonize((PSTRING) & pTask->taskName[0] /*"%s",pAd->net_dev->name */ );
 
 	allow_signal(SIGTERM);
 	allow_signal(SIGKILL);
 	current->flags |= PF_NOFREEZE;
-#else
-	unsigned long flags;
-
-	daemonize();
-	reparent_to_init();
-	strcpy(current->comm, &pTask->taskName[0]);
-
-	siginitsetinv(&current->blocked, sigmask(SIGTERM) | sigmask(SIGKILL));
-
-	/* Allow interception of SIGKILL only
-	 * Don't allow other signals to interrupt the transmission */
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,4,22)
-	spin_lock_irqsave(&current->sigmask_lock, flags);
-	flush_signals(current);
-	recalc_sigpending(current);
-	spin_unlock_irqrestore(&current->sigmask_lock, flags);
-#endif
-#endif
 
 	RTMP_GET_OS_PID(pTask->taskPID, current->pid);
 
@@ -1507,11 +1488,7 @@ void RtmpOSNetDevFree(PNET_DEV pNetDev)
 {
 	ASSERT(pNetDev);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 	free_netdev(pNetDev);
-#else
-	kfree(pNetDev);
-#endif
 
 #ifdef VENDOR_FEATURE4_SUPPORT
 	printk("OS_NumOfMemAlloc = %ld, OS_NumOfMemFree = %ld\n",
@@ -1561,8 +1538,6 @@ PNET_DEV RtmpOSNetDevGetByName(PNET_DEV pNetDev, PSTRING pDevName)
 {
 	PNET_DEV pTargetNetDev = NULL;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
-
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26)
 	pTargetNetDev = dev_get_by_name(dev_net(pNetDev), pDevName);
@@ -1574,26 +1549,12 @@ PNET_DEV RtmpOSNetDevGetByName(PNET_DEV pNetDev, PSTRING pDevName)
 	pTargetNetDev = dev_get_by_name(pDevName);
 #endif /* KERNEL_VERSION(2,6,24) */
 
-#else
-	int devNameLen;
-
-	devNameLen = strlen(pDevName);
-	ASSERT((devNameLen <= IFNAMSIZ));
-
-	for (pTargetNetDev = dev_base; pTargetNetDev != NULL;
-		 pTargetNetDev = pTargetNetDev->next) {
-		if (strncmp(pTargetNetDev->name, pDevName, devNameLen) == 0)
-			break;
-	}
-#endif /* KERNEL_VERSION(2,5,0) */
-
 	return pTargetNetDev;
 }
 
 
 void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 	/*
 	   every time dev_get_by_name is called, and it has returned a valid struct
 	   net_device*, dev_put should be called afterwards, because otherwise the
@@ -1601,7 +1562,6 @@ void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
 	 */
 	if (pNetDev)
 		dev_put(pNetDev);
-#endif /* LINUX_VERSION_CODE */
 }
 
 

@@ -193,8 +193,6 @@ typedef struct semaphore	OS_SEM;
 
 typedef int (*HARD_START_XMIT_FUNC)(struct sk_buff *skb, struct net_device *net_dev);
 
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #define RT_MOD_INC_USE_COUNT() \
 	if (!try_module_get(THIS_MODULE)) \
 	{ \
@@ -203,10 +201,7 @@ typedef int (*HARD_START_XMIT_FUNC)(struct sk_buff *skb, struct net_device *net_
 	}
 
 #define RT_MOD_DEC_USE_COUNT() module_put(THIS_MODULE);
-#else
-#define RT_MOD_INC_USE_COUNT()	MOD_INC_USE_COUNT;
-#define RT_MOD_DEC_USE_COUNT() MOD_DEC_USE_COUNT;
-#endif
+
 
 #define RTMP_INC_REF(_A)		0
 #define RTMP_DEC_REF(_A)		0
@@ -556,7 +551,6 @@ typedef void (*TIMER_FUNCTION)(unsigned long);
 	}\
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #define RTMP_TIME_AFTER(a,b)		\
 	(typecheck(unsigned long, (unsigned long)a) && \
 	 typecheck(unsigned long, (unsigned long)b) && \
@@ -567,21 +561,6 @@ typedef void (*TIMER_FUNCTION)(unsigned long);
 	 typecheck(unsigned long, (unsigned long)b) && \
 	 ((long)(a) - (long)(b) >= 0))
 #define RTMP_TIME_BEFORE(a,b)	RTMP_TIME_AFTER_EQ(b,a)
-#else
-#define typecheck(type,x) \
-({      type __dummy; \
-		typeof(x) __dummy2; \
-		(void)(&__dummy == &__dummy2); \
-		1; \
-})
-#define RTMP_TIME_AFTER_EQ(a,b)	\
-	(typecheck(unsigned long, (unsigned long)a) && \
-	 typecheck(unsigned long, (unsigned long)b) && \
-	 ((long)(a) - (long)(b) >= 0))
-#define RTMP_TIME_BEFORE(a,b)	RTMP_TIME_AFTER_EQ(b,a)
-#define RTMP_TIME_AFTER(a,b) time_after(a, b)
-#endif
-
 #define ONE_TICK 1
 
 static inline void NdisGetSystemUpTime(ULONG *time)
@@ -1052,8 +1031,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #define BULKAGGRE_SIZE				100 /* 100 */
 #endif /* INF_AMAZON_SE */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
-
 #ifndef OS_ABL_SUPPORT
 #define RTUSB_ALLOC_URB(iso)		usb_alloc_urb(iso, GFP_ATOMIC)
 #define RTUSB_SUBMIT_URB(pUrb)		usb_submit_urb(pUrb, GFP_ATOMIC)
@@ -1073,22 +1050,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #define RTUSB_URB_ALLOC_BUFFER		rausb_buffer_alloc
 #define RTUSB_URB_FREE_BUFFER		rausb_buffer_free
 #endif /* OS_ABL_SUPPORT */
-
-#else
-
-#define RT28XX_PUT_DEVICE(dev_p)
-
-#ifndef OS_ABL_SUPPORT
-#define RTUSB_ALLOC_URB(iso)		usb_alloc_urb(iso)
-#define RTUSB_SUBMIT_URB(pUrb)		usb_submit_urb(pUrb)
-#else
-#define RTUSB_ALLOC_URB(iso)		rausb_alloc_urb(iso)
-#define RTUSB_SUBMIT_URB(pUrb)		rausb_submit_urb(pUrb)
-#endif /* OS_ABL_SUPPORT */
-
-#define RTUSB_URB_ALLOC_BUFFER(pUsb_Dev, BufSize, pDma_addr)         		kmalloc(BufSize, GFP_ATOMIC)
-#define RTUSB_URB_FREE_BUFFER(pUsb_Dev, BufSize, pTransferBuf, Dma_addr)  	kfree(pTransferBuf)
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0) */
 
 
 #ifndef OS_ABL_SUPPORT
@@ -1159,7 +1120,6 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 
 /* Fill Bulk URB Macro */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #define RTUSB_FILL_TX_BULK_URB(pUrb,	\
 				   pUsb_Dev,	\
 				   uEndpointAddress,		\
@@ -1212,49 +1172,6 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 		pUrb->transfer_flags &= (~URB_NO_TRANSFER_DMA_MAP);	\
 	}
 
-#else
-#define RTUSB_FILL_TX_BULK_URB(pUrb,	\
-				   pUsb_Dev,	\
-				   uEndpointAddress,		\
-				   pTransferBuf,			\
-				   BufSize,				\
-				   Complete,	\
-				   pContext,	\
-					TransferDma)	\
-  				   do{	\
-  				   		FILL_BULK_URB(pUrb, pUsb_Dev, usb_sndbulkpipe(pUsb_Dev, uEndpointAddress),	\
-							pTransferBuf, BufSize, Complete, pContext);	\
-				   }while(0)
-
-#define RTUSB_FILL_HTTX_BULK_URB(pUrb,	\
-				pUsb_Dev,				\
-				uEndpointAddress,		\
-				pTransferBuf,			\
-				BufSize,				\
-				Complete,				\
-				   pContext,	\
-					TransferDma)	\
-  				do{	\
-					FILL_BULK_URB(pUrb, pUsb_Dev, usb_sndbulkpipe(pUsb_Dev, uEndpointAddress),	\
-								pTransferBuf, BufSize, Complete, pContext);	\
-				}while(0)
-
-#define RTUSB_FILL_RX_BULK_URB(pUrb,	\
-				pUsb_Dev,	\
-				uEndpointAddress,		\
-				pTransferBuf,			\
-				BufSize,				\
-				Complete,	\
-				   pContext,	\
-					TransferDma)	\
-  				do{	\
-					FILL_BULK_URB(pUrb, pUsb_Dev, usb_rcvbulkpipe(pUsb_Dev, uEndpointAddress),	\
-								pTransferBuf, BufSize, Complete, pContext);	\
-				}while(0)
-
-#define	RTUSB_URB_DMA_MAPPING(pUrb)
-#endif /* LINUX_VERSION_CODE */
-
 
 #define RTUSB_CONTROL_MSG(pUsb_Dev, uEndpointAddress, Request, RequestType, Value,Index, tmpBuf, TransferBufferLength, timeout, ret)	\
   		do{	\
@@ -1287,18 +1204,13 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 
 extern struct urb *rausb_alloc_urb(int iso_packets);
 extern void rausb_free_urb(VOID *urb);
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 extern void rausb_put_dev(VOID *dev);
 extern struct usb_device *rausb_get_dev(VOID *dev);
-#endif /* LINUX_VERSION_CODE */
-
 extern int rausb_submit_urb(VOID *urb);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #ifndef gfp_t
 #define gfp_t		INT32
-#endif /* gfp_t */
+#endif 
 
 extern void *rausb_buffer_alloc(VOID *dev,
 								size_t size,
@@ -1307,7 +1219,6 @@ extern void rausb_buffer_free(VOID *dev,
 								size_t size,
 								void *addr,
 								ra_dma_addr_t dma);
-#endif /* LINUX_VERSION_CODE */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,7)
 extern void rausb_kill_urb(VOID *urb);
