@@ -4851,7 +4851,6 @@ NDIS_STATUS rtmp_rf_read(
 
 VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr);
 VOID NICInitAsicFromEEPROM(RTMP_ADAPTER *pAd);
-
 NDIS_STATUS NICInitializeAdapter(RTMP_ADAPTER *pAd, BOOLEAN bHardReset);
 VOID RTMPRingCleanUp(RTMP_ADAPTER *pAd, UCHAR RingType);
 
@@ -4859,7 +4858,6 @@ VOID UserCfgExit(RTMP_ADAPTER *pAd);
 VOID UserCfgInit(RTMP_ADAPTER *pAd);
 
 int load_patch(RTMP_ADAPTER *ad);
-VOID erase_patch(RTMP_ADAPTER *ad);
 NDIS_STATUS NICLoadFirmware(RTMP_ADAPTER *pAd);
 VOID NICEraseFirmware(RTMP_ADAPTER *pAd);
 
@@ -4882,10 +4880,7 @@ ULONG RTMPCompareMemory(VOID *pSrc1, VOID *pSrc2, ULONG Length);
 VOID RTMPMoveMemory(VOID *pDest, VOID *pSrc, ULONG Length);
 
 VOID AtoH(PSTRING src, UCHAR *dest, int destlen);
-UCHAR BtoH(char ch);
 
-VOID RTMP_TimerListAdd(RTMP_ADAPTER *pAd, VOID *pRsc);
-VOID RTMP_TimerListRelease(RTMP_ADAPTER *pAd, VOID *pRsc);
 VOID RTMP_AllTimerListRelease(RTMP_ADAPTER *pAd);
 
 VOID RTMPInitTimer(
@@ -4901,8 +4896,6 @@ VOID RTMPCancelTimer(RALINK_TIMER_STRUCT *pTimer, BOOLEAN *pCancelled);
 VOID RTMPReleaseTimer(RALINK_TIMER_STRUCT *pTimer, BOOLEAN *pCancelled);
 
 VOID RTMPEnableRxTx(RTMP_ADAPTER *pAd);
-
-VOID AntCfgInit(RTMP_ADAPTER *pAd);
 
 /* */
 /* prototype in action.c */
@@ -4953,9 +4946,6 @@ VOID SendRefreshBAR(
 	IN	MAC_TABLE_ENTRY	*pEntry);
 
 #ifdef DOT11N_DRAFT3
-VOID RTMP_11N_D3_TimerInit(
-	IN RTMP_ADAPTER *pAd);
-
 VOID SendBSS2040CoexistMgmtAction(
 	IN	RTMP_ADAPTER *pAd,
 	IN	UCHAR	Wcid,
@@ -7284,8 +7274,6 @@ VOID RT28xx_UpdateBeaconToAsic(
 	IN INT apidx,
 	IN ULONG BeaconLen,
 	IN ULONG UpdatePos);
-
-void CfgInitHook(RTMP_ADAPTER *pAd);
 
 NDIS_STATUS RtmpNetTaskInit(RTMP_ADAPTER *pAd);
 NDIS_STATUS RtmpMgmtTaskInit(RTMP_ADAPTER *pAd);

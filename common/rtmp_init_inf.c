@@ -186,7 +186,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	if (Status != NDIS_STATUS_SUCCESS)
 		goto err5;
 
-	CfgInitHook(pAd);
+//JB removed	CfgInitHook(pAd);
 
 #ifdef BLOCK_NET_IF
 	initblockQueueTab(pAd);
