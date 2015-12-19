@@ -162,7 +162,6 @@ static VOID dump_txblk(TX_BLK *pTxBlk)
 		if (pPacket)
 		{
 			pBuf = GET_OS_PKT_DATAPTR(pPacket);
-//jb was 			DBGPRINT(RT_DEBUG_TRACE,("\t\t[%d]:ptr=0x%x, Len=%d!\n", i, (UINT32)(GET_OS_PKT_DATAPTR(pPacket)), GET_OS_PKT_LEN(pPacket)));
 			DBGPRINT(RT_DEBUG_TRACE,("\t\t[%d]:ptr=0x%x, Len=%d!\n", i, GET_OS_PKT_DATAPTR(pPacket), GET_OS_PKT_LEN(pPacket)));
 			DBGPRINT(RT_DEBUG_TRACE,("\t\t"));
 			for (j =0 ; j < GET_OS_PKT_LEN(pPacket); j++)
@@ -1254,7 +1253,7 @@ static UCHAR TxPktClassification(RTMP_ADAPTER *pAd, PNDIS_PACKET  pPacket, TX_BL
 	if ((RTMP_GET_PACKET_FRAGMENTS(pPacket) > 1)
 		 && (TxFrameType == TX_LEGACY_FRAME)
 #ifdef VHT_TXBF_SUPPORT
-		 || (TxFrameType == TX_LEGACY_FRAME | TX_NDPA_FRAME)
+		 || (TxFrameType == (TX_LEGACY_FRAME | TX_NDPA_FRAME))
 #endif
 #ifdef DOT11_N_SUPPORT
 		&& ((pMacEntry->TXBAbitmap & (1<<(RTMP_GET_PACKET_UP(pPacket)))) == 0)
