@@ -221,8 +221,6 @@ int RtmpOSNetDevAddrSet(
 
 void RtmpOSNetDevClose(PNET_DEV pNetDev);
 void RtmpOSNetDevFree(PNET_DEV pNetDev);
-INT RtmpOSNetDevAlloc(PNET_DEV *new_dev_p, UINT32 privDataSize);
-INT RtmpOSNetDevOpsAlloc(PVOID *pNetDevOps);
 
 
 #ifdef CONFIG_STA_SUPPORT
@@ -230,27 +228,21 @@ INT RtmpOSNotifyRawData(PNET_DEV pNetDev, UCHAR *buf, INT len, ULONG type, USHOR
 
 #endif /* CONFIG_STA_SUPPORT */
 
-PNET_DEV RtmpOSNetDevGetByName(PNET_DEV pNetDev, PSTRING pDevName);
-
 void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev);
 
 INT RtmpOSNetDevDestory(VOID *pReserved, PNET_DEV pNetDev);
 void RtmpOSNetDevDetach(PNET_DEV pNetDev);
-int RtmpOSNetDevAttach(
-	IN	UCHAR					OpMode,
-	IN	PNET_DEV				pNetDev, 
-	IN	RTMP_OS_NETDEV_OP_HOOK	*pDevOpHook);
+int RtmpOSNetDevAttach(UCHAR OpMode, PNET_DEV pNetDev, RTMP_OS_NETDEV_OP_HOOK *pDevOpHook);
 
-void RtmpOSNetDevProtect(
-	IN BOOLEAN lock_it);
+void RtmpOSNetDevProtect(BOOLEAN lock_it);
 
 PNET_DEV RtmpOSNetDevCreate(
-	IN	INT32					MC_RowID,
-	IN	UINT32					*pIoctlIF,
-	IN	INT 					devType,
-	IN	INT						devNum,
-	IN	INT						privMemSize,
-	IN	PSTRING					pNamePrefix);
+	IN	INT32 MC_RowID,
+	IN	UINT32 *pIoctlIF,
+	IN	INT devType,
+	IN	INT devNum,
+	IN	INT privMemSize,
+	IN	PSTRING pNamePrefix);
 
 BOOLEAN RtmpOSNetDevIsUp(VOID *pDev);
 

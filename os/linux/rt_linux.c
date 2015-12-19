@@ -1412,6 +1412,23 @@ int RtmpOSNetDevAddrSet(
 	return 0;
 }
 
+static PNET_DEV RtmpOSNetDevGetByName(PNET_DEV pNetDev, PSTRING pDevName)
+{
+	PNET_DEV pTargetNetDev = NULL;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26)
+	pTargetNetDev = dev_get_by_name(dev_net(pNetDev), pDevName);
+#else
+	ASSERT(pNetDev);
+	pTargetNetDev = dev_get_by_name(pNetDev->nd_net, pDevName);
+#endif
+#else
+	pTargetNetDev = dev_get_by_name(pDevName);
+#endif /* KERNEL_VERSION(2,6,24) */
+
+	return pTargetNetDev;
+}
 
 /*
   *	Assign the network dev name for created Ralink WiFi interface.
@@ -1500,7 +1517,7 @@ void RtmpOSNetDevFree(PNET_DEV pNetDev)
 #endif /* VENDOR_FEATURE2_SUPPORT */
 }
 
-INT RtmpOSNetDevAlloc(PNET_DEV *new_dev_p, UINT32 privDataSize)
+static INT RtmpOSNetDevAlloc(PNET_DEV *new_dev_p, UINT32 privDataSize)
 {
 	*new_dev_p = NULL;
 
@@ -1521,7 +1538,7 @@ INT RtmpOSNetDevAlloc(PNET_DEV *new_dev_p, UINT32 privDataSize)
 
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
-INT RtmpOSNetDevOpsAlloc(PVOID *pNetDevOps)
+static INT RtmpOSNetDevOpsAlloc(PVOID *pNetDevOps)
 {
 	*pNetDevOps = (PVOID) vmalloc(sizeof (struct net_device_ops));
 	if (*pNetDevOps) {
@@ -1532,25 +1549,6 @@ INT RtmpOSNetDevOpsAlloc(PVOID *pNetDevOps)
 	}
 }
 #endif
-
-
-PNET_DEV RtmpOSNetDevGetByName(PNET_DEV pNetDev, PSTRING pDevName)
-{
-	PNET_DEV pTargetNetDev = NULL;
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26)
-	pTargetNetDev = dev_get_by_name(dev_net(pNetDev), pDevName);
-#else
-	ASSERT(pNetDev);
-	pTargetNetDev = dev_get_by_name(pNetDev->nd_net, pDevName);
-#endif
-#else
-	pTargetNetDev = dev_get_by_name(pDevName);
-#endif /* KERNEL_VERSION(2,6,24) */
-
-	return pTargetNetDev;
-}
 
 
 void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
@@ -3586,11 +3584,11 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID RtmpOsGetPid(IN ULONG *pDst,
-		  IN ULONG PID)
-{
-	RT_GET_OS_PID(*pDst, PID);
-}
+//VOID RtmpOsGetPid(IN ULONG *pDst,
+//		  IN ULONG PID)
+//{
+//	RT_GET_OS_PID(*pDst, PID);
+//}
 
 
 /*

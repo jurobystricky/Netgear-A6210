@@ -670,20 +670,11 @@ do {                                   \
 
 #define DBGPRINT(Level, Fmt) DBGPRINT_RAW(Level, Fmt)
 
-#if 0
-#define DBGPRINT_ERR(Fmt)           \
-{ 	\
-	printk("ERROR mt7662u_sta:"); \
-	printk KERN_ERR Fmt;          \
-}
-#else
 #define DBGPRINT_ERR(Fmt)        \
 {                                \
     printk("ERROR mt766u_sta:"); \
     printk Fmt;                  \
 }
-#endif
-
 
 #else
 #define DBGPRINT(Level, Fmt)
@@ -1271,11 +1262,6 @@ USBHST_STATUS ATE_RTUSBBulkOutDataPacketComplete(URBCompleteStatus Status, purbb
 #endif /* RTMP_USB_SUPPORT */
 
 #endif /* RALINK_ATE */
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
-INT RtmpOSNetDevOpsAlloc(
-	IN PVOID *pNetDevOps);
-#endif
 
 #define RTMP_OS_MAX_SCAN_DATA_GET()		IW_SCAN_MAX_DATA
 
