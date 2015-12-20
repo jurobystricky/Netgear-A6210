@@ -2687,56 +2687,55 @@ static int rtw_ndev_notifier_call(struct notifier_block * nb, unsigned long stat
 
 
 static INT CFG80211NetdevNotifierEvent(struct notifier_block *nb, ULONG state, 
-	VOID *ndev)
+	VOID *ptr)
 {
-//	VOID *pAd;
-//	struct net_device *pNev = ndev;
-//	struct wireless_dev *pWdev; // = pNev->ieee80211_ptr;
+	VOID *pAd;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0))
+	struct net_device *ndev = netdev_notifier_info_to_dev(ptr);
+#else
+	struct net_device *ndev = ptr;
+#endif
+	struct wireless_dev *wdev;
+
+	DBGPRINT(RT_DEBUG_TRACE,("%s ndev:%p  state:%ld\n",
+			__FUNCTION__, ndev, state));
 	if (!ndev)
 		return NOTIFY_DONE;
 
-//	pNev = ndev;
-//	pWdev = pNev->ieee80211_ptr;
-
-//	if (!pWdev || !pWdev->wiphy)
-//		return NOTIFY_DONE;
-		
-//	DBGPRINT(RT_DEBUG_TRACE,("JB Here %s pNev:%p pWdev:%p state:0x%lx\n",
-//		__FUNCTION__,pNev, pWdev, state));
-
-//	MAC80211_PAD_GET_X(pAd, pWdev->wiphy);
-
-//	DBGPRINT(RT_DEBUG_TRACE,("Here 2B %s\n",__FUNCTION__));
-//	if (!pAd)
-//		return NOTIFY_DONE;
+	wdev = ndev->ieee80211_ptr;
+	if (!wdev)
+		return NOTIFY_DONE;
 
 	switch (state) {
 	case NETDEV_CHANGENAME:
-		DBGPRINT(RT_DEBUG_TRACE,("JB Here %s NETDEV_CHANGENAME [%ld]\n",
+		DBGPRINT(RT_DEBUG_TRACE,("%s NETDEV_CHANGENAME [%ld]\n",
 				__FUNCTION__,state));
 		break;
 	case NETDEV_UNREGISTER:
-			DBGPRINT(RT_DEBUG_TRACE,("JB Here %s NETDEV_UNREGISTER [%ld]\n",
+		DBGPRINT(RT_DEBUG_TRACE,("%s NETDEV_UNREGISTER [%ld]\n",
 				__FUNCTION__,state));
 		break;
 
 	case NETDEV_GOING_DOWN:
-			DBGPRINT(RT_DEBUG_TRACE,("JB Here %s NETDEV_GOING_DOWN [%ld]\n",
+		DBGPRINT(RT_DEBUG_WARN,("%s NETDEV_GOING_DOWN [%ld]\n",
 				__FUNCTION__, state));
-		//MAC80211_PAD_GET_X(pAd, pWdev->wiphy);
-		//if (!pAd)
+
+//		DBGPRINT(RT_DEBUG_WARN,("%s pNev:%p pWdev:%p pWdev->wiphy:%p\n",
+//			__FUNCTION__,ndev, wdev, wdev->wiphy));
+
+		MAC80211_PAD_GET_X(pAd,  wdev->wiphy);
+		if (!pAd)
 			return NOTIFY_DONE;
 
-		//RTMP_DRIVER_80211_NETDEV_EVENT(pAd, pNev, state);
+		RTMP_DRIVER_80211_NETDEV_EVENT(pAd, ndev, state);
 		break;
 	default:
-			DBGPRINT(RT_DEBUG_TRACE,("JB Here %s default: [%ld]\n",
+		DBGPRINT(RT_DEBUG_TRACE,("%s default: [%ld]\n",
 				__FUNCTION__,state));
 		break;
 	}
 
-//	DBGPRINT(RT_DEBUG_TRACE,("Here 4 (OK) %s\n",__FUNCTION__));
 	return NOTIFY_DONE;
 }
 
@@ -2954,21 +2953,22 @@ BOOLEAN CFG80211_Register(VOID *pAd, struct device *pDev, struct net_device *pNe
 #ifdef CONFIG_AP_SUPPORT
 	/* default we are AP mode */
 	pCfg80211_CB->pCfg80211_Wdev->iftype = NL80211_IFTYPE_AP;
-#endif /* CONFIG_AP_SUPPORT */
+#endif
 
 #ifdef CONFIG_STA_SUPPORT
 	/* default we are station mode */
 	pCfg80211_CB->pCfg80211_Wdev->iftype = NL80211_IFTYPE_STATION;
-#endif /* CONFIG_STA_SUPPORT */
+#endif
 
 	pNetDev->ieee80211_ptr = pCfg80211_CB->pCfg80211_Wdev;
-	DBGPRINT(RT_DEBUG_TRACE, ("JB: %s: pNetDev->ieee80211_ptr:%p\n", __FUNCTION__, pNetDev->ieee80211_ptr));
+	DBGPRINT(RT_DEBUG_WARN, ("**** JB: %s: pNetDev:%p pNetDev->ieee80211_ptr:%p\n", 
+			__FUNCTION__, pNetDev, pNetDev->ieee80211_ptr));
 	SET_NETDEV_DEV(pNetDev, wiphy_dev(pCfg80211_CB->pCfg80211_Wdev->wiphy));
 	pCfg80211_CB->pCfg80211_Wdev->netdev = pNetDev;
 
 #ifdef RFKILL_HW_SUPPORT
 	wiphy_rfkill_start_polling(pCfg80211_CB->pCfg80211_Wdev->wiphy);
-#endif /* RFKILL_HW_SUPPORT */
+#endif
 
 	RTMP_DRIVER_80211_CB_SET(pAd, pCfg80211_CB);
 	RTMP_DRIVER_80211_RESET(pAd);
@@ -2976,7 +2976,7 @@ BOOLEAN CFG80211_Register(VOID *pAd, struct device *pDev, struct net_device *pNe
 
 	err = register_netdevice_notifier(&cfg80211_netdev_notifier);
 	if (err) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("80211> Failed to register notifierl %d\n", err));
+		CFG80211DBG(RT_DEBUG_ERROR, ("80211> Failed to register notifier! %d\n", err));
 	}
 
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> CFG80211_Register\n"));
