@@ -8,6 +8,8 @@ clean:
 	rm -f ../../os/linux/*.o *.ko *.mod.o *.mod.c
 	rm -f ../../os/linux/.*.cmd .*.flags .*.d
 	rm -fr ../../os/linux/.tmp_versions
+	rm -f ../../os/linux/cfg80211/*.o
+	rm -f ../../os/linux/cfg80211/.*.cmd .*.flags .*.d
 #Must clean Module.symvers; or you will suffer symbol version not match
 #when OS_ABL = YES.
 	rm -f ../../os/linux/Module.symvers
@@ -32,6 +34,9 @@ clean:
 	rm -f ../../mgmt/.*.cmd .*.flags .*.d
 	rm -f ../../naf/*.o
 	rm -f ../../naf/.*.cmd .*.flags .*.d
+	rm -f ../../tx_rx/*.o
+	rm -f ../../tx_rx/.*.cmd .*.flags .*.d
+	rm -f ../../tools/bin2h
 ifeq ($(RT28xx_MODE),AP)
 	rm -f ../../ap/*.o
 	rm -f ../../ap/.*.cmd .*.flags .*.d
