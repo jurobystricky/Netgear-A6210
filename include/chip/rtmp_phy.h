@@ -268,17 +268,17 @@ struct _RMTP_ADAPTER;
 #define _HT (0x1 << 6)
 #define _TEM_SETTING (0x1 << 6)
 
-INT bbp_set_bw(struct _RTMP_ADAPTER *pAd, UINT8 bw);
-INT bbp_set_ctrlch(struct _RTMP_ADAPTER *pAd, UINT8 ext_ch);
-INT bbp_set_rxpath(struct _RTMP_ADAPTER *pAd, INT rxpath);
-INT bbp_get_temp(struct _RTMP_ADAPTER *pAd, CHAR *temp_val);
-INT bbp_tx_comp_init(struct _RTMP_ADAPTER *pAd, INT adc_insel, INT tssi_mode);
-INT bbp_set_txdac(struct _RTMP_ADAPTER *pAd, INT tx_dac);
-INT bbp_set_mmps(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower);
-INT bbp_is_ready(struct _RTMP_ADAPTER *pAd);
-INT bbp_set_agc(struct _RTMP_ADAPTER *pAd, UCHAR agc, RX_CHAIN_IDX idx);
-INT bbp_get_agc(struct _RTMP_ADAPTER *pAd, CHAR *agc, RX_CHAIN_IDX idx);
-INT filter_coefficient_ctrl(struct _RTMP_ADAPTER *pAd, UCHAR Channel);
+BOOLEAN bbp_set_bw(struct _RTMP_ADAPTER *pAd, UINT8 bw);
+BOOLEAN bbp_set_ctrlch(struct _RTMP_ADAPTER *pAd, UINT8 ext_ch);
+BOOLEAN bbp_set_rxpath(struct _RTMP_ADAPTER *pAd, INT rxpath);
+BOOLEAN bbp_get_temp(struct _RTMP_ADAPTER *pAd, CHAR *temp_val);
+BOOLEAN bbp_tx_comp_init(struct _RTMP_ADAPTER *pAd, INT adc_insel, INT tssi_mode);
+BOOLEAN bbp_set_txdac(struct _RTMP_ADAPTER *pAd, INT tx_dac);
+BOOLEAN bbp_set_mmps(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower);
+BOOLEAN bbp_is_ready(struct _RTMP_ADAPTER *pAd);
+BOOLEAN bbp_set_agc(struct _RTMP_ADAPTER *pAd, UCHAR agc, RX_CHAIN_IDX idx);
+BOOLEAN bbp_get_agc(struct _RTMP_ADAPTER *pAd, CHAR *agc, RX_CHAIN_IDX idx);
+BOOLEAN filter_coefficient_ctrl(struct _RTMP_ADAPTER *pAd, UCHAR Channel);
 UCHAR get_random_seed_by_phy(struct _RTMP_ADAPTER *pAd);
 
 NDIS_STATUS NICInitBBP(struct _RTMP_ADAPTER *pAd);

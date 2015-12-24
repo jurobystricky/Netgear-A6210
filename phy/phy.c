@@ -21,45 +21,47 @@
 
 	Revision History:
 	Who 		When			What
-	--------	----------		----------------------------------------------
+	--------	----------		--------------------------------
 */
 
 #include "rt_config.h"
 
 
-INT phy_probe(RTMP_ADAPTER *pAd)
+#if 0 //JB removed
+BOOLEAN phy_probe(RTMP_ADAPTER *pAd)
 {
-
 	return TRUE;
 }
+#endif //0
 
 
 NDIS_STATUS NICInitBBP(RTMP_ADAPTER *pAd)
 {
 	UINT32 Index = 0, val;
-	
+
 	/* Before program BBP, we need to wait BBP/RF get wake up.*/
-	do
-	{
+	do {
 		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))
 			return NDIS_STATUS_FAILURE;
 
 		RTMP_IO_READ32(pAd, MAC_STATUS_CFG, &val);
 		if ((val & 0x03) == 0)	/* if BB.RF is stable*/
 			break;
-		
+
 		DBGPRINT(RT_DEBUG_TRACE, ("Check if MAC_STATUS_CFG is busy(=%x)\n", val));
 		RtmpusecDelay(1000);
 	} while (Index++ < 100);
-	
+
+	WARN_ON(Index >= 100);
+
 	if (pAd->phy_op && pAd->phy_op->bbp_init)
 		return pAd->phy_op->bbp_init(pAd);
 	else
 		return NDIS_STATUS_FAILURE;
 }
 
-
-INT bbp_get_temp(struct _RTMP_ADAPTER *pAd, CHAR *temp_val)
+#if 0 //JB removed
+BOOLEAN bbp_get_temp(struct _RTMP_ADAPTER *pAd, CHAR *temp_val)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_get_temp)
 		return pAd->phy_op->bbp_get_temp(pAd, temp_val);
@@ -68,16 +70,16 @@ INT bbp_get_temp(struct _RTMP_ADAPTER *pAd, CHAR *temp_val)
 }
 
 
-INT bbp_tx_comp_init(RTMP_ADAPTER *pAd, INT adc_insel, INT tssi_mode)
+BOOLEAN bbp_tx_comp_init(RTMP_ADAPTER *pAd, INT adc_insel, INT tssi_mode)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_tx_comp_init)
 		return pAd->phy_op->bbp_tx_comp_init(pAd, adc_insel, tssi_mode);
 	else
 		return FALSE;
 }
+#endif
 
-
-INT bbp_set_txdac(struct _RTMP_ADAPTER *pAd, INT tx_dac)
+BOOLEAN bbp_set_txdac(struct _RTMP_ADAPTER *pAd, INT tx_dac)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_set_txdac)
 		return pAd->phy_op->bbp_set_txdac(pAd, tx_dac);
@@ -86,7 +88,7 @@ INT bbp_set_txdac(struct _RTMP_ADAPTER *pAd, INT tx_dac)
 }
 
 
-INT bbp_set_rxpath(struct _RTMP_ADAPTER *pAd, INT rxpath)
+BOOLEAN bbp_set_rxpath(struct _RTMP_ADAPTER *pAd, INT rxpath)
 {
 
 //DBGPRINT(RT_DEBUG_OFF, ("%s(): rxpath=%d, Set AGC1_R0=0x%x, agc_r0=0x%x\n", __FUNCTION__, rxpath, agc, agc_r0));
@@ -100,7 +102,7 @@ INT bbp_set_rxpath(struct _RTMP_ADAPTER *pAd, INT rxpath)
 }
 
 
-INT bbp_set_ctrlch(struct _RTMP_ADAPTER *pAd, UINT8 ext_ch)
+BOOLEAN bbp_set_ctrlch(struct _RTMP_ADAPTER *pAd, UINT8 ext_ch)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_set_ctrlch)
 		return pAd->phy_op->bbp_set_ctrlch(pAd, ext_ch);
@@ -109,15 +111,14 @@ INT bbp_set_ctrlch(struct _RTMP_ADAPTER *pAd, UINT8 ext_ch)
 }
 
 
-INT bbp_set_bw(struct _RTMP_ADAPTER *pAd, UINT8 bw)
+BOOLEAN bbp_set_bw(struct _RTMP_ADAPTER *pAd, UINT8 bw)
 {
-	INT result = FALSE;
+	BOOLEAN result = FALSE;
 
 	if (pAd->phy_op && pAd->phy_op->bbp_set_bw)
 		result = pAd->phy_op->bbp_set_bw(pAd, bw);
 
-	if (result == TRUE)
-	{
+	if (result == TRUE) {
 		DBGPRINT(RT_DEBUG_TRACE, ("%s(): Set PhyBW as %sHz.l\n",
 				__FUNCTION__, get_bw_str(bw)));
 	}
@@ -125,17 +126,17 @@ INT bbp_set_bw(struct _RTMP_ADAPTER *pAd, UINT8 bw)
 	return result;
 }
 
-
-INT bbp_set_mmps(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower)
+#if 0 //JB removed
+BOOLEAN bbp_set_mmps(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_set_mmps)
 		return pAd->phy_op->bbp_set_mmps(pAd, ReduceCorePower);
 	else
 		return FALSE;
 }
+#endif
 
-
-INT bbp_get_agc(struct _RTMP_ADAPTER *pAd, CHAR *agc, RX_CHAIN_IDX chain)
+BOOLEAN bbp_get_agc(struct _RTMP_ADAPTER *pAd, CHAR *agc, RX_CHAIN_IDX chain)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_get_agc)
 		return pAd->phy_op->bbp_get_agc(pAd, agc, chain);
@@ -144,7 +145,7 @@ INT bbp_get_agc(struct _RTMP_ADAPTER *pAd, CHAR *agc, RX_CHAIN_IDX chain)
 }
 
 
-INT bbp_set_agc(struct _RTMP_ADAPTER *pAd, UCHAR agc, RX_CHAIN_IDX chain)
+BOOLEAN bbp_set_agc(struct _RTMP_ADAPTER *pAd, UCHAR agc, RX_CHAIN_IDX chain)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_set_agc)
 		return pAd->phy_op->bbp_set_agc(pAd, agc, chain);
@@ -152,15 +153,15 @@ INT bbp_set_agc(struct _RTMP_ADAPTER *pAd, UCHAR agc, RX_CHAIN_IDX chain)
 		return FALSE;
 }
 
-
-INT filter_coefficient_ctrl(RTMP_ADAPTER *pAd, UCHAR Channel)
+#if 0 //JB removed
+BOOLEAN filter_coefficient_ctrl(RTMP_ADAPTER *pAd, UCHAR Channel)
 {
 	if (pAd->phy_op && pAd->phy_op->filter_coefficient_ctrl)
 		return pAd->phy_op->filter_coefficient_ctrl(pAd, Channel);
 	else
 		return FALSE;
 }
-
+#endif
 
 UCHAR get_random_seed_by_phy(RTMP_ADAPTER *pAd)
 {
@@ -170,12 +171,12 @@ UCHAR get_random_seed_by_phy(RTMP_ADAPTER *pAd)
 		return 0;
 }
 
-
-INT bbp_is_ready(struct _RTMP_ADAPTER *pAd)
+#if 0 //JB removed
+BOOLEAN bbp_is_ready(struct _RTMP_ADAPTER *pAd)
 {
 	if (pAd->phy_op && pAd->phy_op->bbp_is_ready)
 		return pAd->phy_op->bbp_is_ready(pAd);
 	else
 		return FALSE;
 }
-
+#endif
