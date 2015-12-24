@@ -28,12 +28,14 @@
 
 #include "rt_config.h"
 
-//static VOID CFG80211_P2pStopNoA(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacClient);
-static VOID CFG80211_P2pStopNoA(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacClient);
+
 static VOID CFG80211RemainOnChannelTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3);
 
+#ifdef RT_CFG80211_P2P_SUPPORT
+static VOID CFG80211_P2pStopNoA(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacClient);
 static UCHAR CFG_WPS_OUI[4] = {0x00, 0x50, 0xf2, 0x04};
+#endif
 
 UCHAR CFG_P2POUIBYTE[4] = {0x50, 0x6f, 0x9a, 0x9}; /* spec. 1.14 OUI */
 
@@ -222,8 +224,9 @@ BOOLEAN CFG80211DRV_OpsCancelRemainOnChannel(VOID *pAdOrg, UINT32 cookie)
 
 INT CFG80211_setPowerMgmt(VOID *pAdCB, UINT Enable)
 {
+#ifdef RT_CFG80211_P2P_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
-
+#endif
 	DBGPRINT(RT_DEBUG_TRACE, ("@@@ %s: %d\n", __FUNCTION__, Enable));
 
 #ifdef RT_CFG80211_P2P_SUPPORT
@@ -250,7 +253,7 @@ INT CFG80211_setPowerMgmt(VOID *pAdCB, UINT Enable)
  */
 VOID CFG80211_P2PMakeFakeNoATlv(PRTMP_ADAPTER pAd, ULONG StartTime, PUCHAR pOutBuffer)
 {
-	PUCHAR	pDest;
+	PUCHAR pDest;
 	PP2PCLIENT_NOA_SCHEDULE pNoa = &pAd->cfg80211_ctrl.GONoASchedule;
 	pDest = pOutBuffer;
 
@@ -286,7 +289,7 @@ BOOLEAN	CFG80211_P2pAdjustSwNoATimer(PRTMP_ADAPTER pAd, ULONG CurrentTimeStamp, 
 		if ((pP2PCtrl->GONoASchedule.OngoingAwakeTime) >= (AwakeDuration >> 2)) {
 			DBGPRINT(RT_DEBUG_TRACE,("P2pAdjustSwNoATimer HERE HERE!!!! \n"));
 			DBGPRINT(RT_DEBUG_TRACE,("OngoingAwakeTime = %ld. CurrentTimeStamp = %ld.!!!! \n",
-							pP2PCtrl->GONoASchedule.OngoingAwakeTime, CurrentTimeStamp));
+					pP2PCtrl->GONoASchedule.OngoingAwakeTime, CurrentTimeStamp));
 
 			CFG80211_P2pStopNoA(pAd, &pAd->MacTab.Content[pP2PCtrl->MyGOwcid]);
 			FakeNoAAttribute[0] = SUBID_P2P_NOA;
@@ -536,14 +539,10 @@ VOID CFG80211_P2pStopOpPS(PRTMP_ADAPTER pAd)
 	pAd->cfg80211_ctrl.CTWindows = 0;
 }
 
-static
-ULONG CFG80211_P2pGetTimeStamp(PRTMP_ADAPTER pAd)
+static ULONG CFG80211_P2pGetTimeStamp(PRTMP_ADAPTER pAd)
 {
-	ULONG Value = 0;
 	/* RTMP_IO_FORCE_READ32(pAd, TSF_TIMER_DW0, &Value); */
-	Value = pAd->cfg80211_ctrl.GONoASchedule.LastBeaconTimeStamp;
-
-	return Value;
+	return pAd->cfg80211_ctrl.GONoASchedule.LastBeaconTimeStamp;
 }
 
 BOOLEAN CFG80211_P2pHandleNoAAttri(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacClient, PUCHAR pData)
