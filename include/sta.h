@@ -35,8 +35,8 @@ BOOLEAN RTMPCheckChannel(
 	IN UCHAR		CentralChannel,
 	IN UCHAR		Channel);
 
-VOID InitChannelRelatedValue(
-	IN  PRTMP_ADAPTER   pAd);
+//VOID InitChannelRelatedValue(
+//	IN  PRTMP_ADAPTER   pAd);
 
 VOID AdjustChannelRelatedValue(
 	IN PRTMP_ADAPTER pAd,

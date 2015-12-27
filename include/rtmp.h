@@ -156,11 +156,11 @@ extern UCHAR WMM_UP2AC_MAP[8];
 extern unsigned char RateIdToMbps[];
 extern USHORT RateIdTo500Kbps[];
 
-extern UCHAR CipherSuiteWpaNoneTkip[];
-extern UCHAR CipherSuiteWpaNoneTkipLen;
+//extern UCHAR CipherSuiteWpaNoneTkip[];
+//extern UCHAR CipherSuiteWpaNoneTkipLen;
 
-extern UCHAR CipherSuiteWpaNoneAes[];
-extern UCHAR CipherSuiteWpaNoneAesLen;
+//extern UCHAR CipherSuiteWpaNoneAes[];
+//extern UCHAR CipherSuiteWpaNoneAesLen;
 
 extern UCHAR SsidIe;
 extern UCHAR SupRateIe;
@@ -5790,55 +5790,53 @@ VOID MlmeCntlMachinePerformAction(
 	IN  STATE_MACHINE *S,
 	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlIdleProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlIdleProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
 VOID CntlOidScanProc(
 	IN  RTMP_ADAPTER *pAd,
 	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlOidSsidProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM * Elem);
+//VOID CntlOidSsidProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM * Elem);
 
 VOID CntlOidRTBssidProc(
 	IN  RTMP_ADAPTER *pAd,
 	IN  MLME_QUEUE_ELEM * Elem);
 
-VOID CntlMlmeRoamingProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM * Elem);
+//VOID CntlMlmeRoamingProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM * Elem);
 
-VOID CntlWaitDisassocProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlWaitDisassocProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlWaitJoinProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlWaitJoinProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlWaitReassocProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlWaitReassocProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlWaitStartProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlWaitStartProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlWaitAuthProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlWaitAuthProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlWaitAuthProc2(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
+//VOID CntlWaitAuthProc2(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
-VOID CntlWaitAssocProc(
-	IN  RTMP_ADAPTER *pAd,
-	IN  MLME_QUEUE_ELEM *Elem);
-
-
+//VOID CntlWaitAssocProc(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  MLME_QUEUE_ELEM *Elem);
 
 VOID LinkUp(
 	IN  RTMP_ADAPTER *pAd,
@@ -5851,13 +5849,13 @@ VOID LinkDown(
 VOID IterateOnBssTab(
 	IN  RTMP_ADAPTER *pAd);
 
-VOID IterateOnBssTab2(
-	IN  RTMP_ADAPTER *pAd);;
+//VOID IterateOnBssTab2(
+//	IN  RTMP_ADAPTER *pAd);;
 
-VOID JoinParmFill(
-	IN  RTMP_ADAPTER *pAd,
-	IN  OUT MLME_JOIN_REQ_STRUCT *JoinReq,
-	IN  ULONG BssIdx);
+//VOID JoinParmFill(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  OUT MLME_JOIN_REQ_STRUCT *JoinReq,
+//	IN  ULONG BssIdx);
 
 VOID AssocParmFill(
 	IN  RTMP_ADAPTER *pAd,
@@ -5881,17 +5879,17 @@ VOID DisassocParmFill(
 	IN  PUCHAR pAddr,
 	IN  USHORT Reason);
 
-VOID StartParmFill(
-	IN  RTMP_ADAPTER *pAd,
-	IN  OUT MLME_START_REQ_STRUCT *StartReq,
-	IN  CHAR Ssid[],
-	IN  UCHAR SsidLen);
+//VOID StartParmFill(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  OUT MLME_START_REQ_STRUCT *StartReq,
+//	IN  CHAR Ssid[],
+//	IN  UCHAR SsidLen);
 
-VOID AuthParmFill(
-	IN  RTMP_ADAPTER *pAd,
-	IN  OUT MLME_AUTH_REQ_STRUCT *AuthReq,
-	IN  PUCHAR pAddr,
-	IN  USHORT Alg);
+//VOID AuthParmFill(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN  OUT MLME_AUTH_REQ_STRUCT *AuthReq,
+//	IN  PUCHAR pAddr,
+//	IN  USHORT Alg);
 
 VOID EnqueuePsPoll(RTMP_ADAPTER *pAd);
 VOID EnqueueBeaconFrame(RTMP_ADAPTER *pAd);
@@ -7527,11 +7525,11 @@ BOOLEAN Set_ForceTxBurst_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 VOID RTMPAddKey(RTMP_ADAPTER *pAd, PNDIS_802_11_KEY pKey);
 VOID StaSiteSurvey(RTMP_ADAPTER *pAd, PNDIS_802_11_SSID pSsid, UCHAR ScanType);
 
-VOID MaintainBssTable(
-	IN  RTMP_ADAPTER *pAd,
-	IN OUT	BSS_TABLE *Tab,
-	IN  ULONG	MaxRxTimeDiff,
-	IN  UCHAR	MaxSameRxTimeCount);
+//VOID MaintainBssTable(
+//	IN  RTMP_ADAPTER *pAd,
+//	IN OUT	BSS_TABLE *Tab,
+//	IN  ULONG	MaxRxTimeDiff,
+//	IN  UCHAR	MaxSameRxTimeCount);
 #endif /* CONFIG_STA_SUPPORT */
 
 void  getRate(HTTRANSMIT_SETTING HTSetting, ULONG* fLastTxRxRate);
