@@ -120,7 +120,7 @@ typedef struct _RTMP_OS_TASK_ {
 #endif /* RTMP_MODULE_OS || ! OS_ABL_FUNC_SUPPORT */
 
 
-int RtmpOSIRQRequest(PNET_DEV pNetDev);
+//int RtmpOSIRQRequest(PNET_DEV pNetDev);
 
 
 #ifndef OS_ABL_SUPPORT
