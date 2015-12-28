@@ -2077,7 +2077,8 @@ BOOLEAN ITxBFPhaseCalibration(RTMP_ADAPTER *pAd, INT calFunction,USHORT ch)
 	INT mCalPhase0, mCalPhase1;
 	LONG avgIData, avgQData;
 	UCHAR i;
-	INT divPhase[2] = {0};
+//	INT divPhase[2] = {0};
+	UCHAR divPhase[2] = {0};
 	INT phaseValues[2] = {0};
 	BOOLEAN gBandFlg = FALSE;
 
