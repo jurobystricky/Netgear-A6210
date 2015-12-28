@@ -347,7 +347,7 @@ static INT process_nbns_packet(PRTMP_ADAPTER pAd, struct sk_buff *skb)
 
 void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 {
-	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
+//	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 	PNDIS_PACKET pRxPkt = pPacket;
 
 	ASSERT(pPacket);
