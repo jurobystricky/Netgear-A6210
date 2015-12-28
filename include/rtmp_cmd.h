@@ -20,34 +20,34 @@ typedef struct _CmdQ {
 } CmdQ, *PCmdQ;
 
 #define EnqueueCmd(cmdq, cmdqelmt)		\
-{										\
-	if (cmdq->size == 0)				\
-		cmdq->head = cmdqelmt;			\
-	else								\
+{						\
+	if (cmdq->size == 0)			\
+		cmdq->head = cmdqelmt;		\
+	else					\
 		cmdq->tail->next = cmdqelmt;	\
-	cmdq->tail = cmdqelmt;				\
-	cmdqelmt->next = NULL;				\
-	cmdq->size++;						\
+	cmdq->tail = cmdqelmt;			\
+	cmdqelmt->next = NULL;			\
+	cmdq->size++;				\
 }
 
 #define NDIS_OID	UINT
 
 /* OS_RTCMDUp is only used in UTIL/NETIF module */
-#define OS_RTCMDUp						RtmpOsCmdUp
+#define OS_RTCMDUp	RtmpOsCmdUp
 
 
 
-#define CMDTHREAD_RESPONSE_EVENT_CALLBACK		0x0D730123
+#define CMDTHREAD_RESPONSE_EVENT_CALLBACK	0x0D730123
 
 /* RALINK command status code */
-#define RTMP_IO_EINVAL							30000
-#define RTMP_IO_EOPNOTSUPP						30001
-#define RTMP_IO_EFAULT							30002
-#define RTMP_IO_ENETDOWN						30003
-#define RTMP_IO_E2BIG							30004
-#define RTMP_IO_ENOMEM							30005
-#define RTMP_IO_EAGAIN							30006
-#define RTMP_IO_ENOTCONN						30007
+#define RTMP_IO_EINVAL			30000
+#define RTMP_IO_EOPNOTSUPP		30001
+#define RTMP_IO_EFAULT			30002
+#define RTMP_IO_ENETDOWN		30003
+#define RTMP_IO_E2BIG			30004
+#define RTMP_IO_ENOMEM			30005
+#define RTMP_IO_EAGAIN			30006
+#define RTMP_IO_ENOTCONN		30007
 
 enum {
 	SHOW_CONN_STATUS = 4,
@@ -71,17 +71,18 @@ enum {
 };
 
 #ifdef CONFIG_STA_SUPPORT
-
 #ifdef WPA_SUPPLICANT_SUPPORT
 #ifndef NATIVE_WPA_SUPPLICANT_SUPPORT
-#define	RT_ASSOC_EVENT_FLAG                         0x0101
-#define	RT_DISASSOC_EVENT_FLAG                      0x0102
-#define	RT_REQIE_EVENT_FLAG                         0x0103
-#define	RT_RESPIE_EVENT_FLAG                        0x0104
-#define	RT_ASSOCINFO_EVENT_FLAG                     0x0105
-#define RT_PMKIDCAND_FLAG                           0x0106
-#define RT_INTERFACE_DOWN                           0x0107
-#define RT_INTERFACE_UP                             0x0108
+
+#define	RT_ASSOC_EVENT_FLAG		0x0101
+#define	RT_DISASSOC_EVENT_FLAG		0x0102
+#define	RT_REQIE_EVENT_FLAG		0x0103
+#define	RT_RESPIE_EVENT_FLAG		0x0104
+#define	RT_ASSOCINFO_EVENT_FLAG		0x0105
+#define RT_PMKIDCAND_FLAG		0x0106
+#define RT_INTERFACE_DOWN		0x0107
+#define RT_INTERFACE_UP			0x0108
+
 #endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
 #endif /* WPA_SUPPLICANT_SUPPORT */
 #endif /* CONFIG_STA_SUPPORT */
@@ -89,7 +90,6 @@ enum {
 /* RALINK command handle ID */
 /* ap commands */
 typedef enum _CMD_RTPRIV_IOCTL_AP {
-
 	/* general */
 	CMD_RTPRIV_IOCTL_SET_WSCOOB = 0x0001,
 	CMD_RTPRIV_IOCTL_GET_MAC_TABLE,
@@ -144,7 +144,6 @@ typedef enum _CMD_RTPRIV_IOCTL_AP {
 
 /* common commands */
 typedef enum _CMD_RTPRIV_IOCTL_COMMON {
-
 	/* general */
 	CMD_RTPRIV_IOCTL_NETDEV_GET = 0x5000,
 	CMD_RTPRIV_IOCTL_NETDEV_SET,
@@ -175,7 +174,7 @@ typedef enum _CMD_RTPRIV_IOCTL_COMMON {
 	CMD_RTPRIV_IOCTL_AP_BSSID_GET,
 #endif /* CONFIG_STA_SUPPORT */
 	CMD_RTPRIV_IOCTL_SANITY_CHECK,
-	CMD_RTPRIV_IOCTL_SANITY_CHECK_ON_SET_CMD,	
+	CMD_RTPRIV_IOCTL_SANITY_CHECK_ON_SET_CMD,
 #ifdef EXT_BUILD_CHANNEL_LIST
 	CMD_RTPRIV_SET_PRECONFIG_VALUE,
 #endif /* EXT_BUILD_CHANNEL_LIST */
@@ -187,7 +186,7 @@ typedef enum _CMD_RTPRIV_IOCTL_COMMON {
 	CMD_RTPRIV_IOCTL_SNIFF_OPEN,
 	CMD_RTPRIV_IOCTL_SNIFF_CLOSE,
 	CMD_RTPRIV_IOCTL_SNIFF_REMOVE,
-	
+
 	/* mesh */
 	CMD_RTPRIV_IOCTL_MESH_INIT,
 	CMD_RTPRIV_IOCTL_MESH_REMOVE,
@@ -291,7 +290,7 @@ typedef enum _CMD_RTPRIV_IOCTL_COMMON {
 	CMD_RTPRIV_IOCTL_80211_BEACON_DEL,
 	CMD_RTPRIV_IOCTL_80211_AP_KEY_ADD,
 	CMD_RTPRIV_IOCTL_80211_RTS_THRESHOLD_ADD,
-	CMD_RTPRIV_IOCTL_80211_FRAG_THRESHOLD_ADD,	
+	CMD_RTPRIV_IOCTL_80211_FRAG_THRESHOLD_ADD,
 	CMD_RTPRIV_IOCTL_80211_CHANGE_BSS_PARM,
 	CMD_RTPRIV_IOCTL_80211_AP_KEY_DEL,
 	CMD_RTPRIV_IOCTL_80211_AP_PROBE_RSP_EXTRA_IE,
@@ -333,29 +332,29 @@ typedef enum _CMD_RTPRIV_IOCTL_COMMON {
 
 #ifdef RT_CFG80211_SUPPORT
 typedef struct __CMD_RTPRIV_IOCTL_80211_VIF_SET {
-	INT  vifType;
+	INT vifType;
 	char vifName[IFNAMSIZ];
-	INT  vifNameLen;
+	INT vifNameLen;
 } CMD_RTPRIV_IOCTL_80211_VIF_SET;
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_BSS_PARM {
-	INT   use_cts_prot;
-	INT   use_short_preamble;
-	INT   use_short_slot_time;
+	INT use_cts_prot;
+	INT use_short_preamble;
+	INT use_short_slot_time;
 	UINT8 *basic_rates;
 	UINT8 basic_rates_len;
-	INT   ap_isolate;
-	INT   ht_opmode;	
+	INT ap_isolate;
+	INT ht_opmode;
 
 } CMD_RTPRIV_IOCTL_80211_BSS_PARM;
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_BEACON {
-        INT32 interval;
-        INT32 dtim_period;
-        UCHAR *beacon_head;
-		UCHAR *beacon_tail;
-        UINT32 beacon_head_len; /* Before TIM IE */
-		UINT32 beacon_tail_len; /* After TIM IE */
+	INT32 interval;
+	INT32 dtim_period;
+	UCHAR *beacon_head;
+	UCHAR *beacon_tail;
+	UINT32 beacon_head_len; /* Before TIM IE */
+	UINT32 beacon_tail_len; /* After TIM IE */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 	UCHAR *beacon_ies;
@@ -375,64 +374,57 @@ typedef struct __CMD_RTPRIV_IOCTL_80211_BEACON {
 #endif
 } CMD_RTPRIV_IOCTL_80211_BEACON;
 
-#define RT_CMD_80211_IFTYPE_UNSPECIFIED         0x00
+#define RT_CMD_80211_IFTYPE_UNSPECIFIED		0x00
 #define RT_CMD_80211_IFTYPE_ADHOC		0x01
-#define RT_CMD_80211_IFTYPE_STATION				0x02
-#define RT_CMD_80211_IFTYPE_AP                  0x03
-#define RT_CMD_80211_IFTYPE_MONITOR             0x06
-#define RT_CMD_80211_IFTYPE_P2P_CLIENT          0x08
-#define RT_CMD_80211_IFTYPE_P2P_GO              0x09
+#define RT_CMD_80211_IFTYPE_STATION		0x02
+#define RT_CMD_80211_IFTYPE_AP			0x03
+#define RT_CMD_80211_IFTYPE_MONITOR		0x06
+#define RT_CMD_80211_IFTYPE_P2P_CLIENT		0x08
+#define RT_CMD_80211_IFTYPE_P2P_GO		0x09
 
 /* Must sync with nl80211_channel_type@nl80211.h */
 #define RT_CMD_80211_CHANTYPE_NOHT		0x00
 #define RT_CMD_80211_CHANTYPE_HT20		0x01
-#define RT_CMD_80211_CHANTYPE_HT40MINUS	0X02
-#define RT_CMD_80211_CHANTYPE_HT40PLUS	0X03
+#define RT_CMD_80211_CHANTYPE_HT40MINUS		0X02
+#define RT_CMD_80211_CHANTYPE_HT40PLUS		0X03
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_CHAN {
 	UINT8 ChanId;
 	UINT8 IfType;
 	UINT8 ChanType;
-
 	UINT32 MonFilterFlag;
-	
 	UINT64 cookie;
 	PVOID chan;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))	
-	PWIRELESS_DEV pWdev;	
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+	PWIRELESS_DEV pWdev;
 #endif /* LINUX_VERSION_CODE: 3.6.0 */
 } CMD_RTPRIV_IOCTL_80211_CHAN;
 
 #define RT_CMD_80211_FILTER_FCSFAIL		0x01
-#define RT_CMD_80211_FILTER_PLCPFAIL	0x02
+#define RT_CMD_80211_FILTER_PLCPFAIL		0x02
 #define RT_CMD_80211_FILTER_CONTROL		0x04
-#define RT_CMD_80211_FILTER_OTHER_BSS	0x08
+#define RT_CMD_80211_FILTER_OTHER_BSS		0x08
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_VIF_PARM {
 	PNET_DEV net_dev;
 	UINT8 newIfType;
 	UINT8 oldIfType;
-
 	UINT32 MonFilterFlag;
-	
 } CMD_RTPRIV_IOCTL_80211_VIF_PARM;
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_IBSS {
-
 	UINT32 BeaconInterval;
 	UCHAR *pSsid;
 } CMD_RTPRIV_IOCTL_80211_IBSS;
 
 #define RT_CMD_80211_TXRATE_LEGACY		0x01
 #define RT_CMD_80211_TXRATE_BW_40		0x02
-#define RT_CMD_80211_TXRATE_SHORT_GI	0x04
+#define RT_CMD_80211_TXRATE_SHORT_GI		0x04
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_STA {
 	UINT8 MAC[MAC_ADDR_LEN];
 	ULONG DataRate;
-
 	UINT32 TxRateFlags;
-	
 	UINT32 TxRateMCS;
 	INT32 Signal;
 	UINT32 TxPacketCnt;
@@ -443,7 +435,7 @@ typedef struct __CMD_RTPRIV_IOCTL_80211_STA {
 #define RT_CMD_80211_KEY_WEP104			0x01
 #define RT_CMD_80211_KEY_WPA			0x02
 #ifdef DOT11W_PMF_SUPPORT
-#define RT_CMD_80211_KEY_AES_CMAC	0x03
+#define RT_CMD_80211_KEY_AES_CMAC		0x03
 #endif /* DOT11W_PMF_SUPPORT */
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_KEY {
@@ -456,43 +448,36 @@ typedef struct __CMD_RTPRIV_IOCTL_80211_KEY {
 	UINT8 MAC[MAC_ADDR_LEN];
 } CMD_RTPRIV_IOCTL_80211_KEY;
 
-#define RT_CMD_80211_CONN_ENCRYPT_NONE	0x01
-#define RT_CMD_80211_CONN_ENCRYPT_WEP	0x02
-#define RT_CMD_80211_CONN_ENCRYPT_TKIP	0x04
-#define RT_CMD_80211_CONN_ENCRYPT_CCMP	0x08
+#define RT_CMD_80211_CONN_ENCRYPT_NONE		0x01
+#define RT_CMD_80211_CONN_ENCRYPT_WEP		0x02
+#define RT_CMD_80211_CONN_ENCRYPT_TKIP		0x04
+#define RT_CMD_80211_CONN_ENCRYPT_CCMP		0x08
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_CONNECT {
 	UINT8 WpaVer;
 	BOOLEAN FlgIs8021x;
 	UINT8 AuthType;
-
 	UINT8 PairwiseEncrypType;
 	UINT8 GroupwiseEncrypType;
-
 	UINT8 *pKey;
 	UINT32 KeyLen;
 	UINT8 KeyIdx;
-
-	UINT8 *pSsid;
+	const UINT8 *pSsid;
 	UINT32 SsidLen;
-	
-	UINT8 *pBssid;  
-	
+	const UINT8 *pBssid;
 	BOOLEAN bWpsConnection;
 #ifdef DOT11W_PMF_SUPPORT
 	BOOLEAN mfp;
-#endif /* DOT11W_PMF_SUPPORT */
+#endif
 
 } CMD_RTPRIV_IOCTL_80211_CONNECT;
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_REG_NOTIFY {
-
 	UCHAR Alpha2[2];
 	VOID *pWiphy;
 } CMD_RTPRIV_IOCTL_80211_REG_NOTIFY;
 
 typedef struct __CMD_RTPRIV_IOCTL_80211_SURVEY {
-
 	VOID *pCfg80211;
 /*	UINT64 ChannelTime; */ /* idle + busy, not support */
 	UINT64 ChannelTimeBusy;
@@ -504,7 +489,6 @@ typedef struct __CMD_RTPRIV_IOCTL_80211_SURVEY {
 /* station commands */
 #ifdef CONFIG_STA_SUPPORT
 typedef enum _CMD_RTPRIV_IOCTL_STATION {
-
 	/* general */
 	CMD_RTPRIV_IOCTL_PARAM_SET = 0xa000,
 	CMD_RTPRIV_IOCTL_SITESURVEY_GET,
@@ -553,102 +537,94 @@ typedef enum _CMD_RTPRIV_IOCTL_STATION {
 	CMD_RTPRIV_IOCTL_STA_IW_GET_STATISTICS,
 } CMD_RTPRIV_IOCTL_STATION;
 
-#define RT_CMD_MODE_ADHOC								0x01
-#define RT_CMD_MODE_INFRA								0x02
-#define RT_CMD_MODE_MONITOR								0x03
+#define RT_CMD_MODE_ADHOC			0x01
+#define RT_CMD_MODE_INFRA			0x02
+#define RT_CMD_MODE_MONITOR			0x03
 #endif /* CONFIG_STA_SUPPORT */
 
 /* when adding any new type, please also add codes in LINUX_WEVENT_TRANSLATE */
-#define RT_WLAN_EVENT_CUSTOM							0x01
-#define RT_WLAN_EVENT_CGIWAP							0x02
-#define RT_WLAN_EVENT_ASSOC_REQ_IE						0x03
-#define RT_WLAN_EVENT_SCAN								0x04
-#define RT_WLAN_EVENT_EXPIRED							0x05
-#define RT_WLAN_EVENT_SHOWPIN							0x06
-#define RT_WLAN_EVENT_PIN							0x07
+#define RT_WLAN_EVENT_CUSTOM			0x01
+#define RT_WLAN_EVENT_CGIWAP			0x02
+#define RT_WLAN_EVENT_ASSOC_REQ_IE		0x03
+#define RT_WLAN_EVENT_SCAN			0x04
+#define RT_WLAN_EVENT_EXPIRED			0x05
+#define RT_WLAN_EVENT_SHOWPIN			0x06
+#define RT_WLAN_EVENT_PIN			0x07
 
 typedef struct __RT_CMD_RATE_SET {
-	IN UINT32 Rate;
-	IN UINT32 Fixed;
+	UINT32 Rate;
+	UINT32 Fixed;
 } RT_CMD_RATE_SET;
 
 typedef struct __RT_CMD_PARAM_SET {
-	IN PSTRING pThisChar;
-	IN PSTRING pValue;
+	PSTRING pThisChar;
+	PSTRING pValue;
 } RT_CMD_PARAM_SET;
 
 typedef struct __RT_CMD_SHARED_KEY_ADD {
-	IN UCHAR KeyIdx;
-	IN BOOLEAN FlgHaveGTK;
+	UCHAR KeyIdx;
+	BOOLEAN FlgHaveGTK;
 } RT_CMD_SHARED_KEY_ADD;
 
 typedef struct __RT_CMD_MBSS_KICKOUT {
-	IN INT BssId;
-	IN USHORT Reason;
+	INT BssId;
+	USHORT Reason;
 } RT_CMD_MBSS_KICKOUT;
 
 typedef struct __RT_CMD_USB_MORE_FLAG_CONFIG {
-	IN UINT32 VendorID;
-	IN UINT32 ProductID;
+	UINT32 VendorID;
+	UINT32 ProductID;
 } RT_CMD_USB_MORE_FLAG_CONFIG;
 
 typedef struct __RT_CMD_USB_DEV_CONFIG {
-	IN UINT NumberOfPipes;
-	IN UINT8 BulkInEpAddr[2];
-	IN USHORT BulkInMaxPacketSize;
-	IN UINT8 BulkOutEpAddr[6];
-	IN USHORT BulkOutMaxPacketSize;
-	IN VOID *pConfig;
+	UINT NumberOfPipes;
+	UINT8 BulkInEpAddr[2];
+	USHORT BulkInMaxPacketSize;
+	UINT8 BulkOutEpAddr[6];
+	USHORT BulkOutMaxPacketSize;
+	VOID *pConfig;
 } RT_CMD_USB_DEV_CONFIG;
 
 typedef struct __RT_CMD_CFG80211_CONFIG {
-	IN VOID *pCfgDev;
-	IN VOID(
-	*CFG80211_Register) (
-	IN VOID * pAd,
-	IN VOID * pDev,
-	IN VOID * pNetDev);
+	VOID *pCfgDev;
+	VOID(*CFG80211_Register) (VOID * pAd, VOID * pDev, VOID * pNetDev);
 } RT_CMD_CFG80211_CONFIG;
 
 typedef struct __RT_CMD_WAIT_QUEUE_LIST {
-	OUT RTMP_OS_TASK *pMlmeTask;
-	OUT RTMP_OS_TASK *pTimerTask;
-	OUT RTMP_OS_TASK *pCmdQTask;
-	OUT RTMP_OS_TASK *pWscTask;
+	RTMP_OS_TASK *pMlmeTask;
+	RTMP_OS_TASK *pTimerTask;
+	RTMP_OS_TASK *pCmdQTask;
+	RTMP_OS_TASK *pWscTask;
 } RT_CMD_WAIT_QUEUE_LIST;
 
 typedef struct __RT_CMD_INF_UP_DOWN {
-
-	IN	int (*rt28xx_open)(VOID *net_dev);
-	IN	int (*rt28xx_close)(VOID *net_dev);
+	int (*rt28xx_open)(VOID *net_dev);
+	int (*rt28xx_close)(VOID *net_dev);
 } RT_CMD_INF_UP_DOWN;
 
 typedef struct __RT_CMD_STATS {
-	IN VOID *pNetDev;
-	OUT VOID *pStats;	/* point to pAd->stats */
+	VOID *pNetDev;
+	VOID *pStats;			/* point to pAd->stats */
 
-	OUT unsigned long rx_packets;	/* total packets received       */
-	OUT unsigned long tx_packets;	/* total packets transmitted */
-	OUT unsigned long rx_bytes;	/* total bytes received         */
-	OUT unsigned long tx_bytes;	/* total bytes transmitted      */
-	OUT unsigned long rx_errors;	/* bad packets received         */
-	OUT unsigned long tx_errors;	/* packet transmit problems     */
-	OUT unsigned long multicast;	/* multicast packets received */
-	OUT unsigned long collisions;
+	unsigned long rx_packets;	/* total packets received       */
+	unsigned long tx_packets;	/* total packets transmitted */
+	unsigned long rx_bytes;		/* total bytes received         */
+	unsigned long tx_bytes;		/* total bytes transmitted      */
+	unsigned long rx_errors;	/* bad packets received         */
+	unsigned long tx_errors;	/* packet transmit problems     */
+	unsigned long multicast;	/* multicast packets received */
+	unsigned long collisions;
 
-	OUT unsigned long rx_over_errors;	/* receiver ring buff overflow  */
-	OUT unsigned long rx_crc_errors;	/* recved pkt with crc error    */
-	OUT unsigned long rx_frame_errors;	/* recv'd frame alignment error */
-	OUT unsigned long rx_fifo_errors;	/* recv'r fifo overrun                  */
+	unsigned long rx_over_errors;	/* receiver ring buff overflow  */
+	unsigned long rx_crc_errors;	/* recved pkt with crc error    */
+	unsigned long rx_frame_errors;	/* recv'd frame alignment error */
+	unsigned long rx_fifo_errors;	/* recv'r fifo overrun                  */
 } RT_CMD_STATS;
 
 typedef struct __RT_CMD_IW_STATS {
-
 	ULONG priv_flags;
 	UCHAR *dev_addr;
-
-	VOID *pStats;		/* point to pAd->iw_stats */
-
+	VOID *pStats;			/* point to pAd->iw_stats */
 	UINT8 qual;
 	UINT8 level;
 	UINT8 noise;
@@ -656,36 +632,33 @@ typedef struct __RT_CMD_IW_STATS {
 } RT_CMD_IW_STATS;
 
 typedef struct __RT_CMD_PCIE_INIT {
-
-	IN VOID *pPciDev;
-	IN UINT32 ConfigDeviceID;
-	IN UINT32 ConfigSubsystemVendorID;
-	IN UINT32 ConfigSubsystemID;
+	VOID *pPciDev;
+	UINT32 ConfigDeviceID;
+	UINT32 ConfigSubsystemVendorID;
+	UINT32 ConfigSubsystemID;
 } RT_CMD_PCIE_INIT;
 
 typedef struct __RT_CMD_AP_IOCTL_CONFIG {
-	IN VOID *net_dev;
-	IN VOID *wdev;
-	IN ULONG priv_flags;
-	IN char *pCmdData;
-	IN INT32 CmdId_RTPRIV_IOCTL_SET;
-	IN char *name;
-	IN INT apidx;
-
-	OUT INT32 Status;
+	VOID *net_dev;
+	VOID *wdev;
+	ULONG priv_flags;
+	char *pCmdData;
+	INT32 CmdId_RTPRIV_IOCTL_SET;
+	char *name;
+	INT apidx;
+	INT32 Status;
 } RT_CMD_AP_IOCTL_CONFIG;
 
 typedef struct __RT_CMD_AP_IOCTL_SSID {
-	IN ULONG priv_flags;
-	IN INT apidx;
-
-	OUT char *pSsidStr;
-	OUT INT32 length;
+	ULONG priv_flags;
+	INT apidx;
+	char *pSsidStr;
+	INT32 length;
 } RT_CMD_AP_IOCTL_SSID;
 
 typedef struct __RT_CMD_IOCTL_RATE {
 	IN ULONG priv_flags;
-	OUT UINT32 BitRate;
+	UINT32 BitRate;
 } RT_CMD_IOCTL_RATE;
 
 #define RTMP_CMD_STA_MODE_AUTO			0x00
@@ -694,183 +667,169 @@ typedef struct __RT_CMD_IOCTL_RATE {
 #define RTMP_CMD_STA_MODE_MONITOR		0x03
 
 typedef struct __RT_CMD_STA_IOCTL_FREQ {
-	IN INT32 m;		/* Mantissa */
-	IN INT16 e;		/* Exponent */
+	INT32 m;		/* Mantissa */
+	INT16 e;		/* Exponent */
 } RT_CMD_STA_IOCTL_FREQ;
 
 typedef struct __RT_CMD_STA_IOCTL_BSS {
-	OUT UCHAR Bssid[6];
-	OUT UCHAR ChannelQuality;
-	OUT CHAR Rssi;
-	OUT CHAR Noise;
+	UCHAR Bssid[6];
+	UCHAR ChannelQuality;
+	CHAR Rssi;
+	CHAR Noise;
 } RT_CMD_STA_IOCTL_BSS;
 
 typedef struct __RT_CMD_STA_IOCTL_BSS_LIST {
-	IN UINT32 MaxNum;
-	OUT UINT32 BssNum;
-	OUT RT_CMD_STA_IOCTL_BSS *pList;
+	UINT32 MaxNum;
+	UINT32 BssNum;
+	RT_CMD_STA_IOCTL_BSS *pList;
 } RT_CMD_STA_IOCTL_BSS_LIST;
 
 typedef struct __RT_CMD_STA_IOCTL_SCAN {
-	IN UCHAR FlgScanThisSsid;
-	IN UINT32 SsidLen;
-	IN CHAR *pSsid;
-	OUT INT32 Status;
+	UCHAR FlgScanThisSsid;
+	UINT32 SsidLen;
+	CHAR *pSsid;
+	INT32 Status;
 } RT_CMD_STA_IOCTL_SCAN;
 
 typedef struct __RT_CMD_STA_IOCTL_BSS_TABLE {
-	OUT UCHAR Bssid[6];
-	OUT UCHAR Channel;
-	OUT UCHAR BssType;
-	OUT UCHAR HtCapabilityLen;
-    OUT UCHAR VHTCapabilityLen;
-
-	OUT UCHAR SupRate[12];
-	OUT UCHAR SupRateLen;
-	OUT UCHAR ExtRate[12];
-	OUT UCHAR ExtRateLen;
-
-	OUT UCHAR SsidLen;
-	OUT CHAR Ssid[32];
-
-	OUT USHORT CapabilityInfo;
-	OUT UCHAR ChannelWidth, ShortGIfor40, ShortGIfor20, MCSSet;
-
-	OUT USHORT WpaIeLen;
-	OUT UCHAR *pWpaIe;
-
-	OUT USHORT RsnIeLen;
-	OUT UCHAR *pRsnIe;
-
-	OUT USHORT WpsIeLen;
-	OUT UCHAR *pWpsIe;
-
-	OUT UCHAR FlgIsPrivacyOn;
-
-	OUT RT_CMD_STA_IOCTL_BSS Signal;
+	UCHAR Bssid[6];
+	UCHAR Channel;
+	UCHAR BssType;
+	UCHAR HtCapabilityLen;
+	UCHAR VHTCapabilityLen;
+	UCHAR SupRate[12];
+	UCHAR SupRateLen;
+	UCHAR ExtRate[12];
+	UCHAR ExtRateLen;
+	UCHAR SsidLen;
+	CHAR Ssid[32];
+	USHORT CapabilityInfo;
+	UCHAR ChannelWidth, ShortGIfor40, ShortGIfor20, MCSSet;
+	USHORT WpaIeLen;
+	UCHAR *pWpaIe;
+	USHORT RsnIeLen;
+	UCHAR *pRsnIe;
+	USHORT WpsIeLen;
+	UCHAR *pWpsIe;
+	UCHAR FlgIsPrivacyOn;
+	RT_CMD_STA_IOCTL_BSS Signal;
 } RT_CMD_STA_IOCTL_BSS_TABLE;
 
 typedef struct __RT_CMD_STA_IOCTL_SCAN_TABLE {
-	IN ULONG priv_flags;
-	OUT UINT32 BssNr;
-	OUT RT_CMD_STA_IOCTL_BSS_TABLE *pBssTable;	/* must be freed by caller */
-	OUT UCHAR MainSharedKey[4][16];
+	ULONG priv_flags;
+	UINT32 BssNr;
+	RT_CMD_STA_IOCTL_BSS_TABLE *pBssTable;	/* must be freed by caller */
+	UCHAR MainSharedKey[4][16];
 } RT_CMD_STA_IOCTL_SCAN_TABLE;
 
 typedef struct __RT_CMD_STA_IOCTL_SSID {
-	IN UCHAR FlgAnySsid;
-	INOUT UINT32 SsidLen;
-	INOUT CHAR *pSsid;
-	OUT INT32 Status;
+	UCHAR FlgAnySsid;
+	UINT32 SsidLen;
+	CHAR *pSsid;
+	INT32 Status;
 } RT_CMD_STA_IOCTL_SSID;
 
 typedef struct __RT_CMD_STA_IOCTL_NICK_NAME {
-	OUT UINT NameLen;
-	OUT CHAR *pName;
+	UINT NameLen;
+	CHAR *pName;
 } RT_CMD_STA_IOCTL_NICK_NAME;
 
 typedef struct __RT_CMD_STA_IOCTL_SECURITY {
-	INOUT CHAR *pData;
-	INOUT UINT16 length;
-	IN INT32 KeyIdx;
-	IN INT32 MaxKeyLen;
+	CHAR *pData;
+	UINT16 length;
+	INT32 KeyIdx;
+	INT32 MaxKeyLen;
 
 #define RT_CMD_STA_IOCTL_SECURITY_ALG_NONE		0x01
 #define RT_CMD_STA_IOCTL_SECURITY_ALG_WEP		0x02
 #define RT_CMD_STA_IOCTL_SECURITY_ALG_TKIP		0x03
 #define RT_CMD_STA_IOCTL_SECURITY_ALG_CCMP		0x04
-	IN UINT32 Alg;
+	UINT32 Alg;
 
 #define RT_CMD_STA_IOCTL_SECURTIY_EXT_SET_TX_KEY	0x01
 #define RT_CMD_STA_IOCTL_SECURTIY_EXT_GROUP_KEY		0x02
-	IN UINT16 ext_flags;
+	UINT16 ext_flags;
 
 #define RT_CMD_STA_IOCTL_SECURITY_DISABLED		0x01
 #define RT_CMD_STA_IOCTL_SECURITY_ENABLED		0x02
-#define RT_CMD_STA_IOCTL_SECURITY_RESTRICTED	0x04
+#define RT_CMD_STA_IOCTL_SECURITY_RESTRICTED		0x04
 #define RT_CMD_STA_IOCTL_SECURITY_OPEN			0x08
 #define RT_CMD_STA_IOCTL_SECURITY_NOKEY			0x10
 #define RT_CMD_STA_IOCTL_SECURITY_MODE			0x20
-	INOUT UINT16 flags;
+	UINT16 flags;
 
-	OUT INT32 Status;
+	INT32 Status;
 } RT_CMD_STA_IOCTL_SECURITY;
 
 typedef struct __RT_CMD_STA_IOCTL_WSC_U32_ITEM {
-	IN UINT32 *pUWrq;
-	OUT INT32 Status;
+	UINT32 *pUWrq;
+	INT32 Status;
 } RT_CMD_STA_IOCTL_WSC_U32_ITEM;
 
 typedef struct __RT_CMD_STA_IOCTL_WSC_STR_ITEM {
-	IN UINT32 Subcmd;
-	IN CHAR *pData;
-	IN UINT32 length;
+	UINT32 Subcmd;
+	CHAR *pData;
+	UINT32 length;
 
-	OUT INT32 Status;
+	INT32 Status;
 } RT_CMD_STA_IOCTL_WSC_STR_ITEM;
 
 typedef struct __RT_CMD_STA_IOCTL_SHOW {
-	IN CHAR *pData;
-	IN UINT32 MaxSize;
-	IN UINT32 InfType;
+	CHAR *pData;
+	UINT32 MaxSize;
+	UINT32 InfType;
 } RT_CMD_STA_IOCTL_SHOW;
 
-#define RT_CMD_STA_IOCTL_IW_MLME_DEAUTH		0x01
-#define RT_CMD_STA_IOCTL_IW_MLME_DISASSOC	0x02
+#define RT_CMD_STA_IOCTL_IW_MLME_DEAUTH			0x01
+#define RT_CMD_STA_IOCTL_IW_MLME_DISASSOC		0x02
 
 typedef struct __RT_CMD_STA_IOCTL_SECURITY_ADV {
 
-#define RT_CMD_STA_IOCTL_WPA_VERSION					0x10
-#define RT_CMD_STA_IOCTL_WPA_VERSION1				0x11
-#define RT_CMD_STA_IOCTL_WPA_VERSION2				0x12
+#define RT_CMD_STA_IOCTL_WPA_VERSION			0x10
+#define RT_CMD_STA_IOCTL_WPA_VERSION1			0x11
+#define RT_CMD_STA_IOCTL_WPA_VERSION2			0x12
 
-#define RT_CMD_STA_IOCTL_WPA_PAIRWISE					0x20
-#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_NONE			0x21
-#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_WEP40			0x22
+#define RT_CMD_STA_IOCTL_WPA_PAIRWISE			0x20
+#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_NONE		0x21
+#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_WEP40		0x22
 #define RT_CMD_STA_IOCTL_WPA_PAIRWISE_WEP104		0x23
-#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_TKIP			0x24
-#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_CCMP			0x25
-
-#define RT_CMD_STA_IOCTL_WPA_GROUP						0x30
-#define RT_CMD_STA_IOCTL_WPA_GROUP_NONE				0x31
-#define RT_CMD_STA_IOCTL_WPA_GROUP_WEP40			0x32
-#define RT_CMD_STA_IOCTL_WPA_GROUP_WEP104			0x33
-#define RT_CMD_STA_IOCTL_WPA_GROUP_TKIP				0x34
-#define RT_CMD_STA_IOCTL_WPA_GROUP_CCMP				0x35
-
-#define RT_CMD_STA_IOCTL_WPA_KEY_MGMT					0x40
-#define RT_CMD_STA_IOCTL_WPA_KEY_MGMT_1X			0x41
-#define RT_CMD_STA_IOCTL_WPA_KEY_MGMT_WPS			0x42
-
+#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_TKIP		0x24
+#define RT_CMD_STA_IOCTL_WPA_PAIRWISE_CCMP		0x25
+#define RT_CMD_STA_IOCTL_WPA_GROUP			0x30
+#define RT_CMD_STA_IOCTL_WPA_GROUP_NONE			0x31
+#define RT_CMD_STA_IOCTL_WPA_GROUP_WEP40		0x32
+#define RT_CMD_STA_IOCTL_WPA_GROUP_WEP104		0x33
+#define RT_CMD_STA_IOCTL_WPA_GROUP_TKIP			0x34
+#define RT_CMD_STA_IOCTL_WPA_GROUP_CCMP			0x35
+#define RT_CMD_STA_IOCTL_WPA_KEY_MGMT			0x40
+#define RT_CMD_STA_IOCTL_WPA_KEY_MGMT_1X		0x41
+#define RT_CMD_STA_IOCTL_WPA_KEY_MGMT_WPS		0x42
 #define RT_CMD_STA_IOCTL_WPA_AUTH_RX_UNENCRYPTED_EAPOL	0x50
-#define RT_CMD_STA_IOCTL_WPA_AUTH_PRIVACY_INVOKED		0x60
-#define RT_CMD_STA_IOCTL_WPA_AUTH_DROP_UNENCRYPTED		0x70
+#define RT_CMD_STA_IOCTL_WPA_AUTH_PRIVACY_INVOKED	0x60
+#define RT_CMD_STA_IOCTL_WPA_AUTH_DROP_UNENCRYPTED	0x70
+#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG	0x80
+#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG_SHARED	0x81
+#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG_OPEN	0x82
+#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG_LEAP	0x83
+#define RT_CMD_STA_IOCTL_WPA_AUTH_WPA_ENABLED		0x90
+#define RT_CMD_STA_IOCTL_WPA_AUTH_COUNTERMEASURES	0xA0
 
-#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG		0x80
-#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG_SHARED		0x81
-#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG_OPEN		0x82
-#define RT_CMD_STA_IOCTL_WPA_AUTH_80211_AUTH_ALG_LEAP		0x83
-
-#define RT_CMD_STA_IOCTL_WPA_AUTH_WPA_ENABLED			0x90
-
-#define RT_CMD_STA_IOCTL_WPA_AUTH_COUNTERMEASURES			0xA0
-
-	IN UINT32 flags;
-	IN UINT32 value;
+	UINT32 flags;
+	UINT32 value;
 } RT_CMD_STA_IOCTL_SECURITY_ADV;
 
 typedef struct __RT_CMD_STA_IOCTL_RSN_IE {
-	INOUT UINT32 length;
-	INOUT UCHAR *pRsnIe;
+	UINT32 length;
+	UCHAR *pRsnIe;
 } RT_CMD_STA_IOCTL_RSN_IE;
 
 typedef struct __RT_CMD_STA_IOCTL_PMA_SA {
-#define RT_CMD_STA_IOCTL_PMA_SA_FLUSH					0x01
-#define RT_CMD_STA_IOCTL_PMA_SA_REMOVE					0x02
-#define RT_CMD_STA_IOCTL_PMA_SA_ADD						0x03
-	IN UINT32 Cmd;
-	IN UCHAR *pBssid;
-	IN UCHAR *pPmkid;
+#define RT_CMD_STA_IOCTL_PMA_SA_FLUSH			0x01
+#define RT_CMD_STA_IOCTL_PMA_SA_REMOVE			0x02
+#define RT_CMD_STA_IOCTL_PMA_SA_ADD			0x03
+	UINT32 Cmd;
+	UCHAR *pBssid;
+	UCHAR *pPmkid;
 } RT_CMD_STA_IOCTL_PMA_SA;
 
 typedef struct __RT_CMD_USB_INIT {
