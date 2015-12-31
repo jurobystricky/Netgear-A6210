@@ -27,21 +27,40 @@
 
 #include "rt_config.h"
 
-extern struct notifier_block cfg80211_netdev_notifier;
-extern INT RtmpIoctl_rt_ioctl_siwauth(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data);
-extern INT RtmpIoctl_rt_ioctl_siwauth(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data);
+static VOID CFG80211DRV_OpsMgmtFrameProbeRegister(VOID *pAdOrg, VOID *pData,
+	BOOLEAN isReg);
+static VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData,
+	BOOLEAN isReg);
+static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData);
+static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData);
+static BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData);
+static BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType);
+static BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData);
+static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData);
+static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData);
+static VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData);
+static VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData);
+static VOID CFG80211_UnRegister(VOID *pAdOrg, VOID *pNetDev);
+static INT CFG80211_reSetToDefault(VOID *pAdCB);
 
-INT CFG80211DRV_IoctlHandle(
-	IN	VOID					*pAdSrc,
-	IN	RTMP_IOCTL_INPUT_STRUCT	*wrq,
-	IN	INT						cmd,
-	IN	USHORT					subcmd,
-	IN	VOID					*pData,
-	IN	ULONG					Data)
+
+#ifdef CONFIG_STA_SUPPORT
+static INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data);
+
+#ifdef DOT11W_PMF_SUPPORT
+INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data);
+#endif /* DOT11W_PMF_SUPPORT */
+
+#endif /*CONFIG_STA_SUPPORT*/
+
+extern struct notifier_block cfg80211_netdev_notifier;
+
+INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
+	INT cmd, USHORT subcmd, VOID *pData, ULONG Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 
-	switch(cmd) {
+	switch (cmd) {
 	case CMD_RTPRIV_IOCTL_80211_START:
 	case CMD_RTPRIV_IOCTL_80211_END:
 		/* nothing to do */
@@ -368,7 +387,7 @@ VOID CFG80211DRV_OpsMgmtFrameProbeRegister(VOID *pAdOrg, VOID *pData, BOOLEAN is
 		pCfg80211_ctrl->cfg80211MainDev.Cfg80211ProbeReqCount));
 }
 
-VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BOOLEAN isReg)
+static VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BOOLEAN isReg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) pAdOrg;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -403,8 +422,10 @@ VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BOOLEAN i
 		else
 			pDevEntry->Cfg80211RegisterActionFrame = FALSE;
 
-		DBGPRINT(RT_DEBUG_INFO, ("[%d] TYPE pDevEntry->Cfg80211RegisterActionFrame=%d[%d]\n",
-				isReg, pDevEntry->Cfg80211RegisterActionFrame, pDevEntry->Cfg80211ActionCount));
+		DBGPRINT(RT_DEBUG_INFO,
+				("[%d] TYPE pDevEntry->Cfg80211RegisterActionFrame=%d[%d]\n",
+				isReg, pDevEntry->Cfg80211RegisterActionFrame,
+				pDevEntry->Cfg80211ActionCount));
 
 		return;
 	}
@@ -423,12 +444,14 @@ VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BOOLEAN i
 		pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount = 0;
 	}
 
-	DBGPRINT(RT_DEBUG_INFO, ("[%d] TYPE pAd->Cfg80211RegisterActionFrame=%d[%d]\n",
-		isReg, pCfg80211_ctrl->cfg80211MainDev.Cfg80211RegisterActionFrame,
-		pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount));
+	DBGPRINT(RT_DEBUG_INFO, 
+			("[%d] TYPE pAd->Cfg80211RegisterActionFrame=%d[%d]\n",
+			isReg,
+			pCfg80211_ctrl->cfg80211MainDev.Cfg80211RegisterActionFrame,
+			pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount));
 }
 
-VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
+static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_BSS_PARM *pBssInfo;
@@ -440,28 +463,34 @@ VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
 
 	/* Short Preamble */
 	if (pBssInfo->use_short_preamble != -1) {
-		CFG80211DBG(RT_DEBUG_TRACE, ("%s: ShortPreamble %d\n", __FUNCTION__, pBssInfo->use_short_preamble));
-			pAd->CommonCfg.TxPreamble = (pBssInfo->use_short_preamble == 0 ? Rt802_11PreambleLong : Rt802_11PreambleShort);
+		CFG80211DBG(RT_DEBUG_TRACE, 
+				("%s: ShortPreamble %d\n",
+				__FUNCTION__, pBssInfo->use_short_preamble));
+		pAd->CommonCfg.TxPreamble = (pBssInfo->use_short_preamble == 0 ? 
+				Rt802_11PreambleLong : Rt802_11PreambleShort);
 		TxPreamble = (pAd->CommonCfg.TxPreamble == Rt802_11PreambleLong ? 0 : 1);
 		MlmeSetTxPreamble(pAd, (USHORT)pAd->CommonCfg.TxPreamble);
 	}
 
 	/* CTS Protection */
 	if (pBssInfo->use_cts_prot != -1) {
-		CFG80211DBG(RT_DEBUG_TRACE, ("%s: CTS Protection %d\n", __FUNCTION__, pBssInfo->use_cts_prot));
+		CFG80211DBG(RT_DEBUG_TRACE, 
+				("%s: CTS Protection %d\n",
+				__FUNCTION__, pBssInfo->use_cts_prot));
 	}
 
 	/* Short Slot */
 	if (pBssInfo->use_short_slot_time != -1) {
-		CFG80211DBG(RT_DEBUG_TRACE, ("%s: Short Slot %d\n", __FUNCTION__, pBssInfo->use_short_slot_time));
+		CFG80211DBG(RT_DEBUG_TRACE,
+				("%s: Short Slot %d\n", __FUNCTION__, 
+				pBssInfo->use_short_slot_time));
 	}
 }
 
-BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData)
+static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData)
 {
 	CMD_RTPRIV_IOCTL_80211_CHAN *pChan;
 	UINT8 ChanId, IfType, ChannelType;
-//	UCHAR lock_channel;
 #ifdef DOT11_N_SUPPORT
 	BOOLEAN FlgIsChanged;
 #endif /* DOT11_N_SUPPORT */
@@ -579,7 +608,7 @@ BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData)
 	return TRUE;
 }
 
-BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -593,7 +622,7 @@ BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData)
 	return TRUE;
 }
 
-BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType)
+static BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -632,7 +661,7 @@ BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType)
 }
 
 
-BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_STA *pIbssInfo = (CMD_RTPRIV_IOCTL_80211_STA *)pData;
@@ -649,8 +678,8 @@ BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
 	/* fill tx rate */
 	//getRate(pEntry->HTPhyMode, &DataRate);
 	RtmpDrvRateGet(pAd, pEntry->HTPhyMode.field.MODE, pEntry->HTPhyMode.field.ShortGI,
-				 pEntry->HTPhyMode.field.BW,pEntry->HTPhyMode.field.MCS,
-				 newRateGetAntenna(pEntry->MaxHTPhyMode.field.MCS),&DataRate);
+			 pEntry->HTPhyMode.field.BW,pEntry->HTPhyMode.field.MCS,
+			 newRateGetAntenna(pEntry->MaxHTPhyMode.field.MCS),&DataRate);
 	DataRate /= 500000;
 	DataRate /= 2;
 
@@ -674,8 +703,7 @@ BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
 
 	/* fill tx count */
 	pIbssInfo->TxPacketCnt = pEntry->OneSecTxNoRetryOkCount +
-						pEntry->OneSecTxRetryOkCount +
-						pEntry->OneSecTxFailCount;
+			pEntry->OneSecTxRetryOkCount + pEntry->OneSecTxFailCount;
 
 	/* fill inactive time */
 	pIbssInfo->InactiveTime = pEntry->NoDataIdleCount * 1000; /* unit: ms */
@@ -689,10 +717,9 @@ BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
 	ULONG DataRate = 0;
 	UINT32 RSSI;
 
-
 	/* fill tx rate */
 	if ((!WMODE_CAP_N(pAd->CommonCfg.PhyMode)) ||
-	 (pAd->MacTab.Content[BSSID_WCID].HTPhyMode.field.MODE <= MODE_OFDM)) {
+		(pAd->MacTab.Content[BSSID_WCID].HTPhyMode.field.MODE <= MODE_OFDM)) {
 		PhyInfo.word = pAd->StaCfg.wdev.HTPhyMode.word;
 	} else {
 		PhyInfo.word = pAd->MacTab.Content[BSSID_WCID].HTPhyMode.word;
@@ -728,7 +755,7 @@ BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
 	return TRUE;
 }
 
-BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -739,7 +766,8 @@ BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 	if (pKeyInfo->KeyType == RT_CMD_80211_KEY_AES_CMAC) {
 		PPMF_CFG pPmfCfg = pPmfCfg = &pAd->StaCfg.PmfCfg;
 		hex_dump("PMF IGTK pKeyInfo->KeyBuf=", (UINT8 *)pKeyInfo->KeyBuf, pKeyInfo->KeyLen);
-		DBGPRINT(RT_DEBUG_ERROR, ("PMF IGTK pKeyInfo->KeyId=%d\n",pKeyInfo->KeyId));
+		DBGPRINT(RT_DEBUG_ERROR, ("PMF IGTK pKeyInfo->KeyId=%d\n",
+				pKeyInfo->KeyId));
 
 		//only 4 or 5, no other case!
 		if (pKeyInfo->KeyId == 4 || pKeyInfo->KeyId == 5) {
@@ -747,16 +775,21 @@ BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 			NdisZeroMemory(&pPmfCfg->IPN[pKeyInfo->KeyId -4][0], LEN_WPA_TSC);
 			NdisMoveMemory(&pPmfCfg->IGTK[pKeyInfo->KeyId -4][0], pKeyInfo->KeyBuf, pKeyInfo->KeyLen);
 		} else {
-			DBGPRINT(RT_DEBUG_ERROR, ("ERROR !! pKeyInfo->KeyId=%d \n",pKeyInfo->KeyId));
+			DBGPRINT(RT_DEBUG_ERROR, 
+					("ERROR !! pKeyInfo->KeyId=%d \n",
+					pKeyInfo->KeyId));
 		}
 	} else
 #endif /* DOT11W_PMF_SUPPORT */
-	if (pKeyInfo->KeyType == RT_CMD_80211_KEY_WEP40 || pKeyInfo->KeyType == RT_CMD_80211_KEY_WEP104) {
+	if (pKeyInfo->KeyType == RT_CMD_80211_KEY_WEP40 ||
+		pKeyInfo->KeyType == RT_CMD_80211_KEY_WEP104) {
 		DBGPRINT(RT_DEBUG_TRACE, ("RT_CMD_80211_KEY_WEP\n"));
 	} else {
 		RT_CMD_STA_IOCTL_SECURITY IoctlSec;
 
-		DBGPRINT(RT_DEBUG_TRACE, ("Set_WPAPSK_Proc ==> %d, %d, %zx...\n", pKeyInfo->KeyId, pKeyInfo->KeyType, strlen(pKeyInfo->KeyBuf)));
+		DBGPRINT(RT_DEBUG_TRACE, ("%s ==> %d, %d, %zx...\n",
+				__FUNCTION__, pKeyInfo->KeyId, 
+				pKeyInfo->KeyType,  strlen(pKeyInfo->KeyBuf)));
 
 		IoctlSec.KeyIdx = pKeyInfo->KeyId;
 		IoctlSec.pData = pKeyInfo->KeyBuf;
@@ -800,7 +833,7 @@ BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 	return TRUE;
 }
 
-BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -868,7 +901,7 @@ BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 	}
 
 	CFG80211DBG(RT_DEBUG_TRACE,
-				("80211> AuthMode = %d\n", pAd->StaCfg.wdev.AuthMode));
+			("80211> AuthMode = %d\n", pAd->StaCfg.wdev.AuthMode));
 
 	/* set encryption mode */
 	if (pConnInfo->PairwiseEncrypType & RT_CMD_80211_CONN_ENCRYPT_CCMP) {
@@ -914,8 +947,7 @@ BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 		/* reset key */
 #ifdef RT_CFG80211_DEBUG
 		hex_dump("KeyBuf=", (UINT8 *)pConnInfo->pKey, pConnInfo->KeyLen);
-#endif /* RT_CFG80211_DEBUG */
-
+#endif
 		pAd->StaCfg.wdev.DefaultKeyId = pConnInfo->KeyIdx; /* base 0 */
 		if (pConnInfo->KeyLen >= sizeof(KeyBuf))
 			return FALSE;
@@ -924,7 +956,8 @@ BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 		KeyBuf[pConnInfo->KeyLen] = 0x00;
 
 		CFG80211DBG(RT_DEBUG_ERROR,
-			("80211> pAd->StaCfg.DefaultKeyId = %d\n", pAd->StaCfg.wdev.DefaultKeyId));
+				("80211> pAd->StaCfg.DefaultKeyId = %d\n", 
+				pAd->StaCfg.wdev.DefaultKeyId));
 
 		Set_Wep_Key_Proc(pAd, (PSTRING)KeyBuf, (INT)pConnInfo->KeyLen, (INT)pConnInfo->KeyIdx);
 	}
@@ -947,7 +980,7 @@ BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 }
 
 
-VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData)
+static VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_REG_NOTIFY *pRegInfo;
@@ -968,7 +1001,7 @@ VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData)
 }
 
 
-VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData)
+static VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_SURVEY *pSurveyInfo;
@@ -983,7 +1016,7 @@ VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData)
 }
 
 
-VOID CFG80211_UnRegister(VOID *pAdOrg, VOID *pNetDev)
+static VOID CFG80211_UnRegister(VOID *pAdOrg, VOID *pNetDev)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -1048,9 +1081,9 @@ Routine Description:
 	Parse and handle country region in beacon from associated AP.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
-	pVIE			- Beacon elements
-	LenVIE			- Total length of Beacon elements
+	pAdCB		- WLAN control block pointer
+	pVIE		- Beacon elements
+	LenVIE		- Total length of Beacon elements
 
 Return Value:
 	NONE
@@ -1092,7 +1125,7 @@ Routine Description:
 	Re-Initialize wireless channel/PHY in 2.4GHZ and 5GHZ.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
+	pAdCB		- WLAN control block pointer
 
 Return Value:
 	NONE
@@ -1111,16 +1144,16 @@ VOID CFG80211_LostApInform(VOID *pAdCB)
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,11,0)
 	DBGPRINT(RT_DEBUG_TRACE, ("80211> CFG80211_LostApInform ==> %d\n",
-					p80211CB->pCfg80211_Wdev->sme_state));
+			p80211CB->pCfg80211_Wdev->sme_state));
 #endif
 	pAd->StaCfg.bAutoReconnect = FALSE;
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,11,0)
 	if (p80211CB->pCfg80211_Wdev->sme_state == CFG80211_SME_CONNECTING) {
-		   cfg80211_connect_result(pAd->net_dev, NULL, NULL, 0, NULL, 0,
-								   WLAN_STATUS_UNSPECIFIED_FAILURE, GFP_KERNEL);
+		cfg80211_connect_result(pAd->net_dev, NULL, NULL, 0, NULL, 0,
+				WLAN_STATUS_UNSPECIFIED_FAILURE, GFP_KERNEL);
 	} else if (p80211CB->pCfg80211_Wdev->sme_state == CFG80211_SME_CONNECTED) {
-		   cfg80211_disconnected(pAd->net_dev, 0, NULL, 0, GFP_KERNEL);
+		cfg80211_disconnected(pAd->net_dev, 0, NULL, 0, GFP_KERNEL);
 	}
 #else
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,2,0)
@@ -1141,8 +1174,8 @@ Routine Description:
 	Hint to the wireless core a regulatory domain from driver.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	pCountryIe		- pointer to the country IE
+	pAd		- WLAN control block pointer
+	pCountryIe	- pointer to the country IE
 	CountryIeLen	- length of the country IE
 
 Return Value:
@@ -1166,8 +1199,8 @@ Routine Description:
 	Hint to the wireless core a regulatory domain from country element.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
-	pCountryIe		- pointer to the country IE
+	pAdCB		- WLAN control block pointer
+	pCountryIe	- pointer to the country IE
 	CountryIeLen	- length of the country IE
 
 Return Value:
@@ -1192,9 +1225,9 @@ Routine Description:
 	Apply new regulatory rule.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
-	pWiphy			- Wireless hardware description
-	pAlpha2			- Regulation domain (2B)
+	pAdCB		- WLAN control block pointer
+	pWiphy		- Wireless hardware description
+	pAlpha2		- Regulation domain (2B)
 
 Return Value:
 	NONE
@@ -1215,8 +1248,8 @@ VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
 	BOOLEAN FlgIsRadar;
 	ULONG IrqFlags;
 #ifdef DFS_SUPPORT
-	RADAR_DETECT_STRUCT	*pRadarDetect;
-#endif /* DFS_SUPPORT */
+	RADAR_DETECT_STRUCT *pRadarDetect;
+#endif
 
 	CFG80211DBG(RT_DEBUG_TRACE, ("crda> CFG80211_RegRuleApply ==>\n"));
 
@@ -1236,8 +1269,7 @@ VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
 	RecId = 0;
 #ifdef DFS_SUPPORT
 	pRadarDetect = &pAd->CommonCfg.RadarDetect;
-#endif /* DFS_SUPPORT */
-
+#endif
 	/* find the DfsType */
 	DfsType = CE;
 	pBand24G = NULL;
@@ -1253,9 +1285,11 @@ VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
 		}
 
 		if (IdBand == 0) {
-			CFG80211DBG(RT_DEBUG_TRACE, ("crda> reset chan/power for 2.4GHz\n"));
+			CFG80211DBG(RT_DEBUG_TRACE, 
+					("crda> reset chan/power for 2.4GHz\n"));
 		} else {
-			CFG80211DBG(RT_DEBUG_TRACE, ("crda> reset chan/power for 5GHz\n"));
+			CFG80211DBG(RT_DEBUG_TRACE, 
+					("crda> reset chan/power for 5GHz\n"));
 		}
 
 		ChanNum = CFG80211OS_ChanNumGet(CFG80211CB, pWiphy, IdBand);
@@ -1329,12 +1363,12 @@ Routine Description:
 	Inform CFG80211 about association status.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
-	pBSSID			- the BSSID of the AP
-	pReqIe			- the element list in the association request frame
-	ReqIeLen		- the request element length
-	pRspIe			- the element list in the association response frame
-	RspIeLen		- the response element length
+	pAdCB		- WLAN control block pointer
+	pBSSID		- the BSSID of the AP
+	pReqIe		- the element list in the association request frame
+	ReqIeLen	- the request element length
+	pRspIe		- the element list in the association response frame
+	RspIeLen	- the response element length
 	FlgIsSuccess	- 1: success; otherwise: fail
 
 Return Value:
@@ -1363,11 +1397,11 @@ Routine Description:
 	Re-Initialize wireless channel/PHY in 2.4GHZ and 5GHZ.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
+	pAdCB		- WLAN control block pointer
 
 Return Value:
-	TRUE			- re-init successfully
-	FALSE			- re-init fail
+	TRUE		- re-init successfully
+	FALSE		- re-init fail
 
 Note:
 	CFG80211_SupBandInit() is called in xx_probe().
@@ -1395,7 +1429,7 @@ BOOLEAN CFG80211_SupBandReInit(VOID *pAdCB)
 
 #ifdef CONFIG_STA_SUPPORT
 //CMD_RTPRIV_IOCTL_80211_KEY_DEFAULT_SET:
-INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data)
+static INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
@@ -1405,7 +1439,7 @@ INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data)
 }
 
 #ifdef DOT11W_PMF_SUPPORT
-INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data)
+static INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
@@ -1416,7 +1450,7 @@ INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data)
 #endif /* DOT11W_PMF_SUPPORT */
 
 #endif /*CONFIG_STA_SUPPORT*/
-INT CFG80211_reSetToDefault(VOID *pAdCB)
+static INT CFG80211_reSetToDefault(VOID *pAdCB)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -1440,7 +1474,7 @@ initList(&pAd->Cfg80211VifDevSet.vifDevList);
 initList(&pAd->cfg80211_ctrl.cfg80211TxPacketList);
 */
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
-BOOLEAN CFG80211_checkScanResInKernelCache(VOID *pAdCB, UCHAR *pBSSID, 
+static BOOLEAN CFG80211_checkScanResInKernelCache(VOID *pAdCB, UCHAR *pBSSID,
 	UCHAR *pSsid, INT ssidLen)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
@@ -1487,19 +1521,22 @@ BOOLEAN CFG80211_checkScanTable(VOID *pAdCB)
 	timestamp = ((UINT64)tv.tv_sec * 1000000) + tv.tv_usec;
 
 	bss = cfg80211_get_bss(pWiphy, NULL, pApCliEntry->MlmeAux.Bssid,
-				   pApCliEntry->MlmeAux.Ssid, pApCliEntry->MlmeAux.SsidLen,
-				   WLAN_CAPABILITY_ESS, WLAN_CAPABILITY_ESS);
+				pApCliEntry->MlmeAux.Ssid, pApCliEntry->MlmeAux.SsidLen,
+				WLAN_CAPABILITY_ESS, WLAN_CAPABILITY_ESS);
 	if (bss) {
-		DBGPRINT(RT_DEBUG_TRACE, ("Found %s in Kernel_ScanTable with CH[%d]\n", 
+		DBGPRINT(RT_DEBUG_TRACE, ("Found %s in Kernel_ScanTable with CH[%d]\n",
 				pApCliEntry->MlmeAux.Ssid, bss->channel->center_freq));
 		bss->tsf = timestamp;
 		cfg80211_put_bss(bss);
 		return TRUE;
 	} else {
-		DBGPRINT(RT_DEBUG_ERROR, ("Can't Found %s in Kernel_ScanTable & Try Fake it\n", pApCliEntry->MlmeAux.Ssid));
+		DBGPRINT(RT_DEBUG_ERROR, 
+				("Can't Found %s in Kernel_ScanTable & Try Fake it\n",
+				pApCliEntry->MlmeAux.Ssid));
 	}
 
-	bss_idx = BssSsidTableSearchBySSID(&pAd->ScanTab, pApCliEntry->MlmeAux.Ssid, pApCliEntry->MlmeAux.SsidLen);
+	bss_idx = BssSsidTableSearchBySSID(&pAd->ScanTab, pApCliEntry->MlmeAux.Ssid,
+			pApCliEntry->MlmeAux.SsidLen);
 	if (bss_idx != BSS_NOT_FOUND) {
 		/* Since the cfg80211 kernel scanTable not exist this Entry,
 		 * Build an Entry for this connect inform event.
@@ -1509,9 +1546,9 @@ BOOLEAN CFG80211_checkScanTable(VOID *pAdCB)
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		if (pAd->ScanTab.BssEntry[bss_idx].Channel > 14)
-			CenFreq = ieee80211_channel_to_frequency(pBssEntry->Channel , IEEE80211_BAND_5GHZ);
+			CenFreq = ieee80211_channel_to_frequency(pBssEntry->Channel, IEEE80211_BAND_5GHZ);
 		else
-			CenFreq = ieee80211_channel_to_frequency(pBssEntry->Channel , IEEE80211_BAND_2GHZ);
+			CenFreq = ieee80211_channel_to_frequency(pBssEntry->Channel, IEEE80211_BAND_2GHZ);
 #else
 			CenFreq = ieee80211_channel_to_frequency(pBssEntry->Channel);
 #endif
@@ -1530,8 +1567,8 @@ BOOLEAN CFG80211_checkScanTable(VOID *pAdCB)
 		NdisCopyMemory(ie + 2 + pApCliEntry->MlmeAux.SsidLen, pBssEntry->pVarIeFromProbRsp,
 				pBssEntry->VarIeFromProbeRspLen);
 
-		bss = cfg80211_inform_bss(pWiphy, chan, pApCliEntry->MlmeAux.Bssid, 
-				timestamp, WLAN_CAPABILITY_ESS, 
+		bss = cfg80211_inform_bss(pWiphy, chan, pApCliEntry->MlmeAux.Bssid,
+				timestamp, WLAN_CAPABILITY_ESS,
 				pApCliEntry->MlmeAux.BeaconPeriod, ie, ieLen,
 #ifdef CFG80211_SCAN_SIGNAL_AVG
 					  (pBssEntry->AvgRssi * 100),
