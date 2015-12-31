@@ -156,12 +156,6 @@ extern UCHAR WMM_UP2AC_MAP[8];
 extern unsigned char RateIdToMbps[];
 extern USHORT RateIdTo500Kbps[];
 
-//extern UCHAR CipherSuiteWpaNoneTkip[];
-//extern UCHAR CipherSuiteWpaNoneTkipLen;
-
-//extern UCHAR CipherSuiteWpaNoneAes[];
-//extern UCHAR CipherSuiteWpaNoneAesLen;
-
 extern UCHAR SsidIe;
 extern UCHAR SupRateIe;
 extern UCHAR ExtRateIe;
@@ -4720,47 +4714,8 @@ static inline VOID RTMPFrameEndianChange(RTMP_ADAPTER *pAd, PUCHAR pData,
 }
 #endif /* RT_BIG_ENDIAN */
 
-#if 0 //JB removed
-/***************************************************************************
-  *	Other static inline function definitions
-  **************************************************************************/
-static inline VOID ConvertMulticastIP2MAC(PUCHAR pIpAddr, PUCHAR *ppMacAddr,
-	UINT16 ProtoType)
-{
-	if (pIpAddr == NULL)
-		return;
-
-	if (ppMacAddr == NULL || *ppMacAddr == NULL)
-		return;
-
-	switch (ProtoType) {
-	case ETH_P_IPV6:
-/*		memset(*ppMacAddr, 0, MAC_ADDR_LEN); */
-		*(*ppMacAddr) = 0x33;
-		*(*ppMacAddr + 1) = 0x33;
-		*(*ppMacAddr + 2) = pIpAddr[12];
-		*(*ppMacAddr + 3) = pIpAddr[13];
-		*(*ppMacAddr + 4) = pIpAddr[14];
-		*(*ppMacAddr + 5) = pIpAddr[15];
-		break;
-
-	case ETH_P_IP:
-	default:
-/*		memset(*ppMacAddr, 0, MAC_ADDR_LEN); */
-		*(*ppMacAddr) = 0x01;
-		*(*ppMacAddr + 1) = 0x00;
-		*(*ppMacAddr + 2) = 0x5e;
-		*(*ppMacAddr + 3) = pIpAddr[1] & 0x7f;
-		*(*ppMacAddr + 4) = pIpAddr[2];
-		*(*ppMacAddr + 5) = pIpAddr[3];
-		break;
-	}
-}
-#endif //0
-
 char *get_phymode_str(int phy_mode);
 char *get_bw_str(int bandwidth);
-
 
 BOOLEAN RTMPCheckForHang(NDIS_HANDLE MiniportAdapterContext);
 
@@ -5193,7 +5148,6 @@ VOID AsicResetBBPAgent(RTMP_ADAPTER *pAd);
 
 #ifdef CONFIG_STA_SUPPORT
 VOID AsicSleepThenAutoWakeup(RTMP_ADAPTER *pAd, USHORT TbttNumToNextWakeUp);
-//JBb removedVOID AsicForceSleep(RTMP_ADAPTER *pAd);
 VOID AsicForceWakeup(RTMP_ADAPTER *pAd, BOOLEAN bFromTx);
 #endif /* CONFIG_STA_SUPPORT */
 
@@ -5213,7 +5167,6 @@ BOOLEAN AsicSetRDG(RTMP_ADAPTER *pAd, BOOLEAN bEnable);
 
 VOID AsicCtrlBcnMask(PRTMP_ADAPTER pAd, INT mask);
 BOOLEAN AsicSetPreTbtt(RTMP_ADAPTER *pAd, BOOLEAN enable);
-//JB removedBOOLEAN AsicSetGPTimer(RTMP_ADAPTER *pAd, BOOLEAN enable, UINT32 timeout);
 
 VOID AsicDisableSync(RTMP_ADAPTER *pAd);
 VOID AsicEnableBssSync(RTMP_ADAPTER *pAd);
@@ -5280,16 +5233,6 @@ BOOLEAN AsicSendCmdToMcuAndWait(
 	IN UCHAR Arg0,
 	IN UCHAR Arg1,
 	IN BOOLEAN in_atomic);
-
-#if 0 //JB remove
-BOOLEAN AsicSendCommandToMcuBBP(
-	IN RTMP_ADAPTER *pAd,
-	IN UCHAR		 Command,
-	IN UCHAR		 Token,
-	IN UCHAR		 Arg0,
-	IN UCHAR		 Arg1,
-	IN BOOLEAN		FlgIsNeedLocked);
-#endif
 
 #ifdef MCS_LUT_SUPPORT
 VOID asic_mcs_lut_update(
@@ -5790,53 +5733,13 @@ VOID MlmeCntlMachinePerformAction(
 	IN  STATE_MACHINE *S,
 	IN  MLME_QUEUE_ELEM *Elem);
 
-//VOID CntlIdleProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
 VOID CntlOidScanProc(
 	IN  RTMP_ADAPTER *pAd,
 	IN  MLME_QUEUE_ELEM *Elem);
 
-//VOID CntlOidSsidProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM * Elem);
-
 VOID CntlOidRTBssidProc(
 	IN  RTMP_ADAPTER *pAd,
 	IN  MLME_QUEUE_ELEM * Elem);
-
-//VOID CntlMlmeRoamingProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM * Elem);
-
-//VOID CntlWaitDisassocProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
-//VOID CntlWaitJoinProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
-//VOID CntlWaitReassocProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
-//VOID CntlWaitStartProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
-//VOID CntlWaitAuthProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
-//VOID CntlWaitAuthProc2(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
-
-//VOID CntlWaitAssocProc(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  MLME_QUEUE_ELEM *Elem);
 
 VOID LinkUp(
 	IN  RTMP_ADAPTER *pAd,
@@ -5848,14 +5751,6 @@ VOID LinkDown(
 
 VOID IterateOnBssTab(
 	IN  RTMP_ADAPTER *pAd);
-
-//VOID IterateOnBssTab2(
-//	IN  RTMP_ADAPTER *pAd);;
-
-//VOID JoinParmFill(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  OUT MLME_JOIN_REQ_STRUCT *JoinReq,
-//	IN  ULONG BssIdx);
 
 VOID AssocParmFill(
 	IN  RTMP_ADAPTER *pAd,
@@ -5879,18 +5774,6 @@ VOID DisassocParmFill(
 	IN  PUCHAR pAddr,
 	IN  USHORT Reason);
 
-//VOID StartParmFill(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  OUT MLME_START_REQ_STRUCT *StartReq,
-//	IN  CHAR Ssid[],
-//	IN  UCHAR SsidLen);
-
-//VOID AuthParmFill(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN  OUT MLME_AUTH_REQ_STRUCT *AuthReq,
-//	IN  PUCHAR pAddr,
-//	IN  USHORT Alg);
-
 VOID EnqueuePsPoll(RTMP_ADAPTER *pAd);
 VOID EnqueueBeaconFrame(RTMP_ADAPTER *pAd);
 
@@ -5910,54 +5793,6 @@ ULONG MakeIbssBeacon(RTMP_ADAPTER *pAd);
 BOOLEAN MlmeScanReqSanity(RTMP_ADAPTER *pAd, VOID *Msg, ULONG MsgLen, 
 	UCHAR *BssType, CHAR ssid[], UCHAR *SsidLen, UCHAR *ScanType);
 
-#if 0 //JB removed
-BOOLEAN PeerBeaconAndProbeRspSanity_Old(
-	IN  RTMP_ADAPTER *pAd,
-	IN  VOID *Msg,
-	IN  ULONG MsgLen,
-	IN  UCHAR MsgChannel,
-	OUT PUCHAR pAddr2,
-	OUT PUCHAR pBssid,
-	OUT CHAR Ssid[],
-	OUT UCHAR *pSsidLen,
-	OUT UCHAR *pBssType,
-	OUT USHORT *pBeaconPeriod,
-	OUT UCHAR *pChannel,
-	OUT UCHAR *pNewChannel,
-	OUT LARGE_INTEGER *pTimestamp,
-	OUT CF_PARM *pCfParm,
-	OUT USHORT *pAtimWin,
-	OUT USHORT *pCapabilityInfo,
-	OUT UCHAR *pErp,
-	OUT UCHAR *pDtimCount,
-	OUT UCHAR *pDtimPeriod,
-	OUT UCHAR *pBcastFlag,
-	OUT UCHAR *pMessageToMe,
-	OUT UCHAR SupRate[],
-	OUT UCHAR *pSupRateLen,
-	OUT UCHAR ExtRate[],
-	OUT UCHAR *pExtRateLen,
-	OUT	UCHAR *pCkipFlag,
-	OUT	UCHAR *pAironetCellPowerLimit,
-	OUT PEDCA_PARM       pEdcaParm,
-	OUT PQBSS_LOAD_PARM  pQbssLoad,
-	OUT PQOS_CAPABILITY_PARM pQosCapability,
-	OUT ULONG *pRalinkIe,
-	OUT UCHAR		 *pHtCapabilityLen,
-#ifdef CONFIG_STA_SUPPORT
-	OUT UCHAR		 *pPreNHtCapabilityLen,
-#ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
-	OUT UCHAR 	*pSelReg,
-#endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
-#endif /* CONFIG_STA_SUPPORT */
-	OUT HT_CAPABILITY_IE *pHtCapability,
-	OUT EXT_CAP_INFO_ELEMENT *pExtCapInfo,
-	OUT UCHAR		 *AddHtInfoLen,
-	OUT ADD_HT_INFO_IE *AddHtInfo,
-	OUT UCHAR *NewExtChannel,
-	OUT USHORT *LengthVIE,
-	OUT PNDIS_802_11_VARIABLE_IEs pVIE);
-#endif //0
 
 BOOLEAN PeerBeaconAndProbeRspSanity(
 	IN RTMP_ADAPTER *pAd,
@@ -6106,7 +5941,6 @@ UCHAR RandomByte2(RTMP_ADAPTER *pAd);
 
 VOID AsicUpdateAutoFallBackTable(RTMP_ADAPTER *pAd, UCHAR *pTxRate);
 BOOLEAN AsicSetAutoFallBack(RTMP_ADAPTER *pAd, BOOLEAN enable);
-//JB removed BOOLEAN AsicAutoFallbackInit(RTMP_ADAPTER *pAd);
 
 VOID  MlmePeriodicExec(
 	IN PVOID SystemSpecific1,
@@ -6433,10 +6267,6 @@ VOID RTMPSetHT(
 	IN	RTMP_ADAPTER *pAd,
 	IN	OID_SET_HT_PHYMODE *pHTPhyMode);
 
-#if 0 //JB removed
-VOID RTMPSetIndividualHT(RTMP_ADAPTER *pAd, UCHAR apidx);
-#endif
-
 UCHAR get_cent_ch_by_htinfo(
 	RTMP_ADAPTER *pAd,
 	ADD_HT_INFO_IE *ht_op,
@@ -6447,11 +6277,6 @@ INT ht_mode_adjust(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, HT_CAPABILITY_IE 
 INT set_ht_fixed_mcs(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, UCHAR fixed_mcs, UCHAR mcs_bound);
 INT get_ht_max_mcs(RTMP_ADAPTER *pAd, UCHAR *desire_mcs, UCHAR *cap_mcs);
 #endif /* DOT11_N_SUPPORT */
-
-#if 0 //JB removed
-VOID RTMPDisableDesiredHtInfo(
-	IN	RTMP_ADAPTER *pAd);
-#endif //0
 
 #ifdef SYSTEM_LOG_SUPPORT
 VOID RtmpDrvSendWirelessEvent(
@@ -7413,13 +7238,10 @@ VOID RTUSBBulkOutNullFrame(RTMP_ADAPTER *pAd);
 VOID RTUSBBulkOutRTSFrame(RTMP_ADAPTER *pAd);
 VOID RTUSBCancelPendingBulkInIRP(RTMP_ADAPTER *pAd);
 VOID RTUSBCancelPendingIRPs(RTMP_ADAPTER *pAd);
-//VOID RTUSBBulkOutMLMEPacket(RTMP_ADAPTER *pAd, UCHAR Index);
-//VOID RTUSBBulkOutPsPoll(RTMP_ADAPTER *pAd);
 VOID RTUSBCleanUpMLMEBulkOutQueue(RTMP_ADAPTER *pAd);
 VOID RTUSBKickBulkOut(RTMP_ADAPTER *pAd);
 VOID RTUSBBulkReceive(RTMP_ADAPTER *pAd);
 VOID RTUSBBulkCmdRspEventReceive(RTMP_ADAPTER *pAd);
-//VOID DoBulkIn(RTMP_ADAPTER *pAd);
 VOID RTUSBInitRxDesc(RTMP_ADAPTER *pAd, RX_CONTEXT *pRxContext);
 VOID RTUSBBulkRxHandle(ULONG data);
 VOID InitUSBDevice(RT_CMD_USB_INIT *pConfig, VOID *pAd);
@@ -7472,18 +7294,10 @@ BOOLEAN CHAN_PropertyCheck(RTMP_ADAPTER *pAd, UINT32 ChanNum, UCHAR Property);
 
 /* command */
 BOOLEAN Set_SSID_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_WmmCapable_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_NetworkType_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_AuthMode_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_EncrypType_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_DefaultKeyID_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_Wep_Key_Proc(RTMP_ADAPTER  *pAd, PSTRING Key, INT KeyLen, INT KeyId);
-BOOLEAN Set_Key1_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_Key2_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_Key3_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_Key4_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_WPAPSK_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_PSMode_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 
 #ifdef WPA_SUPPLICANT_SUPPORT
 BOOLEAN Set_Wpa_Support(RTMP_ADAPTER *pAd, PSTRING arg);
@@ -7497,39 +7311,12 @@ VOID RTMPIoctlE2PROM(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq);
 NDIS_STATUS RTMPWPANoneAddKeyProc(RTMP_ADAPTER *pAd, VOID *pBuf);
 
 BOOLEAN Set_FragTest_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-
-#ifdef DOT11_N_SUPPORT
-BOOLEAN Set_TGnWifiTest_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-#endif /* DOT11_N_SUPPORT */
-
 BOOLEAN Set_LongRetryLimit_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_ShortRetryLimit_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-
-#ifdef EXT_BUILD_CHANNEL_LIST
-BOOLEAN Set_Ieee80211dClientMode_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-#endif /* EXT_BUILD_CHANNEL_LIST */
-
-BOOLEAN Show_Adhoc_MacTable_Proc(RTMP_ADAPTER *pAd, PSTRING extra, UINT32 size);
-
-#ifdef RTMP_RF_RW_SUPPORT
-VOID RTMPIoctlRF(
-	IN	RTMP_ADAPTER *pAd,
-	IN	RTMP_IOCTL_INPUT_STRUCT *wrq);
-#endif /* RTMP_RF_RW_SUPPORT */
-
-BOOLEAN Set_BeaconLostTime_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_AutoRoaming_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_SiteSurvey_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN Set_ForceTxBurst_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-
-VOID RTMPAddKey(RTMP_ADAPTER *pAd, PNDIS_802_11_KEY pKey);
 VOID StaSiteSurvey(RTMP_ADAPTER *pAd, PNDIS_802_11_SSID pSsid, UCHAR ScanType);
 
-//VOID MaintainBssTable(
-//	IN  RTMP_ADAPTER *pAd,
-//	IN OUT	BSS_TABLE *Tab,
-//	IN  ULONG	MaxRxTimeDiff,
-//	IN  UCHAR	MaxSameRxTimeCount);
+INT RtmpIoctl_rt_ioctl_siwauth(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data);
 #endif /* CONFIG_STA_SUPPORT */
 
 void  getRate(HTTRANSMIT_SETTING HTSetting, ULONG* fLastTxRxRate);
@@ -7570,23 +7357,6 @@ void RTMP_IndicateMediaState(
 VOID RTMP_TxEvmCalibration(
 	IN RTMP_ADAPTER *pAd);
 #endif
-
-INT RTMPSetInformation(
-	IN RTMP_ADAPTER *pAd,
-	IN OUT RTMP_IOCTL_INPUT_STRUCT *rq,
-	IN INT cmd);
-
-INT RTMPQueryInformation(
-	IN RTMP_ADAPTER *pAd,
-	INOUT RTMP_IOCTL_INPUT_STRUCT *rq,
-	IN INT cmd);
-
-VOID RTMPIoctlShow(
-	IN RTMP_ADAPTER *pAd,
-	IN RTMP_IOCTL_INPUT_STRUCT *rq,
-	IN UINT32 subcmd,
-	IN VOID *pData,
-	IN ULONG Data);
 
 INT RTMP_COM_IoctlHandle(
 	IN VOID *pAdSrc,
@@ -7674,9 +7444,7 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
 
 VOID dump_txwi(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI);
 VOID dump_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI);
-//JB removed VOID dump_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo);
 VOID dump_rxinfo(RTMP_ADAPTER *pAd, RXINFO_STRUC *pRxInfo);
-//JB removedVOID dump_rxblk(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk);
 
 #ifdef WFA_VHT_PF
 /* for SIGMA */
