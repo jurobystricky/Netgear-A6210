@@ -135,7 +135,7 @@ static void RtmpTimerQHandle(RTMP_ADAPTER *pAd)
 			break;
 		}
 
-		if (pAd->TimerQ.status == RTMP_TASK_STAT_STOPED)
+		if (pAd->TimerQ.status == RTMP_TASK_STAT_STOPPED)
 			break;
 
 		/* event happened.*/
@@ -165,7 +165,7 @@ static void RtmpTimerQHandle(RTMP_ADAPTER *pAd)
 		}
 
 		if (status != 0) {
-			pAd->TimerQ.status = RTMP_TASK_STAT_STOPED;
+			pAd->TimerQ.status = RTMP_TASK_STAT_STOPPED;
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS);
 			break;
 		}
@@ -296,7 +296,7 @@ void RtmpTimerQExit(RTMP_ADAPTER *pAd)
 	pAd->TimerQ.pQTail = NULL;
 	pAd->TimerQ.pQHead = NULL;
 /*#ifndef KTHREAD_SUPPORT*/
-	pAd->TimerQ.status = RTMP_TASK_STAT_STOPED;
+	pAd->TimerQ.status = RTMP_TASK_STAT_STOPPED;
 /*#endif*/
 	RTMP_INT_UNLOCK(&pAd->TimerQLock, irqFlags);
 /*	NdisFreeSpinLock(&pAd->TimerQLock); */

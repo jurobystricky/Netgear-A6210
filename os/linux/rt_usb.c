@@ -117,7 +117,7 @@ VOID RtmpMgmtTaskExit(
 	RTMP_OS_TASK_LEGALITY(pTask)
 	{
 		NdisAcquireSpinLock(&pAd->CmdQLock);
-		pAd->CmdQ.CmdQState = RTMP_TASK_STAT_STOPED;
+		pAd->CmdQ.CmdQState = RTMP_TASK_STAT_STOPPED;
 		NdisReleaseSpinLock(&pAd->CmdQLock);
 
 		/*RTUSBCMDUp(&pAd->cmdQTask); */
@@ -997,7 +997,7 @@ INT RTUSBCmdThread(
 			break;
 		}
 
-		if (pAd->CmdQ.CmdQState == RTMP_TASK_STAT_STOPED)
+		if (pAd->CmdQ.CmdQState == RTMP_TASK_STAT_STOPPED)
 			break;
 
 		if (!pAd->PM_FlgSuspend)
@@ -1009,7 +1009,7 @@ INT RTUSBCmdThread(
 		CmdQElmt	*pCmdQElmt = NULL;
 
 		NdisAcquireSpinLock(&pAd->CmdQLock);
-		pAd->CmdQ.CmdQState = RTMP_TASK_STAT_STOPED;
+		pAd->CmdQ.CmdQState = RTMP_TASK_STAT_STOPPED;
 		while(pAd->CmdQ.size)
 		{
 			RTThreadDequeueCmd(&pAd->CmdQ, &pCmdQElmt);
