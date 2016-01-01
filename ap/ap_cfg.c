@@ -26,7 +26,7 @@
 
 
 #include "rt_config.h"
-#error BOZO
+#error FIX ME IF USED!
 
 #define A_BAND_REGION_0				0
 #define A_BAND_REGION_1				1
@@ -3925,7 +3925,7 @@ INT	Set_AP_SSID_Proc(RTMP_ADAPTER *pAd, PSTRING arg)
 				}
 			}
 
-			DBGPRINT(RT_DEBUG_TRACE, ("I/F(ra%d) Set_SSID_Proc::(Len=%d,Ssid=%s)\n", pObj->ioctl_if,
+			DBGPRINT(RT_DEBUG_TRACE, ("I/F(ra%d) Set_AP_SSID_Proc::(Len=%d,Ssid=%s)\n", pObj->ioctl_if,
 				mbss->SsidLen, mbss->Ssid));
 		}
 	}
@@ -4123,7 +4123,7 @@ INT	Set_AP_WmmCapable_Proc(
 	SetCommonHT(pAd);
 #endif /* DOT11_N_SUPPORT */
 
-	DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_WmmCapable_Proc::(bWmmCapable=%d)\n",
+	DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_AP_WmmCapable_Proc::(bWmmCapable=%d)\n",
 		pObj->ioctl_if, pAd->ApCfg.MBSSID[pObj->ioctl_if].wdev.bWmmCapable));
 
 	return TRUE;
@@ -4897,7 +4897,7 @@ INT	Set_AP_DefaultKeyID_Proc(
 	else
 		return FALSE;  /* Invalid argument */
 
-	DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_DefaultKeyID_Proc::(DefaultKeyID(0~3)=%d)\n", apidx, pAd->ApCfg.MBSSID[apidx].wdev.DefaultKeyId));
+	DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_AP_DefaultKeyID_Proc::(DefaultKeyID(0~3)=%d)\n", apidx, pAd->ApCfg.MBSSID[apidx].wdev.DefaultKeyId));
 
 	return TRUE;
 }
@@ -4968,7 +4968,7 @@ static BOOLEAN Set_AP_Key2_Proc(
 		{
 			AsicAddSharedKeyEntry(pAd, apidx, 1, pSharedKey);
 		}
-		DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_Key2_Proc::(Key2=%s) success!\n", apidx, arg));
+		DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_AP_Key2_Proc::(Key2=%s) success!\n", apidx, arg));
 	}
 
 	return retVal;
@@ -5005,7 +5005,7 @@ INT	Set_AP_Key3_Proc(
 		{
 			AsicAddSharedKeyEntry(pAd, apidx, 2, pSharedKey);
 		}
-		DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_Key3_Proc::(Key3=%s) success!\n", apidx, arg));
+		DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_AP_Key3_Proc::(Key3=%s) success!\n", apidx, arg));
 	}
 
 	return retVal;
@@ -5043,7 +5043,7 @@ INT	Set_AP_Key4_Proc(
 		{
 			AsicAddSharedKeyEntry(pAd, apidx, 3, pSharedKey);
 		}
-		DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_Key4_Proc::(Key4=%s) success!\n", apidx, arg));
+		DBGPRINT(RT_DEBUG_TRACE, ("if (ra%d) Set_AP_Key4_Proc::(Key4=%s) success!\n", apidx, arg));
 	}
 
 	return retVal;
@@ -5535,7 +5535,7 @@ INT	Set_AP_WPAPSK_Proc(
 	INT	retval;
 	MULTISSID_STRUCT *pMBSSStruct;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("Set_WPAPSK_Proc::(WPAPSK=%s)\n", arg));
+	DBGPRINT(RT_DEBUG_TRACE, ("Set_AP_WPAPSK_Proc::(WPAPSK=%s)\n", arg));
 
 	pMBSSStruct = &pAd->ApCfg.MBSSID[apidx];
 	retval = RT_CfgSetWPAPSKKey(pAd, arg, strlen(arg), (PUCHAR)pMBSSStruct->Ssid, pMBSSStruct->SsidLen, pMBSSStruct->PMK);
@@ -7816,7 +7816,7 @@ done:
 /*	kfree(mpool); */
 	os_free_mem(NULL, mpool);
 	if (wrq->u.data.flags != RT_OID_802_11_HARDWARE_REGISTER)
-	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlE2PROM\n"));
+		DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPAPIoctlE2PROM\n"));
 }
 
 
@@ -8524,7 +8524,7 @@ INT	Set_ApCli_DefaultKeyID_Proc(
 	else
 		return FALSE;  /* Invalid argument */
 
-	DBGPRINT(RT_DEBUG_TRACE, ("if (apcli%d) Set_DefaultKeyID_Proc::(DefaultKeyID(0~3)=%d)\n", pObj->ioctl_if, wdev->DefaultKeyId));
+	DBGPRINT(RT_DEBUG_TRACE, ("if (apcli%d) Set_ApDefaultKeyID_Proc::(DefaultKeyID(0~3)=%d)\n", pObj->ioctl_if, wdev->DefaultKeyId));
 
 	return TRUE;
 }
@@ -9704,7 +9704,7 @@ VOID RTMPApCliAddKey(
 
 				if (pEntry && IS_ENTRY_APCLI(pEntry))
 				{
-					DBGPRINT(RT_DEBUG_TRACE, ("RTMPAddKey: Set Pair-wise Key\n"));
+					DBGPRINT(RT_DEBUG_TRACE, ("%s: Set Pair-wise Key\n"),__FUNCTION__);
 
 					/* set key material and key length */
  					pEntry->PairwiseKey.KeyLen = (UCHAR )pKey->KeyLength;
