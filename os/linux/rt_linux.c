@@ -90,14 +90,15 @@ ULONG RTDebugFunc = 0;
 
 #ifdef OS_ABL_FUNC_SUPPORT
 ULONG RTPktOffsetData = 0, RTPktOffsetLen = 0, RTPktOffsetCB = 0;
-#endif /* OS_ABL_FUNC_SUPPORT */
+#endif
 
 #ifdef VENDOR_FEATURE4_SUPPORT
 ULONG OS_NumOfMemAlloc = 0, OS_NumOfMemFree = 0;
-#endif /* VENDOR_FEATURE4_SUPPORT */
+#endif
+
 #ifdef VENDOR_FEATURE2_SUPPORT
 ULONG OS_NumOfPktAlloc = 0, OS_NumOfPktFree = 0;
-#endif /* VENDOR_FEATURE2_SUPPORT */
+#endif
 
 /*
  * the lock will not be used in TX/RX
@@ -106,8 +107,8 @@ ULONG OS_NumOfPktAlloc = 0, OS_NumOfPktFree = 0;
 BOOLEAN FlgIsUtilInit = FALSE;
 OS_NDIS_SPIN_LOCK UtilSemLock;
 
-BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen);
-BOOLEAN RTMP_OS_Remove_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc);
+static BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen);
+static BOOLEAN RTMP_OS_Remove_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc);
 
 /*
 ========================================================================
@@ -882,18 +883,19 @@ int RtmpOSFileRead(RTMP_OS_FD osfd, char *pDataPtr, int readLen)
 	set_fs(get_ds());
 	ret = vfs_read(osfd, pDataPtr, readLen, &osfd->f_pos);
 	set_fs(fs);
-
-//	if (ret >= 0) {
-//		printk(KERN_INFO "%s:\n%s\n(eof)\n\n",__FUNCTION__,pDataPtr);
-//	}
-
 	return ret;
 }
 
 
 int RtmpOSFileWrite(RTMP_OS_FD osfd, char *pDataPtr, int writeLen)
 {
-	return osfd->f_op->write(osfd, pDataPtr, (size_t) writeLen, &osfd->f_pos);
+	int ret;
+	mm_segment_t oldfs = get_fs();
+
+	set_fs(get_ds());
+	ret = vfs_write(osfd, pDataPtr, writeLen, &osfd->f_pos);
+	set_fs(oldfs);
+	return ret;
 }
 
 
@@ -2803,9 +2805,7 @@ Return Value:
 Note:
 ========================================================================
 */
-BOOLEAN RTMP_OS_Alloc_Rsc(
-	LIST_HEADER *pRscList,
-	VOID *pRscSrc,
+BOOLEAN RTMP_OS_Alloc_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc, 
 	UINT32 RscLen)
 {
 	OS_RSTRUC *pRsc = (OS_RSTRUC *) pRscSrc;
@@ -2851,9 +2851,9 @@ Routine Description:
 	Allocate a OS resource.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	pRsc			- the resource
-	RscLen			- resource length
+	pAd		- WLAN control block pointer
+	pRsc		- the resource
+	RscLen		- resource length
 
 Return Value:
 	TRUE or FALSE
@@ -2861,7 +2861,7 @@ Return Value:
 Note:
 ========================================================================
 */
-BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen)
+static BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen)
 {
 	OS_RSTRUC *pRsc = (OS_RSTRUC *) pRscSrc;
 
@@ -2886,8 +2886,8 @@ Routine Description:
 	Remove a OS resource.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	pRsc			- the resource
+	pAd		- WLAN control block pointer
+	pRsc		- the resource
 
 Return Value:
 	TRUE or FALSE
@@ -2895,17 +2895,14 @@ Return Value:
 Note:
 ========================================================================
 */
-BOOLEAN RTMP_OS_Remove_Rsc(
-	LIST_HEADER *pRscList,
-	VOID *pRscSrc)
+static BOOLEAN RTMP_OS_Remove_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc)
 {
 	LIST_RESOURCE_OBJ_ENTRY *pObj;
 	OS_RSTRUC *pRscHead, *pRsc, *pRscRev = (OS_RSTRUC *) pRscSrc;
 	pRscHead = NULL;
 
 	OS_SEM_LOCK(&UtilSemLock);
-	while(TRUE)
-	{
+	while (TRUE) {
 		pObj = (LIST_RESOURCE_OBJ_ENTRY *) removeHeadList(pRscList);
 		if (pRscHead == NULL)
 			pRscHead = pObj->pRscObj; /* backup first entry */
@@ -2931,7 +2928,7 @@ Routine Description:
 	Free all timers.
 
 Arguments:
-	pAd				- WLAN control block pointer
+	pAd		- WLAN control block pointer
 
 Return Value:
 	None
