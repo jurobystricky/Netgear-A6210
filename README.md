@@ -26,7 +26,8 @@ first. You can do this either via GUI or from the command line:
 
     $ sudo ifconfig wlan0 down
     
-or 
+or
+
     $ sudo ifconfig eth0 down
     
     
