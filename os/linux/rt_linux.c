@@ -104,11 +104,13 @@ ULONG OS_NumOfPktAlloc = 0, OS_NumOfPktFree = 0;
  * the lock will not be used in TX/RX
  * path so throughput should not be impacted
  */
-BOOLEAN FlgIsUtilInit = FALSE;
+static BOOLEAN FlgIsUtilInit = FALSE;
 OS_NDIS_SPIN_LOCK UtilSemLock;
 
+#ifdef OS_ABL_FUNC_SUPPORT
 static BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen);
 static BOOLEAN RTMP_OS_Remove_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc);
+#endif
 
 /*
 ========================================================================
