@@ -70,7 +70,7 @@ NDIS_SPIN_LOCK TimerSemLock;
 NDIS_STATUS RTMPAllocAdapterBlock(VOID *handle, VOID **ppAdapter)
 {
 	RTMP_ADAPTER *pAd = NULL;
-	NDIS_STATUS	 Status;
+	NDIS_STATUS Status;
 	INT index;
 	UCHAR *pBeaconBuf = NULL;
 
@@ -433,11 +433,6 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 	/* Read Tx AGC control bit*/
 	Antenna.word = pAd->EEPROMDefaultValue[EEPROM_NIC_CFG1_OFFSET];
 
-#ifdef MT76x2
-	if (IS_MT76x2(pAd))
-		mt76x2_antenna_sel_ctl(pAd);
-#endif /* MT76x2 */
-
 #ifdef RT8592
 	if (IS_RT8592(pAd)) {
 		DBGPRINT(RT_DEBUG_OFF, 
@@ -468,9 +463,14 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 #endif /* RTMP_MAC_USB */
 
 	// TODO: shiang, why we only check oxff00??
-	if (((Antenna.word & 0xFF00) == 0xFF00) || IS_MT76x2(pAd))
-/*	if (Antenna.word == 0xFFFF)*/
+	if (((Antenna.word & 0xFF00) == 0xFF00) || IS_MT76x2(pAd)) {
+		/* This will call "mt76x2_antenna_default_reset", 
+		 * where the Antenna.RfIcType is not initialized correctly.
+		 * The correct RfIcType value is set correctly later
+		 * on in this routine, before it is is used in code.
+		 */
 		RTMP_CHIP_ANTENNA_INFO_DEFAULT_RESET(pAd, &Antenna);
+	}
 
 	/* Choose the desired Tx&Rx stream.*/
 	if ((pAd->CommonCfg.TxStream == 0) || (pAd->CommonCfg.TxStream > Antenna.field.TxPath))
@@ -489,7 +489,6 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s(): AfterAdjust, RxPath = %d, TxPath = %d\n",
 			__FUNCTION__, Antenna.field.RxPath, Antenna.field.TxPath));
-
 
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
@@ -540,7 +539,6 @@ VOID NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 		pAd->RfIcType = RFIC_UNKNOWN;
 	}
 #endif
-
 
 #ifdef MT76x2
 	if (IS_MT7662(pAd))
@@ -1178,6 +1176,8 @@ static NDIS_STATUS NICInitializeAsic(RTMP_ADAPTER *pAd, BOOLEAN bHardReset)
 			DBGPRINT(RT_DEBUG_TRACE, ("Check if MAC_STATUS_CFG is busy(=%x)\n", mac_val));
 			RtmpusecDelay(1000);
 		} while (Index++ < 100);
+
+		WARN_ON(Index >= 100);
 	}
 #endif /* RTMP_MAC */
 
