@@ -2956,9 +2956,12 @@ static void mt76x2_show_pwr_info(RTMP_ADAPTER *ad)
 static void mt76x2_antenna_default_reset(struct _RTMP_ADAPTER *pAd,
 	EEPROM_ANTENNA_STRUC *pAntenna)
 {
-	DBGPRINT(RT_DEBUG_OFF, ("JB: %s: MORON alert\n", __FUNCTION__));
 	pAntenna->word = 0;
-	pAntenna->field.RfIcType = RFIC_7662; //Morons, how do you store "19" in four bits?
+	/* It is not possible to store the value RFIC_7662 ("19") in four bits,
+	 * so it is not possible to initialize the fRfIcType correctly here.
+	 * However, this value is set correctly later on (in NICReadEEPROMParameters)
+	 */
+	//pAntenna->field.RfIcType = RFIC_7662; 
 	pAntenna->field.TxPath = 2;
 	pAntenna->field.RxPath = 2;
 }
@@ -4178,12 +4181,6 @@ void mt7612_set_ed_cca(RTMP_ADAPTER *ad, BOOLEAN enable)
 	DBGPRINT(RT_DEBUG_TRACE, ("%s::0x%x: 0x%08X\n", __FUNCTION__, TXOP_CTRL_CFG, mac_val));
 }
 #endif /* ED_MONITOR */
-
-VOID mt76x2_antenna_sel_ctl(
-	IN RTMP_ADAPTER *ad)
-{
-/* Antenna selection control in 76x2 is controlled by fw/rom_patch */
-}
 
 static const RTMP_CHIP_CAP MT76x2_ChipCap = {
 	.max_nss = 2,

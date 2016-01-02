@@ -12,7 +12,6 @@ struct _RTMP_ADAPTER;
 void mt76x2_init(struct _RTMP_ADAPTER *ad);
 void mt76x2_adjust_per_rate_pwr_delta(struct _RTMP_ADAPTER *ad, u8 channel, char delta_pwr);
 void mt76x2_get_tx_pwr_per_rate(struct _RTMP_ADAPTER *ad);
-void mt76x2_antenna_sel_ctl(struct _RTMP_ADAPTER *ad);
 int mt76x2_read_chl_pwr(struct _RTMP_ADAPTER *ad);
 void mt76x2_pwrOn(struct _RTMP_ADAPTER *ad);
 void mt76x2_calibration(struct _RTMP_ADAPTER *ad, u8 channel);
@@ -57,7 +56,7 @@ struct mt76x2_frequency_item {
 	u8 channel;
 	u32 fcal_target;
 	u32 sdm_integer;
-	u32 sdm_fraction;	
+	u32 sdm_fraction;
 };
 
 typedef struct _MT76x2_RATE_PWR_ITEM {
