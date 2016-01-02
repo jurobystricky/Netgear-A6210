@@ -54,93 +54,7 @@
 #ifdef RT_CFG80211_SUPPORT
 
 /* 36 ~ 64, 100 ~ 136, 140 ~ 161 */
-#define CFG80211_NUM_OF_CHAN_5GHZ	(sizeof(Cfg80211_Chan)-CFG80211_NUM_OF_CHAN_2GHZ)
-
-#ifdef OS_ABL_FUNC_SUPPORT
-/*
-	Array of bitrates the hardware can operate with
-	in this band. Must be sorted to give a valid "supported
-	rates" IE, i.e. CCK rates first, then OFDM.
-
-	For HT, assign MCS in another structure, ieee80211_sta_ht_cap.
-*/
-#if 0 //JB Removed
-const struct ieee80211_rate Cfg80211_SupRate[12] = {
-	{
-		.flags = IEEE80211_RATE_SHORT_PREAMBLE,
-		.bitrate = 10,    /* bitrate in units of 100 Kbps */
-		.hw_value = 0,
-		.hw_value_short = 0,
-	},
-	{
-		.flags = IEEE80211_RATE_SHORT_PREAMBLE,
-		.bitrate = 20,
-		.hw_value = 1,
-		.hw_value_short = 1,
-	},
-	{
-		.flags = IEEE80211_RATE_SHORT_PREAMBLE,
-		.bitrate = 55,
-		.hw_value = 2,
-		.hw_value_short = 2,
-	},
-	{
-		.flags = IEEE80211_RATE_SHORT_PREAMBLE,
-		.bitrate = 110,
-		.hw_value = 3,
-		.hw_value_short = 3,
-	},
-	{
-		.flags = 0,
-		.bitrate = 60,
-		.hw_value = 4,
-		.hw_value_short = 4,
-	},
-	{
-		.flags = 0,
-		.bitrate = 90,
-		.hw_value = 5,
-		.hw_value_short = 5,
-	},
-	{
-		.flags = 0,
-		.bitrate = 120,
-		.hw_value = 6,
-		.hw_value_short = 6,
-	},
-	{
-		.flags = 0,
-		.bitrate = 180,
-		.hw_value = 7,
-		.hw_value_short = 7,
-	},
-	{
-		.flags = 0,
-		.bitrate = 240,
-		.hw_value = 8,
-		.hw_value_short = 8,
-	},
-	{
-		.flags = 0,
-		.bitrate = 360,
-		.hw_value = 9,
-		.hw_value_short = 9,
-	},
-	{
-		.flags = 0,
-		.bitrate = 480,
-		.hw_value = 10,
-		.hw_value_short = 10,
-	},
-	{
-		.flags = 0,
-		.bitrate = 540,
-		.hw_value = 11,
-		.hw_value_short = 11,
-	},
-};
-#endif //0
-#endif /* OS_ABL_FUNC_SUPPORT */
+#define CFG80211_NUM_OF_CHAN_5GHZ (sizeof(Cfg80211_Chan)-CFG80211_NUM_OF_CHAN_2GHZ)
 
 /* all available channels */
 static const UCHAR Cfg80211_Chan[] = {
@@ -171,19 +85,6 @@ static const UINT32 CipherSuites[] = {
 #endif /* LINUX_VERSION_CODE */
 #endif /* DOT11W_PMF_SUPPORT */
 };
-
-/*
-	The driver's regulatory notification callback.
-*/
-#if 0 //JB removed
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30))
-static INT32 CFG80211_RegNotifier(struct wiphy *pWiphy,
-	struct regulatory_request *pRequest);
-#else
-static INT32 CFG80211_RegNotifier(struct wiphy *pWiphy,
-	enum reg_set_by Request);
-#endif /* LINUX_VERSION_CODE */
-#endif //0
 
 /* get RALINK pAd control block in 80211 Ops */
 #define MAC80211_PAD_GET(__pAd, __pWiphy)						\
@@ -558,7 +459,7 @@ static int CFG80211_OpsScan(struct wiphy *pWiphy, struct net_device *pNdev,
 	}
 
 	if (RTMP_DRIVER_80211_SCAN(pAd, pNdev->ieee80211_ptr->iftype) != NDIS_STATUS_SUCCESS) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("\n\n\n\n\n80211> BUSY - SCANING \n\n\n\n\n"));
+		CFG80211DBG(RT_DEBUG_ERROR, ("80211> BUSY - SCANING\n"));
 		CFG80211OS_ScanEnd(pCfg80211_CB, TRUE);
 		return 0;
 	}
@@ -671,7 +572,7 @@ static int CFG80211_OpsIbssJoin(struct wiphy *pWiphy, struct net_device *pNdev,
 	/* init */
 	memset(&IbssInfo, 0, sizeof(IbssInfo));
 	IbssInfo.BeaconInterval = pParams->beacon_interval;
-	IbssInfo.pSsid = pParams->ssid;
+	IbssInfo.pSsid = (UCHAR*)pParams->ssid;
 
 	/* ibss join */
 	RTMP_DRIVER_80211_IBSS_JOIN(pAd, &IbssInfo);
@@ -762,12 +663,12 @@ Routine Description:
 	Store the current TX power into the dbm variable.
 
 Arguments:
-	pWiphy			- Wireless hardware description
-	pdBm			- dBm
+	pWiphy		- Wireless hardware description
+	pdBm		- dBm
 
 Return Value:
-	0				- success
-	-x				- fail
+	0		- success
+	-x		- fail
 
 Note:
 ========================================================================
@@ -1051,7 +952,6 @@ static int CFG80211_OpsKeyAdd(struct wiphy *pWiphy, struct net_device *pNdev,
 #endif
 		KeyInfo.KeyLen = pParams->key_len;
 
-
 	if ((pParams->cipher == WLAN_CIPHER_SUITE_WEP40)) {
 		KeyInfo.KeyType = RT_CMD_80211_KEY_WEP40;
 	} else if ((pParams->cipher == WLAN_CIPHER_SUITE_WEP104)) {
@@ -1068,10 +968,10 @@ static int CFG80211_OpsKeyAdd(struct wiphy *pWiphy, struct net_device *pNdev,
 //PMF IGTK
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 	else if (pParams->cipher == WLAN_CIPHER_SUITE_AES_CMAC) {
-			KeyInfo.KeyType = RT_CMD_80211_KEY_AES_CMAC;
-			KeyInfo.KeyId = KeyIdx;
-			KeyInfo.bPairwise = FALSE;
-			KeyInfo.KeyLen = pParams->key_len;
+		KeyInfo.KeyType = RT_CMD_80211_KEY_AES_CMAC;
+		KeyInfo.KeyId = KeyIdx;
+		KeyInfo.bPairwise = FALSE;
+		KeyInfo.KeyLen = pParams->key_len;
 	}
 #endif /* LINUX_VERSION_CODE */
 #endif /* DOT11W_PMF_SUPPORT */
@@ -1161,7 +1061,6 @@ static int CFG80211_OpsKeyGet(struct wiphy *pWiphy, struct net_device *pNdev,
 	void (*pCallback)(void *cookie, struct key_params *))
 #endif /* LINUX_VERSION_CODE */
 {
-
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> %s ==>\n", __FUNCTION__));
 	return -ENOTSUPP;
 }
@@ -1461,7 +1360,7 @@ static int CFG80211_OpsConnect(struct wiphy *pWiphy, struct net_device *pNdev,
 	ConnInfo.SsidLen = pSme->ssid_len;
 	ConnInfo.KeyIdx = pSme->key_idx;
 	/* YF@20120328: Reset to default */
-	ConnInfo.bWpsConnection= FALSE;
+	ConnInfo.bWpsConnection = FALSE;
 
 	/* YF@20120328: Use SIOCSIWGENIE to make out the WPA/WPS IEs in AssocReq. */
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
@@ -1474,7 +1373,7 @@ static int CFG80211_OpsConnect(struct wiphy *pWiphy, struct net_device *pNdev,
 #endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
 	{
 		if (pSme->ie_len > 0)
-			RTMP_DRIVER_80211_GEN_IE_SET(pAd, pSme->ie, pSme->ie_len);
+			RTMP_DRIVER_80211_GEN_IE_SET(pAd, (UCHAR*)pSme->ie, pSme->ie_len);
 		else
 			RTMP_DRIVER_80211_GEN_IE_SET(pAd, NULL, 0);
 	}
@@ -1674,8 +1573,13 @@ static int CFG80211_OpsPmksaSet(struct wiphy *pWiphy, struct net_device *pNdev,
 		return -ENOENT;
 
 	pIoctlPmaSa->Cmd = RT_CMD_STA_IOCTL_PMA_SA_ADD;
-	pIoctlPmaSa->pBssid = (UCHAR *)pPmksa->bssid;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+	pIoctlPmaSa->pBssid = (UCHAR*)pPmksa->bssid;
+	pIoctlPmaSa->pPmkid = (UCHAR*)pPmksa->pmkid;
+#else
+	pIoctlPmaSa->pBssid = pPmksa->bssid;
 	pIoctlPmaSa->pPmkid = pPmksa->pmkid;
+#endif
 
 	RTMP_DRIVER_80211_PMKID_CTRL(pAd, pIoctlPmaSa);
 #endif /* CONFIG_STA_SUPPORT */
@@ -1714,8 +1618,13 @@ static int CFG80211_OpsPmksaDel(struct wiphy *pWiphy, struct net_device *pNdev,
 		return -ENOENT;
 
 	pIoctlPmaSa->Cmd = RT_CMD_STA_IOCTL_PMA_SA_REMOVE;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 	pIoctlPmaSa->pBssid = (UCHAR *)pPmksa->bssid;
+	pIoctlPmaSa->pPmkid = (UCHAR *)pPmksa->pmkid;
+#else
+	pIoctlPmaSa->pBssid = pPmksa->bssid;
 	pIoctlPmaSa->pPmkid = pPmksa->pmkid;
+#endif
 
 	RTMP_DRIVER_80211_PMKID_CTRL(pAd, pIoctlPmaSa);
 #endif /* CONFIG_STA_SUPPORT */
@@ -1884,7 +1793,7 @@ static int CFG80211_OpsMgmtTx(struct wiphy *pWiphy, struct net_device *pDev,
 	UINT32 ChanId;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
 	size_t Len = params->len;
-	const u8 *pBuf = params->buf;
+	u8 *pBuf = (u8*) params->buf; //prevent "discard const qualifier" warning
 	bool no_cck = params->no_cck;
 	struct ieee80211_channel *pChan = params->chan;
 #endif
@@ -1908,7 +1817,6 @@ static int CFG80211_OpsMgmtTx(struct wiphy *pWiphy, struct net_device *pDev,
 		; //pAd->isCfgDeviceInP2p = TRUE;
 #else
 #endif
-
 	*pCookie = 5678;
 	RTMP_DRIVER_80211_CHANNEL_LOCK(pAd, ChanId);
 	RTMP_DRIVER_80211_MGMT_FRAME_SEND(pAd, pBuf, Len);
@@ -2694,9 +2602,9 @@ static struct wireless_dev *CFG80211_WdevAlloc(CFG80211_CB *pCfg80211_CB,
 	 * We're trying to have the following memory layout:
 	 *
 	 * +------------------------+
-	 * | struct wiphy			|
+	 * | struct wiphy           |
 	 * +------------------------+
-	 * | pAd pointer			|
+	 * | pAd pointer            |
 	 * +------------------------+
 	 */
 
