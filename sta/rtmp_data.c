@@ -3312,12 +3312,15 @@ VOID STA_Fragment_Frame_Tx(
 
 
 #ifdef VHT_TXBF_SUPPORT
-VOID STA_NDPA_Frame_Tx(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
+static VOID STA_NDPA_Frame_Tx(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
 {
 	UCHAR *buf;
 	VHT_NDPA_FRAME *vht_ndpa;
 	struct wifi_dev *wdev;
-	UINT frm_len, sta_cnt;
+	UINT frm_len;
+#ifdef DBG
+	UINT sta_cnt;
+#endif
 	SNDING_STA_INFO *sta_info;
 	MAC_TABLE_ENTRY *pMacEntry;
 	
