@@ -6358,10 +6358,10 @@ VOID PeerPairMsg3Action(
 	IN MAC_TABLE_ENTRY  *pEntry,
 	IN MLME_QUEUE_ELEM *Elem);
 
-VOID PeerPairMsg4Action(
-	IN RTMP_ADAPTER *pAd,
-	IN MAC_TABLE_ENTRY  *pEntry,
-	IN MLME_QUEUE_ELEM *Elem);
+//VOID PeerPairMsg4Action(
+//	IN RTMP_ADAPTER *pAd,
+//	IN MAC_TABLE_ENTRY  *pEntry,
+//	IN MLME_QUEUE_ELEM *Elem);
 
 VOID PeerGroupMsg1Action(
 	IN  RTMP_ADAPTER *pAd,
@@ -7286,8 +7286,8 @@ const CHAR* ether_sprintf(const UINT8 *mac);
 VOID RTMP_IO_WRITE32(RTMP_ADAPTER *pAd, UINT32 Offset, UINT32 Value);
 #endif /* VENDOR_FEATURE3_SUPPORT */
 
-INT AsicGetMacVersion(RTMP_ADAPTER *pAd);
-INT WaitForAsicReady(RTMP_ADAPTER *pAd);
+//BOOLEAN AsicGetMacVersion(RTMP_ADAPTER *pAd);
+BOOLEAN WaitForAsicReady(RTMP_ADAPTER *pAd);
 BOOLEAN CHAN_PropertyCheck(RTMP_ADAPTER *pAd, UINT32 ChanNum, UCHAR Property);
 
 #ifdef CONFIG_STA_SUPPORT
@@ -7442,9 +7442,11 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
 	IN UCHAR OpMode,
 	IN BOOLEAN CleanAll);
 
+#ifdef DBG
 VOID dump_txwi(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI);
 VOID dump_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI);
 VOID dump_rxinfo(RTMP_ADAPTER *pAd, RXINFO_STRUC *pRxInfo);
+#endif
 
 #ifdef WFA_VHT_PF
 /* for SIGMA */
