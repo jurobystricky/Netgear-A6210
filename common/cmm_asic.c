@@ -2311,10 +2311,12 @@ VOID AsicAddPairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR WCID, PCIPHER_KEY pCipherK
 	INT i;
 	ULONG offset;
 	UINT32 pairwise_key_base = 0, pairwise_key_len = 0;
-	UCHAR *pKey = pCipherKey->Key;
 	UCHAR *pTxMic = pCipherKey->TxMic;
 	UCHAR *pRxMic = pCipherKey->RxMic;
+#ifdef DBG
+	UCHAR *pKey = pCipherKey->Key;
 	UCHAR CipherAlg = pCipherKey->CipherAlg;
+#endif
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT) {
