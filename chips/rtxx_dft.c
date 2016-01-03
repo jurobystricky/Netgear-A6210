@@ -27,6 +27,7 @@
 */
 #include "rt_config.h"
 
+#error FIX ME IF USED
 
 
 FREQUENCY_ITEM RtmpFreqItems3020[] =
