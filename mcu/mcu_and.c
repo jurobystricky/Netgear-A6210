@@ -1118,11 +1118,6 @@ BOOLEAN is_inband_cmd_processing(RTMP_ADAPTER *ad)
 	return FALSE;
 }
 
-static UCHAR get_cmd_rsp_num(RTMP_ADAPTER *ad)
-{
-	return 0;
-}
-
 static inline void andes_inc_error_count(struct MCU_CTRL *ctl, enum cmd_msg_error_type type)
 {
 	if (OS_TEST_BIT(MCU_INIT, &ctl->flags)) {
@@ -1176,7 +1171,6 @@ get_seq:
 	DlListForEach(msg, &ctl->ackq, struct cmd_msg, list) {
 		if (msg->seq == ctl->cmd_seq) {
 			DBGPRINT(RT_DEBUG_ERROR, ("command(seq: %d) is still running\n", ctl->cmd_seq));
-			DBGPRINT(RT_DEBUG_ERROR, ("command response nums = %d\n", get_cmd_rsp_num(ad)));
 			goto get_seq;
 		}
 	}
