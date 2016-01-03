@@ -102,6 +102,7 @@ static VOID dump_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo)
 }
 #endif //0
 
+#ifdef DBG
 VOID dump_txwi(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI)
 {
 	hex_dump("TxWI Raw Data: ", (UCHAR *)pTxWI, pAd->chipCap.TXWISize);
@@ -134,7 +135,7 @@ VOID dump_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI)
 		dump_rtmp_rxwi(pAd, pRxWI);
 #endif
 }
-
+#endif /* DBG */
 
 #if 0 //jb removed
 #ifdef DBG_DIAGNOSE
