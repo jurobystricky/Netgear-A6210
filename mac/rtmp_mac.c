@@ -236,8 +236,10 @@ VOID RTMPWriteTxWI(
 	NdisMoveMemory(pOutTxWI, &TxWI, TXWISize);
 //+++Add by shiang for debug
 if (0){
+#ifdef DBG
 	hex_dump("TxWI", (UCHAR *)pOutTxWI, TXWISize);
 	dump_txwi(pAd, pOutTxWI);
+#endif
 }
 //---Add by shiang for debug
 }
