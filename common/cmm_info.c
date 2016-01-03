@@ -5264,7 +5264,7 @@ BOOLEAN show_devinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg)
 	return TRUE;
 }
 
-
+#ifdef DBG
 static CHAR *wdev_type_str[]={"AP", "STA", "ADHOC", "WDS", "MESH", "Unknown"};
 
 static PSTRING wdev_type2str(int type)
@@ -5276,7 +5276,7 @@ static PSTRING wdev_type2str(int type)
 		return wdev_type_str[1];
 	case WDEV_TYPE_ADHOC:
 		return wdev_type_str[2];
-	case WDEV_TYPE_WDS	:
+	case WDEV_TYPE_WDS:
 		return wdev_type_str[3];
 	case WDEV_TYPE_MESH:
 		return wdev_type_str[4];
@@ -5284,7 +5284,7 @@ static PSTRING wdev_type2str(int type)
 		return wdev_type_str[5];
 	}
 }
-
+#endif /* DBG */
 
 BOOLEAN show_sysinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg)
 {
