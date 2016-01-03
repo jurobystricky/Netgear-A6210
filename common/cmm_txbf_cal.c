@@ -221,7 +221,7 @@ typedef	struct {
 #define R65_LNA_MID		0x8
 #define R65_LNA_HIGH	0xC
 
-
+#ifdef DBG
 /*
 	radMod2pi - converts angle in radians to the range [-pi pi)
 */
@@ -239,11 +239,12 @@ static LONG radMod2pi(LONG a)
 /*
 	radToDeg180 - converts angle in radians to the deg range [-180 180)
 */
+
 static int radToDeg180(LONG rad)
 {
 	return (int)(radMod2pi(rad)*180/FIXED_M_PI);
 }
-
+#endif
 
 /*
 	avgPhase - computes the average phase.
@@ -1654,7 +1655,9 @@ BOOLEAN ITxBFLNACalibrationStartUp(
 }
 
 static INT avgPhase32[3];
+#ifdef DBG
 static UCHAR MidVGA[2];
+#endif
 
 static BOOLEAN mt76x2_ITxBFLNACalibration(RTMP_ADAPTER *pAd, INT calFunction, INT calMethod, BOOLEAN gBand)
 {
