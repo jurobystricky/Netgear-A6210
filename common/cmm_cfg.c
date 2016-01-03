@@ -180,8 +180,9 @@ static UCHAR CFG_WMODE_MAP[]={
 	PHY_MODE_MAX, WMODE_INVALID /* default phy mode if not match */
 };
 
-
+#ifdef DBG
 static PSTRING BAND_STR[] = {"Invalid", "2.4G", "5G", "2.4G/5G"};
+#endif
 static PSTRING WMODE_STR[]= {"", "A", "B", "G", "gN", "aN", "AC"};
 
 UCHAR *wmode_2_str(UCHAR wmode)
