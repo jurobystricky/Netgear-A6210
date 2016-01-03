@@ -135,11 +135,11 @@ INT RTMPCheckRxError(RTMP_ADAPTER *pAd, HEADER_802_11 *pHeader, RX_BLK *pRxBlk,
 				__FUNCTION__, pRxInfo->CipherErr, pRxBlk->MPDUtotalByteCnt,
 				pRxInfo->Mcast | pRxInfo->Bcast, pRxInfo->MyBss, pRxBlk->wcid,
 		pRxBlk->key_idx));
-
+#ifdef DBG
 		dump_rxinfo(pAd, pRxInfo);
 		dump_rxwi(pAd, pRxBlk->pRxWI);
 		hex_dump("ErrorPkt",  (UCHAR *)pHeader, pRxBlk->MPDUtotalByteCnt);
-
+#endif 
 		if (pHeader == NULL)
 			return NDIS_STATUS_SUCCESS;
 
