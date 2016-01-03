@@ -158,7 +158,9 @@ struct RF_INDEX_OFFSET mt76x2_rf_index_offset[] = {
 
 static VOID mt76x2_bbp_adjust(RTMP_ADAPTER *pAd)
 {
+#ifdef DBG
 	static char *ext_str[]={"extNone", "extAbove", "", "extBelow"};
+#endif
 	UCHAR rf_bw, ext_ch;
 
 #ifdef DOT11_N_SUPPORT
@@ -2759,7 +2761,9 @@ void mt76x2_get_tx_pwr_per_rate(RTMP_ADAPTER *ad)
 
 static void mt76x2_show_pwr_info(RTMP_ADAPTER *ad)
 {
+#ifdef DBG
 	RTMP_CHIP_CAP *cap = &ad->chipCap;
+#endif
 	UINT32 value;
 
 	DBGPRINT(RT_DEBUG_OFF, ("\n===================================\n"));
