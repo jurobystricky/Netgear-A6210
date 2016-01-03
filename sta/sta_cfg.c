@@ -48,9 +48,10 @@ static INT RTMPQueryInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 //static VOID RTMPIoctlShow(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 //	UINT32 subcmd, VOID *pData, ULONG Data);
 
-
+#ifdef DBG
 #ifdef RTMP_RF_RW_SUPPORT 
 static VOID RTMPIoctlRF(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq);
+#endif
 #endif
 
 #ifdef DOT11_N_SUPPORT
@@ -7230,7 +7231,7 @@ INT RTMP_STA_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *pRequest,
 	case CMD_RTPRIV_IOCTL_SITESURVEY_GET:
 		RTMPIoctlGetSiteSurvey(pAd, pRequest);
 		break;
-
+#ifdef DBG
 	case CMD_RTPRIV_IOCTL_MAC:
 		RTMPIoctlMAC(pAd, pRequest);
 		break;
@@ -7242,8 +7243,9 @@ INT RTMP_STA_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *pRequest,
 	case CMD_RTPRIV_IOCTL_RF:
 #ifdef RTMP_RF_RW_SUPPORT
 		RTMPIoctlRF(pAd, pRequest);
-#endif /* RTMP_RF_RW_SUPPORT */
+#endif
 		break;
+#endif /* DBG */
 
 	case CMD_RTPRIV_IOCTL_BBP:
 		RTMPIoctlBbp(pAd, pRequest, pData, Data);
