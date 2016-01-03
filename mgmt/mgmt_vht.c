@@ -70,12 +70,9 @@ VOID rtmp_set_vht(RTMP_ADAPTER *pAd, RT_PHY_INFO *phy_info)
 }
 
 
-INT SetCommonVHT(RTMP_ADAPTER *pAd)
+BOOLEAN SetCommonVHT(RTMP_ADAPTER *pAd)
 {
-	UCHAR cent_ch = 0;
-
-	if (!WMODE_CAP_AC(pAd->CommonCfg.PhyMode))
-	{
+	if (!WMODE_CAP_AC(pAd->CommonCfg.PhyMode)) {
 		/* Clear previous VHT information */
 		return FALSE;
 	}
@@ -84,8 +81,8 @@ INT SetCommonVHT(RTMP_ADAPTER *pAd)
 	
 	pAd->CommonCfg.vht_cent_ch = vht_cent_ch_freq(pAd, pAd->CommonCfg.Channel);
 		
-	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Config VHT parameters!cent_ch=%d!vht_cent_ch = %d, vht_cent_ch2 = %d\n",
-				__FUNCTION__, cent_ch, pAd->CommonCfg.vht_cent_ch, pAd->CommonCfg.vht_cent_ch2));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Config VHT parameters!cent_ch=0!vht_cent_ch = %d, vht_cent_ch2 = %d\n",
+				__FUNCTION__, pAd->CommonCfg.vht_cent_ch, pAd->CommonCfg.vht_cent_ch2));
 	return TRUE;
 }
 
