@@ -1477,22 +1477,10 @@ do {	\
 
 int RtmpChipOpsHook(VOID *pCB);
 VOID RtmpChipBcnInit(struct _RTMP_ADAPTER *pAd);
-VOID RtmpChipBcnSpecInit(struct _RTMP_ADAPTER *pAd);
+
 #ifdef RLT_MAC
 VOID rlt_bcn_buf_init(struct _RTMP_ADAPTER *pAd);
 #endif /* RLT_MAC */
-
-VOID RtmpChipWriteHighMemory(
-	IN struct _RTMP_ADAPTER *pAd,
-	IN USHORT Offset,
-	IN UINT32 Value,
-	IN UINT8 Unit);
-
-VOID RtmpChipWriteMemory(
-	IN struct _RTMP_ADAPTER *pAd,
-	IN USHORT Offset,
-	IN UINT32 Value,
-	IN UINT8 Unit);
 
 VOID RTMPReadChannelPwr(struct _RTMP_ADAPTER *pAd);
 VOID RTMPReadTxPwrPerRate(struct _RTMP_ADAPTER *pAd);
