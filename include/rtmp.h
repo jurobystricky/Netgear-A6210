@@ -42,26 +42,15 @@
 #endif /* CONFIG_AP_SUPPORT */
 
 #include "wsc.h"
-
-
-
 #include "rtmp_chip.h"
-
-
 
 #ifdef DOT11W_PMF_SUPPORT
 #include "pmf_cmm.h"
 #endif /* DOT11W_PMF_SUPPORT */
 
-
-
-
-
-
 #ifdef RT_CFG80211_SUPPORT
 #include "cfg80211_cmm.h"
-#endif /* RT_CFG80211_SUPPORT */
-
+#endif
 
 #include "drs_extr.h"
 
@@ -6342,37 +6331,6 @@ VOID WPAStart4WayHS(
 VOID WPAStart2WayGroupHS(
 	IN RTMP_ADAPTER *pAd,
 	IN MAC_TABLE_ENTRY *pEntry);
-
-VOID PeerPairMsg1Action(
-	IN RTMP_ADAPTER *pAd,
-	IN MAC_TABLE_ENTRY  *pEntry,
-	IN MLME_QUEUE_ELEM *Elem);
-
-VOID PeerPairMsg2Action(
-	IN RTMP_ADAPTER *pAd,
-	IN MAC_TABLE_ENTRY  *pEntry,
-	IN MLME_QUEUE_ELEM *Elem);
-
-VOID PeerPairMsg3Action(
-	IN RTMP_ADAPTER *pAd,
-	IN MAC_TABLE_ENTRY  *pEntry,
-	IN MLME_QUEUE_ELEM *Elem);
-
-//VOID PeerPairMsg4Action(
-//	IN RTMP_ADAPTER *pAd,
-//	IN MAC_TABLE_ENTRY  *pEntry,
-//	IN MLME_QUEUE_ELEM *Elem);
-
-VOID PeerGroupMsg1Action(
-	IN  RTMP_ADAPTER *pAd,
-	IN  PMAC_TABLE_ENTRY pEntry,
-	IN  MLME_QUEUE_ELEM  *Elem);
-
-VOID PeerGroupMsg2Action(
-	IN  RTMP_ADAPTER *pAd,
-	IN  PMAC_TABLE_ENTRY pEntry,
-	IN  VOID *Msg,
-	IN  UINT MsgLen);
 
 VOID CMTimerExec(
 	IN PVOID SystemSpecific1,
