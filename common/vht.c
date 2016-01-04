@@ -21,12 +21,11 @@
 
 	Revision History:
 	Who 		When			What
-	--------	----------		----------------------------------------------
+	--------	----------		--------------------------------
 */
 
 
 #include "rt_config.h"
-
 
 struct vht_ch_layout{
 	UCHAR ch_low_bnd;
@@ -45,14 +44,13 @@ static struct vht_ch_layout vht_ch_80M[]={
 };
 
 
-
-
 VOID dump_vht_cap(RTMP_ADAPTER *pAd, VHT_CAP_IE *vht_ie)
 {
+#ifdef DBG
 	VHT_CAP_INFO *vht_cap = &vht_ie->vht_cap;
 	VHT_MCS_SET *vht_mcs = &vht_ie->mcs_set;
-
-	DBGPRINT(RT_DEBUG_OFF, ("Dump VHT_CAP IE\n"));	
+#endif
+	DBGPRINT(RT_DEBUG_OFF, ("Dump VHT_CAP IE\n"));
 	hex_dump("VHT CAP IE Raw Data", (UCHAR *)vht_ie, sizeof(VHT_CAP_IE));
 
 	DBGPRINT(RT_DEBUG_OFF, ("VHT Capabilities Info Field\n"));
@@ -66,7 +64,7 @@ VOID dump_vht_cap(RTMP_ADAPTER *pAd, VHT_CAP_IE *vht_ie)
 	DBGPRINT(RT_DEBUG_OFF, ("\tSU BeamformerCap=%d\n", vht_cap->bfer_cap_su));
 	DBGPRINT(RT_DEBUG_OFF, ("\tSU BeamformeeCap=%d\n", vht_cap->bfee_cap_su));
 	DBGPRINT(RT_DEBUG_OFF, ("\tCompressedSteeringNumOfBeamformerAnt=%d\n", vht_cap->cmp_st_num_bfer));
-	DBGPRINT(RT_DEBUG_OFF, ("\tNumber of Sounding Dimensions=%d\n", vht_cap->num_snd_dimension));	
+	DBGPRINT(RT_DEBUG_OFF, ("\tNumber of Sounding Dimensions=%d\n", vht_cap->num_snd_dimension));
 	DBGPRINT(RT_DEBUG_OFF, ("\tMU BeamformerCap=%d\n", vht_cap->bfer_cap_mu));
 	DBGPRINT(RT_DEBUG_OFF, ("\tMU BeamformeeCap=%d\n", vht_cap->bfee_cap_mu));
 	DBGPRINT(RT_DEBUG_OFF, ("\tVHT TXOP PS=%d\n", vht_cap->vht_txop_ps));
@@ -83,13 +81,14 @@ VOID dump_vht_cap(RTMP_ADAPTER *pAd, VHT_CAP_IE *vht_ie)
 	DBGPRINT(RT_DEBUG_OFF, ("\tTxMCS Map_2SS=%d\n", vht_mcs->tx_mcs_map.mcs_ss2));
 }
 
-
-VOID dump_vht_op(RTMP_ADAPTER *pAd, VHT_OP_IE *vht_ie)
+#if 0 //JB removed
+static VOID dump_vht_op(RTMP_ADAPTER *pAd, VHT_OP_IE *vht_ie)
 {
+#ifdef DBG
 	VHT_OP_INFO *vht_op = &vht_ie->vht_op_info;
 	VHT_MCS_MAP *vht_mcs = &vht_ie->basic_mcs_set;
-	
-	DBGPRINT(RT_DEBUG_OFF, ("Dump VHT_OP IE\n"));	
+#endif
+	DBGPRINT(RT_DEBUG_OFF, ("Dump VHT_OP IE\n"));
 	hex_dump("VHT OP IE Raw Data", (UCHAR *)vht_ie, sizeof(VHT_OP_IE));
 
 	DBGPRINT(RT_DEBUG_OFF, ("VHT Operation Info Field\n"));
@@ -101,7 +100,7 @@ VOID dump_vht_op(RTMP_ADAPTER *pAd, VHT_OP_IE *vht_ie)
 	DBGPRINT(RT_DEBUG_OFF, ("\tRxMCS Map_1SS=%d\n", vht_mcs->mcs_ss1));
 	DBGPRINT(RT_DEBUG_OFF, ("\tRxMCS Map_2SS=%d\n", vht_mcs->mcs_ss2));
 }
-
+#endif //0
 
 #ifdef VHT_TXBF_SUPPORT
 VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
@@ -135,7 +134,7 @@ VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
 		sta_info++;
 		if (frm_len >= (MGMT_DMA_BUFFER_SIZE - sizeof(SNDING_STA_INFO))) {
 			DBGPRINT(RT_DEBUG_ERROR, ("%s(): len(%d) too large!cnt=%d\n",
-						__FUNCTION__, frm_len, sta_cnt));
+					__FUNCTION__, frm_len, sta_cnt));
 			break;
 		}
 	}
@@ -144,7 +143,7 @@ VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
 	else
 		entry->snd_dialog_token++;
 
-	vht_ndpa->duration = pAd->CommonCfg.Dsifs + 
+	vht_ndpa->duration = pAd->CommonCfg.Dsifs +
 						RTMPCalcDuration(pAd, pAd->CommonCfg.MlmeRate, frm_len);
 
 	//DBGPRINT(RT_DEBUG_OFF, ("Send VHT NDPA Frame to STA(%02x:%02x:%02x:%02x:%02x:%02x)\n",
@@ -152,13 +151,13 @@ VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
 	//hex_dump("VHT NDPA Frame", buf, frm_len);
 	MiniportMMRequest(pAd, 0, buf, frm_len);
 	MlmeFreeMemory(pAd, buf);
-		
+
 #ifdef SOFT_SOUNDING
 	if (1) {
 		HEADER_802_11 *pNullFr;
 		UCHAR *qos_p;
 		UCHAR NullFrame[48];
-		
+
 		NdisZeroMemory(NullFrame, 48);
 		pNullFr = (PHEADER_802_11)&NullFrame[0];
 		frm_len = sizeof(HEADER_802_11);
@@ -170,18 +169,19 @@ VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
 		COPY_MAC_ADDR(pNullFr->Addr1, entry->Addr);
 		COPY_MAC_ADDR(pNullFr->Addr2, wdev->if_addr);
 		COPY_MAC_ADDR(pNullFr->Addr3, wdev->bssid);
-		
+
 		qos_p = ((UCHAR *)pNullFr) + frm_len;
 		qos_p[0] = 0;
 		qos_p[1] = 0;
 		frm_len += 2;
 
 		entry->snd_reqired = TRUE;
-		DBGPRINT(RT_DEBUG_OFF, ("Send sounding QoSNULL Frame to STA(%02x:%02x:%02x:%02x:%02x:%02x)\n",
-					PRINT_MAC(entry->Addr)));
+		DBGPRINT(RT_DEBUG_OFF, 
+				("Send sounding QoSNULL Frame to STA(%02x:%02x:%02x:%02x:%02x:%02x)\n",
+				PRINT_MAC(entry->Addr)));
 
 		hex_dump("VHT NDP Frame(QoSNull)", NullFrame, frm_len);
-		
+
 		HAL_KickOutNullFrameTx(pAd, 0, NullFrame, frm_len);
 	}
 #endif /* SOFT_SOUNDING */
@@ -202,10 +202,8 @@ UCHAR vht_prim_ch_idx(UCHAR vht_cent_ch, UCHAR prim_ch)
 	if (vht_cent_ch == prim_ch)
 		goto done;
 
-	while (vht_ch_80M[idx].ch_up_bnd != 0)
-	{
-		if (vht_cent_ch == vht_ch_80M[idx].cent_freq_idx)
-		{
+	while (vht_ch_80M[idx].ch_up_bnd != 0) {
+		if (vht_cent_ch == vht_ch_80M[idx].cent_freq_idx) {
 			if (prim_ch == vht_ch_80M[idx].ch_up_bnd)
 				bbp_idx = 3;
 			else if (prim_ch == vht_ch_80M[idx].ch_low_bnd)
@@ -219,8 +217,9 @@ UCHAR vht_prim_ch_idx(UCHAR vht_cent_ch, UCHAR prim_ch)
 	}
 
 done:
-	DBGPRINT(RT_DEBUG_INFO, ("%s():(VhtCentCh=%d, PrimCh=%d) =>BbpChIdx=%d\n",
-				__FUNCTION__, vht_cent_ch, prim_ch, bbp_idx));
+	DBGPRINT(RT_DEBUG_INFO, 
+			("%s():(VhtCentCh=%d, PrimCh=%d) =>BbpChIdx=%d\n",
+			__FUNCTION__, vht_cent_ch, prim_ch, bbp_idx));
 	return bbp_idx;
 }
 
@@ -232,19 +231,15 @@ UCHAR vht_cent_ch_freq(RTMP_ADAPTER *pAd, UCHAR prim_ch)
 {
 	INT idx = 0;
 
-
-	if (pAd->CommonCfg.vht_bw < VHT_BW_80 || prim_ch < 36)
-	{
+	if (pAd->CommonCfg.vht_bw < VHT_BW_80 || prim_ch < 36) {
 		pAd->CommonCfg.vht_cent_ch = 0;
 		pAd->CommonCfg.vht_cent_ch2 = 0;
 		return prim_ch;
 	}
 
-	while (vht_ch_80M[idx].ch_up_bnd != 0)
-	{
+	while (vht_ch_80M[idx].ch_up_bnd != 0) {
 		if (prim_ch >= vht_ch_80M[idx].ch_low_bnd &&
-			prim_ch <= vht_ch_80M[idx].ch_up_bnd)
-		{
+			prim_ch <= vht_ch_80M[idx].ch_up_bnd) {
 			pAd->CommonCfg.vht_cent_ch = vht_ch_80M[idx].cent_freq_idx;
 			return vht_ch_80M[idx].cent_freq_idx;
 		}
@@ -255,26 +250,25 @@ UCHAR vht_cent_ch_freq(RTMP_ADAPTER *pAd, UCHAR prim_ch)
 }
 
 
-INT vht_mode_adjust(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, VHT_CAP_IE *cap, VHT_OP_IE *op)
+BOOLEAN vht_mode_adjust(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, 
+	VHT_CAP_IE *cap, VHT_OP_IE *op)
 {
 	pEntry->MaxHTPhyMode.field.MODE = MODE_VHT;
 	pAd->CommonCfg.AddHTInfo.AddHtInfo2.NonGfPresent = 1;
 	pAd->MacTab.fAnyStationNonGF = TRUE;
 
-	if (op->vht_op_info.ch_width >= 1 && pEntry->MaxHTPhyMode.field.BW == BW_40)
-	{
+	if (op->vht_op_info.ch_width >= 1 && pEntry->MaxHTPhyMode.field.BW == BW_40) {
 		pEntry->MaxHTPhyMode.field.BW= BW_80;
 		pEntry->MaxHTPhyMode.field.ShortGI = (cap->vht_cap.sgi_80M);
 		pEntry->MaxHTPhyMode.field.STBC = (cap->vht_cap.rx_stbc > 1 ? 1 : 0);
 	}
-				
+
 	return TRUE;
 }
 
 
-INT get_vht_op_ch_width(RTMP_ADAPTER *pAd)
+BOOLEAN get_vht_op_ch_width(RTMP_ADAPTER *pAd)
 {
-	
 	return TRUE;
 }
 
@@ -289,10 +283,7 @@ INT get_vht_op_ch_width(RTMP_ADAPTER *pAd)
 */
 INT build_quiet_channel(RTMP_ADAPTER *pAd, UCHAR *buf)
 {
-	INT len = 0;
-
-
-	return len;
+	return 0;
 }
 
 
@@ -303,13 +294,8 @@ INT build_quiet_channel(RTMP_ADAPTER *pAd, UCHAR *buf)
 */
 INT build_ext_bss_load(RTMP_ADAPTER *pAd, UCHAR *buf)
 {
-	INT len = 0;
-
-
-	return len;
+	return 0;
 }
-
-
 
 
 /*
@@ -319,10 +305,7 @@ INT build_ext_bss_load(RTMP_ADAPTER *pAd, UCHAR *buf)
 */
 INT build_ext_pwr_constraint(RTMP_ADAPTER *pAd, UCHAR *buf)
 {
-	INT len = 0;
-
-
-	return len;
+	return 0;
 }
 
 
@@ -349,13 +332,13 @@ INT build_vht_txpwr_envelope(RTMP_ADAPTER *pAd, UCHAR *buf)
 	txpwr_env.tx_pwr_info.max_tx_pwr_cnt = pwr_cnt;
 	txpwr_env.tx_pwr_info.max_tx_pwr_interpretation = TX_PWR_INTERPRET_EIRP;
 
-// TODO: fixme, we need the real tx_pwr value for each port.
+	// TODO: fixme, we need the real tx_pwr value for each port.
 	for (len = 0; len < pwr_cnt; len++)
 		txpwr_env.tx_pwr_bw[len] = 15;
 
 	len = 2 + pwr_cnt;
 	NdisMoveMemory(buf, &txpwr_env, len);
-	
+
 	return len;
 }
 
@@ -364,42 +347,41 @@ INT build_vht_txpwr_envelope(RTMP_ADAPTER *pAd, UCHAR *buf)
 	Defined in IEEE 802.11AC
 
 	Appeared in Beacon, (Re)AssocResp, ProbResp frames
-*/	
+*/
 INT build_vht_op_ie(RTMP_ADAPTER *pAd, UCHAR *buf)
 {
 	VHT_OP_IE vht_op;
 	UCHAR cent_ch;
 #ifdef RT_BIG_ENDIAN
 	UINT16 tmp;
-#endif /* RT_BIG_ENDIAN */
+#endif
 
 	NdisZeroMemory((UCHAR *)&vht_op, sizeof(VHT_OP_IE));
 	vht_op.vht_op_info.ch_width = (pAd->CommonCfg.vht_bw == VHT_BW_80 ? 1: 0);
 
 #ifdef CONFIG_AP_SUPPORT
-	if (pAd->CommonCfg.Channel > 14 && 
-		(pAd->CommonCfg.bIEEE80211H == 1) && 
+	if (pAd->CommonCfg.Channel > 14 &&
+		(pAd->CommonCfg.bIEEE80211H == 1) &&
 		(pAd->Dot11_H.RDMode == RD_SWITCHING_MODE))
 		cent_ch = vht_cent_ch_freq(pAd, pAd->Dot11_H.org_ch);
 	else
 #endif /* CONFIG_AP_SUPPORT */
 		cent_ch = vht_cent_ch_freq(pAd, pAd->CommonCfg.Channel);
 
-	switch (vht_op.vht_op_info.ch_width)
-	{
-		case 0:
-			vht_op.vht_op_info.center_freq_1 = 0;
-			vht_op.vht_op_info.center_freq_2 = 0;
-			break;
-		case 1:
-		case 2:
-			vht_op.vht_op_info.center_freq_1 = cent_ch;
-			vht_op.vht_op_info.center_freq_2 = 0;
-			break;
-		case 3:
-			vht_op.vht_op_info.center_freq_1 = cent_ch;
-			vht_op.vht_op_info.center_freq_2 = pAd->CommonCfg.vht_cent_ch2;
-			break;
+	switch (vht_op.vht_op_info.ch_width) {
+	case 0:
+		vht_op.vht_op_info.center_freq_1 = 0;
+		vht_op.vht_op_info.center_freq_2 = 0;
+		break;
+	case 1:
+	case 2:
+		vht_op.vht_op_info.center_freq_1 = cent_ch;
+		vht_op.vht_op_info.center_freq_2 = 0;
+		break;
+	case 3:
+		vht_op.vht_op_info.center_freq_1 = cent_ch;
+		vht_op.vht_op_info.center_freq_2 = pAd->CommonCfg.vht_cent_ch2;
+		break;
 	}
 
 	vht_op.basic_mcs_set.mcs_ss1 = VHT_MCS_CAP_NA;
@@ -410,35 +392,35 @@ INT build_vht_op_ie(RTMP_ADAPTER *pAd, UCHAR *buf)
 	vht_op.basic_mcs_set.mcs_ss6 = VHT_MCS_CAP_NA;
 	vht_op.basic_mcs_set.mcs_ss7 = VHT_MCS_CAP_NA;
 	vht_op.basic_mcs_set.mcs_ss8 = VHT_MCS_CAP_NA;
-	switch  (pAd->CommonCfg.RxStream)
-	{
-		case 2:
+
+	switch  (pAd->CommonCfg.RxStream) {
+	case 2:
 #ifdef MT76x2
-			if (IS_MT76x2(pAd)) {
-				vht_op.basic_mcs_set.mcs_ss2 = (((pAd->CommonCfg.vht_bw == VHT_BW_2040) 
-					&& (pAd->CommonCfg.RegTransmitSetting.field.BW == BW_20)) ? VHT_MCS_CAP_8 : VHT_MCS_CAP_9);
-			} else
+		if (IS_MT76x2(pAd)) {
+			vht_op.basic_mcs_set.mcs_ss2 = (((pAd->CommonCfg.vht_bw == VHT_BW_2040)
+				&& (pAd->CommonCfg.RegTransmitSetting.field.BW == BW_20)) ? VHT_MCS_CAP_8 : VHT_MCS_CAP_9);
+		} else
 #endif /* MT76x2 */
-				vht_op.basic_mcs_set.mcs_ss2 = VHT_MCS_CAP_7;
-		case 1:
-#if	defined(MT76x0) || defined(MT76x2)
-			if (IS_MT76x0(pAd) || IS_MT76x2(pAd))
-				vht_op.basic_mcs_set.mcs_ss1 = (((pAd->CommonCfg.vht_bw == VHT_BW_2040) 
-					&& (pAd->CommonCfg.RegTransmitSetting.field.BW == BW_20)) ? VHT_MCS_CAP_8 : VHT_MCS_CAP_9);
-			else
+			vht_op.basic_mcs_set.mcs_ss2 = VHT_MCS_CAP_7;
+	case 1:
+#if defined(MT76x0) || defined(MT76x2)
+		if (IS_MT76x0(pAd) || IS_MT76x2(pAd))
+			vht_op.basic_mcs_set.mcs_ss1 = (((pAd->CommonCfg.vht_bw == VHT_BW_2040)
+				&& (pAd->CommonCfg.RegTransmitSetting.field.BW == BW_20)) ? VHT_MCS_CAP_8 : VHT_MCS_CAP_9);
+		else
 #endif
-				vht_op.basic_mcs_set.mcs_ss1 = VHT_MCS_CAP_7;
-			break;			
+			vht_op.basic_mcs_set.mcs_ss1 = VHT_MCS_CAP_7;
+		break;
 	}
 
 #ifdef RT_BIG_ENDIAN
 	//SWAP16((UINT16)vht_op.basic_mcs_set);
 	NdisCopyMemory(&tmp,&vht_op.basic_mcs_set, 2);
-	tmp=SWAP16(tmp);
+	tmp = SWAP16(tmp);
 	NdisCopyMemory(&vht_op.basic_mcs_set,&tmp, 2);
 #endif /* RT_BIG_ENDIAN */
 	NdisMoveMemory((UCHAR *)buf, (UCHAR *)&vht_op, sizeof(VHT_OP_IE));
-	
+
 	return sizeof(VHT_OP_IE);
 }
 
@@ -472,13 +454,12 @@ INT build_vht_cap_ie(RTMP_ADAPTER *pAd, UCHAR *buf)
 
 	vht_cap_ie.vht_cap.tx_stbc = 0;
 	vht_cap_ie.vht_cap.rx_stbc = 0;
-	if (pAd->CommonCfg.vht_stbc)
-	{
+	if (pAd->CommonCfg.vht_stbc) {
 		if (pAd->CommonCfg.TxStream >= 2)
 			vht_cap_ie.vht_cap.tx_stbc = 1;
 		else
 			vht_cap_ie.vht_cap.tx_stbc = 0;
-		
+
 		if (pAd->CommonCfg.RxStream >= 1)
 			vht_cap_ie.vht_cap.rx_stbc = 1; // TODO: is it depends on the number of our antennas?
 		else
@@ -515,7 +496,7 @@ INT build_vht_cap_ie(RTMP_ADAPTER *pAd, UCHAR *buf)
 		(pAd->CommonCfg.vht_nss_cap < pAd->CommonCfg.RxStream))
 		rx_nss = pAd->CommonCfg.vht_nss_cap;
 
-	if ((pAd->CommonCfg.vht_nss_cap > 0) && 
+	if ((pAd->CommonCfg.vht_nss_cap > 0) &&
 		(pAd->CommonCfg.vht_nss_cap < pAd->CommonCfg.TxStream))
 		tx_nss = pAd->CommonCfg.vht_nss_cap;
 
@@ -523,53 +504,51 @@ INT build_vht_cap_ie(RTMP_ADAPTER *pAd, UCHAR *buf)
 		mcs_cap = pAd->CommonCfg.vht_mcs_cap;
 #endif /* WFA_VHT_PF */
 
-	switch  (rx_nss)
-	{
-		case 1:
-			vht_cap_ie.mcs_set.rx_high_rate = 292;
-			vht_cap_ie.mcs_set.rx_mcs_map.mcs_ss1 = mcs_cap;
-			break;
-		case 2:
-			if (mcs_cap == VHT_MCS_CAP_9)
-				vht_cap_ie.mcs_set.rx_high_rate = 780;
-			else
-				vht_cap_ie.mcs_set.rx_high_rate = 585;
+	switch  (rx_nss) {
+	case 1:
+		vht_cap_ie.mcs_set.rx_high_rate = 292;
+		vht_cap_ie.mcs_set.rx_mcs_map.mcs_ss1 = mcs_cap;
+		break;
+	case 2:
+		if (mcs_cap == VHT_MCS_CAP_9)
+			vht_cap_ie.mcs_set.rx_high_rate = 780;
+		else
+			vht_cap_ie.mcs_set.rx_high_rate = 585;
 
-			vht_cap_ie.mcs_set.rx_mcs_map.mcs_ss1 = mcs_cap;
-			vht_cap_ie.mcs_set.rx_mcs_map.mcs_ss2 = mcs_cap;
-			break;
-		default:
-			vht_cap_ie.mcs_set.rx_high_rate = 0;
-			break;
+		vht_cap_ie.mcs_set.rx_mcs_map.mcs_ss1 = mcs_cap;
+		vht_cap_ie.mcs_set.rx_mcs_map.mcs_ss2 = mcs_cap;
+		break;
+	default:
+		vht_cap_ie.mcs_set.rx_high_rate = 0;
+		break;
 	}
 
-	switch (tx_nss)
-	{
-		case 1:
-			vht_cap_ie.mcs_set.tx_high_rate = 292;
-			vht_cap_ie.mcs_set.tx_mcs_map.mcs_ss1 = mcs_cap;
-			break;
-		case 2:
-			if (mcs_cap == VHT_MCS_CAP_9)
-				vht_cap_ie.mcs_set.tx_high_rate = 780;
-			else
-				vht_cap_ie.mcs_set.tx_high_rate = 585;
+	switch (tx_nss) {
+	case 1:
+		vht_cap_ie.mcs_set.tx_high_rate = 292;
+		vht_cap_ie.mcs_set.tx_mcs_map.mcs_ss1 = mcs_cap;
+		break;
+	case 2:
+		if (mcs_cap == VHT_MCS_CAP_9)
+			vht_cap_ie.mcs_set.tx_high_rate = 780;
+		else
+			vht_cap_ie.mcs_set.tx_high_rate = 585;
 
-			vht_cap_ie.mcs_set.tx_mcs_map.mcs_ss1 = mcs_cap;
-			vht_cap_ie.mcs_set.tx_mcs_map.mcs_ss2 = mcs_cap;
-			break;
-		default:
-			vht_cap_ie.mcs_set.tx_high_rate = 0;
-			break;
+		vht_cap_ie.mcs_set.tx_mcs_map.mcs_ss1 = mcs_cap;
+		vht_cap_ie.mcs_set.tx_mcs_map.mcs_ss2 = mcs_cap;
+		break;
+	default:
+		vht_cap_ie.mcs_set.tx_high_rate = 0;
+		break;
 	}
 
 #ifdef RT_BIG_ENDIAN
 	NdisCopyMemory(&tmp_1,&vht_cap_ie.vht_cap, 4);
 	tmp_1 = SWAP32(tmp_1);
 	NdisCopyMemory(&vht_cap_ie.vht_cap,&tmp_1, 4);
-	
-	NdisCopyMemory(&tmp_2,&vht_cap_ie.mcs_set, 8);	
-	tmp_2=SWAP64(tmp_2);
+
+	NdisCopyMemory(&tmp_2,&vht_cap_ie.mcs_set, 8);
+	tmp_2 = SWAP64(tmp_2);
 	NdisCopyMemory(&vht_cap_ie.mcs_set,&tmp_2, 8);
 
 	//hex_dump("&vht_cap_ie", &vht_cap_ie,  sizeof(VHT_CAP_IE));
@@ -579,14 +558,13 @@ INT build_vht_cap_ie(RTMP_ADAPTER *pAd, UCHAR *buf)
 
 #ifdef VHT_TXBF_SUPPORT
 
-	if ((pAd->chipCap.FlgHwTxBfCap) && (pAd->BeaconSndDimensionFlag ==0))
-	{
+	if ((pAd->chipCap.FlgHwTxBfCap) && (pAd->BeaconSndDimensionFlag == 0)) {
 		vht_cap_ie.vht_cap.num_snd_dimension = pAd->CommonCfg.vht_cap_ie.vht_cap.num_snd_dimension;
    		vht_cap_ie.vht_cap.cmp_st_num_bfer= pAd->CommonCfg.vht_cap_ie.vht_cap.cmp_st_num_bfer;
 		vht_cap_ie.vht_cap.bfee_cap_su=pAd->CommonCfg.vht_cap_ie.vht_cap.bfee_cap_su;
 		vht_cap_ie.vht_cap.bfer_cap_su=pAd->CommonCfg.vht_cap_ie.vht_cap.bfer_cap_su;
-	} 
-        pAd->BeaconSndDimensionFlag =0; 
+	}
+        pAd->BeaconSndDimensionFlag =0;
 #endif
 
 	NdisMoveMemory(buf, (UCHAR *)&vht_cap_ie, sizeof(VHT_CAP_IE));
@@ -600,7 +578,6 @@ INT build_vht_ies(RTMP_ADAPTER *pAd, UCHAR *buf, UCHAR frm)
 	INT len = 0;
 	EID_STRUCT eid_hdr;
 
-
 	eid_hdr.Eid = IE_VHT_CAP;
 	eid_hdr.Len = sizeof(VHT_CAP_IE);
 	NdisMoveMemory(buf, (UCHAR *)&eid_hdr, 2);
@@ -608,8 +585,7 @@ INT build_vht_ies(RTMP_ADAPTER *pAd, UCHAR *buf, UCHAR frm)
 
 	len += build_vht_cap_ie(pAd, (UCHAR *)(buf + len));
 	if (frm == SUBTYPE_BEACON || frm == SUBTYPE_PROBE_RSP ||
-		frm == SUBTYPE_ASSOC_RSP || frm == SUBTYPE_REASSOC_RSP)
-	{
+		frm == SUBTYPE_ASSOC_RSP || frm == SUBTYPE_REASSOC_RSP) {
 		eid_hdr.Eid = IE_VHT_OP;
 		eid_hdr.Len = sizeof(VHT_OP_IE);
 		NdisMoveMemory((UCHAR *)(buf + len), (UCHAR *)&eid_hdr, 2);
@@ -617,7 +593,7 @@ INT build_vht_ies(RTMP_ADAPTER *pAd, UCHAR *buf, UCHAR frm)
 
 		len += build_vht_op_ie(pAd, (UCHAR *)(buf + len));
 	}
-	
+
 	return len;
 }
 
@@ -627,17 +603,14 @@ BOOLEAN vht80_channel_group( RTMP_ADAPTER *pAd, UCHAR channel)
 
 	if (channel <= 14)
 		return FALSE;
-	
-	while (vht_ch_80M[idx].ch_up_bnd != 0)
-	{
+
+	while (vht_ch_80M[idx].ch_up_bnd != 0) {
 		if (channel >= vht_ch_80M[idx].ch_low_bnd &&
-			channel <= vht_ch_80M[idx].ch_up_bnd)
-		{
-			if ( (pAd->CommonCfg.RDDurRegion == JAP ||
+			channel <= vht_ch_80M[idx].ch_up_bnd) {
+			if ((pAd->CommonCfg.RDDurRegion == JAP ||
 				pAd->CommonCfg.RDDurRegion == JAP_W53 ||
 				pAd->CommonCfg.RDDurRegion == JAP_W56) &&
-				vht_ch_80M[idx].cent_freq_idx == 138)
-			{
+				vht_ch_80M[idx].cent_freq_idx == 138) {
 				idx++;
 				continue;
 			}
