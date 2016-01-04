@@ -34,13 +34,14 @@
 ========================================================================
 Routine Description:
 	write high memory.
-	if firmware do not support auto high/low memory switching, we should switch to high memory by ourself.
+	if firmware does not support auto high/low memory switching,
+	we should switch to high memory by ourself.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	Offset			- Memory offsets
-	Value			- Written value
-	Unit				- Unit in "Byte"
+	pAd		- WLAN control block pointer
+	Offset		- Memory offsets
+	Value		- Written value
+	Unit		- Unit in "Byte"
 
 Return Value:
 	None
@@ -48,32 +49,29 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID RtmpChipWriteHighMemory(
-	IN RTMP_ADAPTER *pAd,
-	IN USHORT Offset,
-	IN UINT32 Value,
-	IN UINT8 Unit)
+#if 0 //JB unused
+static VOID RtmpChipWriteHighMemory(RTMP_ADAPTER *pAd, USHORT Offset, UINT32 Value,
+	UINT8 Unit)
 {
 #ifdef RTMP_MAC_USB
-	switch(Unit)
+	switch (Unit) {
+	case 1:
+		RTUSBSingleWrite(pAd, Offset, Value, TRUE);
+		break;
+	case 2:
 	{
-		case 1:
-			RTUSBSingleWrite(pAd, Offset, Value, TRUE);
-			break;
-		case 2:
-		{
-			UINT16 ShortVal = (UINT16)Value;
-			RTUSBMultiWrite(pAd, Offset, (UCHAR *) &ShortVal, 2, TRUE);
-			break;
-		}
-		case 4:
-			RTUSBWriteMACRegister(pAd, Offset, Value, TRUE);
-		default:
-			break;
+		UINT16 ShortVal = (UINT16)Value;
+		RTUSBMultiWrite(pAd, Offset, (UCHAR *) &ShortVal, 2, TRUE);
+		break;
+	}
+	case 4:
+		RTUSBWriteMACRegister(pAd, Offset, Value, TRUE);
+	default:
+		break;
 	}
 #endif /* RTMP_MAC_USB */
 }
-
+#endif //0
 
 /*
 ========================================================================
@@ -81,54 +79,31 @@ Routine Description:
 	write memory
 
 Arguments:
-	pAd				- WLAN control block pointer
-	Offset			- Memory offsets
-	Value			- Written value
-	Unit				- Unit in "Byte"
+	pAd		- WLAN control block pointer
+	Offset		- Memory offsets
+	Value		- Written value
+	Unit		- Unit in "Byte"
 Return Value:
 	None
 
 Note:
 ========================================================================
 */
-VOID RtmpChipWriteMemory(
-	IN	RTMP_ADAPTER	*pAd,
-	IN	USHORT			Offset,
-	IN	UINT32			Value,
-	IN	UINT8			Unit)
+static VOID RtmpChipWriteMemory(RTMP_ADAPTER *pAd, USHORT Offset,
+	UINT32 Value, UINT8 Unit)
 {
-	switch(Unit)
-	{
-		case 1:
-			RTMP_IO_WRITE8(pAd, Offset, Value);
-			break;
-		case 2:
-			RTMP_IO_WRITE16(pAd, Offset, Value);
-			break;
-		case 4:
-			RTMP_IO_WRITE32(pAd, Offset, Value);
-		default:
-			break;
+	switch (Unit) {
+	case 1:
+		RTMP_IO_WRITE8(pAd, Offset, Value);
+		break;
+	case 2:
+		RTMP_IO_WRITE16(pAd, Offset, Value);
+		break;
+	case 4:
+		RTMP_IO_WRITE32(pAd, Offset, Value);
+	default:
+		break;
 	}
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize specific beacon frame architecture.
-
-Arguments:
-	pAd				- WLAN control block pointer
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpChipBcnSpecInit(RTMP_ADAPTER *pAd)
-{
 }
 
 
@@ -138,7 +113,7 @@ Routine Description:
 	Initialize normal beacon frame architecture.
 
 Arguments:
-	pAd				- WLAN control block pointer
+	pAd		- WLAN control block pointer
 
 Return Value:
 	None
@@ -146,11 +121,9 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID RtmpChipBcnInit(
-	IN RTMP_ADAPTER *pAd)
+VOID RtmpChipBcnInit(RTMP_ADAPTER *pAd)
 {
 	RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
-
 
 	pChipCap->FlgIsSupSpecBcnBuf = FALSE;
 	pChipCap->BcnMaxHwNum = 8;
@@ -190,7 +163,7 @@ Routine Description:
 	Initialize specific beacon frame architecture.
 
 Arguments:
-	pAd				- WLAN control block pointer
+	pAd		- WLAN control block pointer
 
 Return Value:
 	None
@@ -204,8 +177,7 @@ VOID rlt_bcn_buf_init(RTMP_ADAPTER *pAd)
 
 	pChipCap->FlgIsSupSpecBcnBuf = FALSE;
 #if defined(MT7601) || defined(MT76x2)
-	if (IS_MT7601(pAd) || IS_MT76x2(pAd)) 
-	{
+	if (IS_MT7601(pAd) || IS_MT76x2(pAd)) {
 		pChipCap->BcnMaxHwNum = 8;
 		pChipCap->WcidHwRsvNum = 127;
 	}
@@ -217,7 +189,7 @@ VOID rlt_bcn_buf_init(RTMP_ADAPTER *pAd)
 	}
 
 /*
-	In 16-MBSS support mode, if AP-Client is enabled, 
+	In 16-MBSS support mode, if AP-Client is enabled,
 	the last 8-MBSS would be occupied for AP-Client using.
 */
 #ifdef APCLI_SUPPORT
@@ -227,7 +199,6 @@ VOID rlt_bcn_buf_init(RTMP_ADAPTER *pAd)
 #endif /* APCLI_SUPPORT */
 
 	pChipCap->BcnMaxHwSize = 0x2000;
-
 	pChipCap->BcnBase[0] = 0xc000;
 	pChipCap->BcnBase[1] = 0xc200;
 	pChipCap->BcnBase[2] = 0xc400;
@@ -244,28 +215,20 @@ VOID rlt_bcn_buf_init(RTMP_ADAPTER *pAd)
 	pChipCap->BcnBase[13] = 0xda00;
 	pChipCap->BcnBase[14] = 0xdc00;
 	pChipCap->BcnBase[15] = 0xde00;
-
-
 	pAd->chipOps.BeaconUpdate = RtmpChipWriteMemory;
 }
 #endif /* RLT_MAC */
 
-
-
-
 #ifdef HW_ANTENNA_DIVERSITY_SUPPORT
-UINT32 SetHWAntennaDivsersity(
-	IN PRTMP_ADAPTER		pAd,
-	IN BOOLEAN				Enable)
+static UINT32 SetHWAntennaDivsersity(PRTMP_ADAPTER pAd, BOOLEAN Enable)
 {
-	if (Enable == TRUE)
-	{
+	if (Enable == TRUE) {
 		UINT8 BBPValue = 0, RFValue = 0;
 		USHORT value;
 
 		// RF_R29 bit7:6
 		RT28xx_EEPROM_READ16(pAd, EEPROM_RSSI_GAIN, value);
-		
+
 		RT30xxReadRFRegister(pAd, RF_R29, &RFValue);
 		RFValue &= 0x3f; // clear bit7:6
 		RFValue |= (value << 6);
@@ -275,7 +238,7 @@ UINT32 SetHWAntennaDivsersity(
 		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R47, &BBPValue);
 		BBPValue |= 0x80;
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R47, BBPValue);
-	
+
 		BBPValue = 0xbe;
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R150, BBPValue);
 		BBPValue = 0xb0;
@@ -292,17 +255,14 @@ UINT32 SetHWAntennaDivsersity(
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R253, BBPValue);
 
 		DBGPRINT(RT_DEBUG_TRACE, ("HwAnDi> Enable!\n"));
-	}
-	else
-	{
+	} else {
 		UINT8 BBPValue = 0;
 
 		/*
 			main antenna: BBP_R152 bit7=1
 			aux antenna: BBP_R152 bit7=0
 		 */
-		if (pAd->FixDefaultAntenna == 0)
-		{
+		if (pAd->FixDefaultAntenna == 0) {
 			/* fix to main antenna */
 			/* do not care BBP R153, R155, R253 */
 			BBPValue = 0x3e;
@@ -313,9 +273,7 @@ UINT32 SetHWAntennaDivsersity(
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R152, BBPValue);
 			BBPValue = 0x00;
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R154, BBPValue);
-		}
-		else
-		{
+		} else {
 			/* fix to aux antenna */
 			/* do not care BBP R153, R155, R253 */
 			BBPValue = 0x3e;
@@ -333,21 +291,18 @@ UINT32 SetHWAntennaDivsersity(
 
 	return 0;
 }
-#endif // HW_ANTENNA_DIVERSITY_SUPPORT // 
+#endif // HW_ANTENNA_DIVERSITY_SUPPORT //
 
 
-
-
-INT WaitForAsicReady(RTMP_ADAPTER *pAd)
+BOOLEAN WaitForAsicReady(RTMP_ADAPTER *pAd)
 {
 	UINT32 mac_val = 0, reg = MAC_CSR0;
 	int idx = 0;
 
-	do
-	{
+	do {
 		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))
 			return FALSE;
-		
+
 		RTMP_IO_READ32(pAd, reg, &mac_val);
 		if ((mac_val != 0x00) && (mac_val != 0xFFFFFFFF))
 			return TRUE;
@@ -355,38 +310,33 @@ INT WaitForAsicReady(RTMP_ADAPTER *pAd)
 		RtmpOsMsDelay(5);
 	} while (idx++ < 500);
 
-	DBGPRINT(RT_DEBUG_ERROR,
-				("%s(0x%x):AsicNotReady!\n",
-				__FUNCTION__, mac_val));
-	
+	DBGPRINT(RT_DEBUG_ERROR, ("%s(0x%x):AsicNotReady!\n", 
+			__FUNCTION__, mac_val));
+
 	return FALSE;
 }
 
-
-INT AsicGetMacVersion(RTMP_ADAPTER *pAd)
+#if 0 //JB: unused
+static BOOLEAN AsicGetMacVersion(RTMP_ADAPTER *pAd)
 {
 	UINT32 reg = MAC_CSR0;
-
 
 #ifdef RT65xx
 	if (IS_RT65XX(pAd))
 		RTMP_IO_READ32(pAd, ASIC_VERSION, &pAd->ChipID);
 #endif /* RT65xx */
 
-	if (WaitForAsicReady(pAd) == TRUE)
-	{
+	if (WaitForAsicReady(pAd) == TRUE) {
 		RTMP_IO_READ32(pAd, reg, &pAd->MACVersion);
 		DBGPRINT(RT_DEBUG_OFF, ("MACVersion[Ver:Rev]=0x%08x : 0x%08x\n",
-					pAd->MACVersion, pAd->ChipID));
+				pAd->MACVersion, pAd->ChipID));
 		return TRUE;
-	}
-	else
-	{
+	} else {
 		DBGPRINT(RT_DEBUG_ERROR, ("%s() failed!\n", __FUNCTION__));
 		return FALSE;
 	}
 }
-
+#endif
 
 /*
 ========================================================================
@@ -394,7 +344,7 @@ Routine Description:
 	Initialize chip related information.
 
 Arguments:
-	pCB				- WLAN control block pointer
+	pCB		- WLAN control block pointer
 
 Return Value:
 	None
@@ -405,7 +355,9 @@ Note:
 int RtmpChipOpsHook(VOID *pCB)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pCB;
+#ifdef DBG
 	RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
+#endif
 	UINT32 MacValue;
 	int ret = 0;
 	RTMP_CHIP_OP *pChipOps = &pAd->chipOps;
@@ -416,7 +368,7 @@ int RtmpChipOpsHook(VOID *pCB)
 
 	RTMP_IO_READ32(pAd, MAC_CSR0, &MacValue);
 	pAd->MACVersion = MacValue;
-	
+
 	if (pAd->MACVersion == 0xffffffff)
 		return -1;
 
@@ -430,7 +382,6 @@ int RtmpChipOpsHook(VOID *pCB)
 
 	/* default init */
 	RTMP_DRS_ALG_INIT(pAd, RATE_ALG_LEGACY);
-
 
 	/* EDCCA */
 	pChipOps->ChipSetEDCCA= NULL;
@@ -449,8 +400,6 @@ int RtmpChipOpsHook(VOID *pCB)
 	}
 #endif
 
-
-
 #ifdef GREENAP_SUPPORT
 	pChipOps->EnableAPMIMOPS = EnableAPMIMOPSv1;
 	pChipOps->DisableAPMIMOPS = DisableAPMIMOPSv1;
@@ -461,16 +410,20 @@ int RtmpChipOpsHook(VOID *pCB)
 	RTxx_default_Init(pAd);
 #endif /* RTMP_MAC */
 
-	/* We depends on RfICType and MACVersion to assign the corresponding operation callbacks. */
-
-
+	/*
+	 * We depends on RfICType and MACVersion to assign the
+	 * corresponding operation callbacks.
+	 */
 
 done:
-	DBGPRINT(RT_DEBUG_TRACE, ("Chip specific bbpRegTbSize=%d!\n", pChipCap->bbpRegTbSize));
-	DBGPRINT(RT_DEBUG_TRACE, ("Chip VCO calibration mode = %d!\n", pChipCap->FlgIsVcoReCalMode));
+	DBGPRINT(RT_DEBUG_TRACE, ("Chip specific bbpRegTbSize=%d!\n",
+			pChipCap->bbpRegTbSize));
+	DBGPRINT(RT_DEBUG_TRACE, ("Chip VCO calibration mode = %d!\n",
+			pChipCap->FlgIsVcoReCalMode));
 #ifdef DOT11W_PMF_SUPPORT
-	DBGPRINT(RT_DEBUG_TRACE, ("[PMF] Encryption mode = %d\n", pChipCap->FlgPMFEncrtptMode));
-#endif /* DOT11W_PMF_SUPPORT */
+	DBGPRINT(RT_DEBUG_TRACE, ("[PMF] Encryption mode = %d\n",
+			pChipCap->FlgPMFEncrtptMode));
+#endif
 
 	return ret;
 }
@@ -480,22 +433,22 @@ BOOLEAN isExternalPAMode(RTMP_ADAPTER *ad, INT channel)
 {
 	BOOLEAN pa_mode = FALSE;
 
-        if (channel > 14) {
-	        if (ad->chipCap.PAType == EXT_PA_2G_5G)
-                	pa_mode = TRUE;
-                else if (ad->chipCap.PAType == EXT_PA_5G_ONLY)
-                        pa_mode = TRUE;
-                else
-        	        pa_mode = FALSE;
-        } else {
-                if (ad->chipCap.PAType == EXT_PA_2G_5G)
-                        pa_mode = TRUE;
-                else if ((ad->chipCap.PAType == EXT_PA_5G_ONLY) ||
-                         (ad->chipCap.PAType == INT_PA_2G_5G))
-                        pa_mode = FALSE;
-                else if (ad->chipCap.PAType == EXT_PA_2G_ONLY)
-                        pa_mode = TRUE;
-        }
+	if (channel > 14) {
+		if (ad->chipCap.PAType == EXT_PA_2G_5G)
+			pa_mode = TRUE;
+		else if (ad->chipCap.PAType == EXT_PA_5G_ONLY)
+			pa_mode = TRUE;
+		else
+			pa_mode = FALSE;
+	} else {
+		if (ad->chipCap.PAType == EXT_PA_2G_5G)
+			pa_mode = TRUE;
+		else if ((ad->chipCap.PAType == EXT_PA_5G_ONLY) ||
+			 (ad->chipCap.PAType == INT_PA_2G_5G))
+			pa_mode = FALSE;
+		else if (ad->chipCap.PAType == EXT_PA_2G_ONLY)
+			pa_mode = TRUE;
+	}
 
 	return pa_mode;
 }
@@ -507,16 +460,16 @@ BOOLEAN is_external_lna_mode(RTMP_ADAPTER *ad, INT channel)
 	/* b'00: 2.4G+5G external LNA, b'01: 5G external LNA, b'10: 2.4G external LNA, b'11: Internal LNA */
 	if (channel > 14) {
 		if ((ad->chipCap.LNA_type == 0x0) || (ad->chipCap.LNA_type == 0x1))
-	            	lna_mode = TRUE;
-	    	else
-	        	lna_mode = FALSE;
+			lna_mode = TRUE;
+		else
+			lna_mode = FALSE;
 	} else {
-	    	if ((ad->chipCap.LNA_type == 0x0) || (ad->chipCap.LNA_type == 0x10))
-	            	lna_mode = TRUE;
-	    	else
-	            	lna_mode = FALSE;
+		if ((ad->chipCap.LNA_type == 0x0) || (ad->chipCap.LNA_type == 0x10))
+			lna_mode = TRUE;
+		else
+			lna_mode = FALSE;
 	}
-	
+
 	return lna_mode;
 }
 #endif /* RT65xx */
