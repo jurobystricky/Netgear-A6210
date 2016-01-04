@@ -21,11 +21,10 @@
 
 	Revision History:
 	Who 		When			What
-	--------	----------		----------------------------------------------
+	--------	----------		--------------------------------
 */
 
 #include "rt_config.h"
-
 
 INT rlt_get_rxwi_phymode(RXWI_STRUC *rxwi)
 {
@@ -40,7 +39,6 @@ INT rlt_get_rxwi_rssi(RXWI_STRUC *rxwi, INT size, CHAR *rssi)
 	return 0;
 }
 
-
 INT rlt_get_rxwi_snr(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi, INT size, UCHAR *snr)
 {
 	if (IS_MT76x2(pAd)) {
@@ -53,8 +51,6 @@ INT rlt_get_rxwi_snr(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi, INT size, UCHAR *snr)
 
 	return 0;
 }
-
-
 
 
 #ifdef RLT_MAC
@@ -78,9 +74,9 @@ VOID dumpRxFCEInfo(RTMP_ADAPTER *pAd, RXFCE_INFO *pRxFceInfo)
 }
 #endif /* RLT_MAC */
 
-
-static UCHAR *txwi_txop_str[]={"HT_TXOP", "PIFS", "SIFS", "BACKOFF", "Invalid"};
-#define TXWI_TXOP_STR(_x)	((_x) <= 3 ? txwi_txop_str[(_x)]: txwi_txop_str[4])
+#ifdef DBG
+static UCHAR *txwi_txop_str[] = {"HT_TXOP", "PIFS", "SIFS", "BACKOFF", "Invalid"};
+#define TXWI_TXOP_STR(_x) ((_x) <= 3 ? txwi_txop_str[(_x)]: txwi_txop_str[4])
 
 VOID dump_rlt_txwi(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI)
 {
@@ -109,17 +105,16 @@ VOID dump_rlt_txwi(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI)
 	DBGPRINT(RT_DEBUG_OFF, ("\tFRAG=%d\n", txwi_nmac->FRAG));
 	DBGPRINT(RT_DEBUG_OFF, ("\tWCID=%d\n", txwi_nmac->wcid));
 	DBGPRINT(RT_DEBUG_OFF, ("\tBAWinSize=%d\n", txwi_nmac->BAWinSize));
-	DBGPRINT(RT_DEBUG_OFF, ("\tMPDUtotalByteCnt=%d\n", txwi_nmac->MPDUtotalByteCnt));	
-	DBGPRINT(RT_DEBUG_OFF, ("\tPID=%d\n", txwi_nmac->TxPktId));	
+	DBGPRINT(RT_DEBUG_OFF, ("\tMPDUtotalByteCnt=%d\n", txwi_nmac->MPDUtotalByteCnt));
+	DBGPRINT(RT_DEBUG_OFF, ("\tPID=%d\n", txwi_nmac->TxPktId));
 }
-
 
 VOID dump_rlt_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI)
 {
 	struct _RXWI_NMAC *rxwi_n = (struct _RXWI_NMAC *)pRxWI;
 
 	ASSERT((sizeof(struct _RXWI_NMAC) == pAd->chipCap.RXWISize));
-	
+
 	DBGPRINT(RT_DEBUG_OFF, ("\tWCID=%d\n", rxwi_n->wcid));
 	DBGPRINT(RT_DEBUG_OFF, ("\tPhyMode=%d(%s)\n", rxwi_n->phy_mode, get_phymode_str(rxwi_n->phy_mode)));
 
@@ -136,11 +131,10 @@ VOID dump_rlt_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI)
 	DBGPRINT(RT_DEBUG_OFF, ("\tSTBC=%d\n", rxwi_n->stbc));
 	DBGPRINT(RT_DEBUG_OFF, ("\tkey_idx=%d\n", rxwi_n->key_idx));
 	DBGPRINT(RT_DEBUG_OFF, ("\tBSS_IDX=%d\n", rxwi_n->bss_idx));
-	DBGPRINT(RT_DEBUG_OFF,("\tRSSI=%d:%d:%d!\n", (CHAR)(rxwi_n->rssi[0]), (CHAR)(rxwi_n->rssi[1]), (CHAR)(rxwi_n->rssi[2])));
-	DBGPRINT(RT_DEBUG_OFF,("\tSNR=%d:%d:%d!\n", (CHAR)rxwi_n->bbp_rxinfo[0], (CHAR)rxwi_n->bbp_rxinfo[1], (CHAR)rxwi_n->bbp_rxinfo[2]));
-	DBGPRINT(RT_DEBUG_OFF,("\tFreqOffset=%d!\n", (CHAR)rxwi_n->bbp_rxinfo[4]));
+	DBGPRINT(RT_DEBUG_OFF, ("\tRSSI=%d:%d:%d!\n", (CHAR)(rxwi_n->rssi[0]), (CHAR)(rxwi_n->rssi[1]), (CHAR)(rxwi_n->rssi[2])));
+	DBGPRINT(RT_DEBUG_OFF, ("\tSNR=%d:%d:%d!\n", (CHAR)rxwi_n->bbp_rxinfo[0], (CHAR)rxwi_n->bbp_rxinfo[1], (CHAR)rxwi_n->bbp_rxinfo[2]));
+	DBGPRINT(RT_DEBUG_OFF, ("\tFreqOffset=%d!\n", (CHAR)rxwi_n->bbp_rxinfo[4]));
 }
-
 
 static UCHAR *txinfo_type_str[]={"PKT", "", "CMD", "RSV", "Invalid"};
 static UCHAR *txinfo_d_port_str[]={"WLAN", "CPU_RX", "CPU_TX", "HOST", "VIRT_RX", "VIRT_TX", "DROP", "Invalid"};
@@ -148,7 +142,7 @@ static UCHAR *txinfo_que_str[]={"MGMT", "HCCA", "EDCA_1", "EDCA_2", "Invalid"};
 
 #define TXINFO_TYPE_STR(_x)  	((_x)<=3 ?  txinfo_type_str[_x] : txinfo_type_str[4])
 #define TXINFO_DPORT_STR(_x)	((_x) <= 6 ? txinfo_d_port_str[_x]: txinfo_d_port_str[7])
-#define TXINFO_QUE_STR(_x)		((_x) <= 3 ? txinfo_que_str[_x]: txinfo_que_str[4])
+#define TXINFO_QUE_STR(_x)	((_x) <= 3 ? txinfo_que_str[_x]: txinfo_que_str[4])
 
 VOID dump_rlt_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo)
 {
@@ -163,9 +157,7 @@ VOID dump_rlt_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo)
 	DBGPRINT(RT_DEBUG_OFF, ("\ttso=%d\n", pkt_txinfo->tso));
 	DBGPRINT(RT_DEBUG_OFF, ("\tpkt_len=0x%x\n", pkt_txinfo->pkt_len));
 }
-
-
-
+#endif
 
 static UINT32 asic_set_wlan_func(RTMP_ADAPTER *pAd, BOOLEAN enable)
 {
@@ -173,26 +165,23 @@ static UINT32 asic_set_wlan_func(RTMP_ADAPTER *pAd, BOOLEAN enable)
 
 	RTMP_IO_FORCE_READ32(pAd, WLAN_FUN_CTRL, &reg);
 
-	if (enable == TRUE)
-	{
+	if (enable == TRUE) {
 		/*
 			Enable WLAN function and clock
 			WLAN_FUN_CTRL[1:0] = 0x3
 		*/
 		reg |= WLAN_FUN_CTRL_WLAN_CLK_EN;
-		reg |= WLAN_FUN_CTRL_WLAN_EN; 
-	}
-	else
-	{
+		reg |= WLAN_FUN_CTRL_WLAN_EN;
+	} else {
 		/*
 			Diable WLAN function and clock
 			WLAN_FUN_CTRL[1:0] = 0x0
 		*/
 		if (IS_PCIE_INF(pAd))
 			reg &= ~WLAN_FUN_CTRL_PCIE_APP0_CLK_REQ;
-		
+
 		reg &= ~WLAN_FUN_CTRL_WLAN_EN;
-		reg &= ~WLAN_FUN_CTRL_WLAN_CLK_EN;	
+		reg &= ~WLAN_FUN_CTRL_WLAN_CLK_EN;
 	}
 
 	DBGPRINT(RT_DEBUG_TRACE, ("WlanFunCtrl= 0x%x\n", reg));
@@ -209,10 +198,6 @@ INT rlt_wlan_chip_onoff(RTMP_ADAPTER *pAd, BOOLEAN bOn, BOOLEAN bResetWLAN)
 {
 	UINT32 reg = 0;
 
-#ifdef RTMP_FLASH_SUPPORT
-#endif /* RTMP_FLASH_SUPPORT */
-
-
 #ifdef RTMP_MAC_USB
 	if (IS_USB_INF(pAd)) {
 		UINT32 ret;
@@ -226,36 +211,35 @@ INT rlt_wlan_chip_onoff(RTMP_ADAPTER *pAd, BOOLEAN bOn, BOOLEAN bResetWLAN)
 #endif /* RTMP_MAC_USB */
 
 	RTMP_IO_FORCE_READ32(pAd, WLAN_FUN_CTRL, &reg);
-	DBGPRINT(RT_DEBUG_OFF, ("==>%s(): OnOff:%d, Reset= %d, pAd->WlanFunCtrl:0x%x, Reg-WlanFunCtrl=0x%x\n",
-				__FUNCTION__, bOn, bResetWLAN, pAd->WlanFunCtrl.word, reg));
+	DBGPRINT(RT_DEBUG_OFF, 
+			("==>%s(): OnOff:%d, Reset= %d, pAd->WlanFunCtrl:0x%x, Reg-WlanFunCtrl=0x%x\n",
+			__FUNCTION__, bOn, bResetWLAN, pAd->WlanFunCtrl.word, reg));
 
-	if (bResetWLAN == TRUE)
-	{
+	if (bResetWLAN == TRUE) {
 #ifdef MT76x2
 		if (!IS_MT76x2(pAd))
-#endif /* MT76x2 */
+#endif
 			reg &= ~WLAN_FUN_CTRL_GPIO0_OUT_OE_N_MASK;
 
 		reg &= ~WLAN_FUN_CTRL_FRC_WL_ANT_SEL;
 
-		if (pAd->WlanFunCtrl.field.WLAN_EN)
-		{
+		if (pAd->WlanFunCtrl.field.WLAN_EN) {
 			/*
 				Restore all HW default value and reset RF.
 			*/
 #ifdef MT76x2
 			if (!IS_MT76x2(pAd))
-#endif /* MT76x2 */
-				reg |= WLAN_FUN_CTRL_WLAN_RESET;	
-		
+#endif
+				reg |= WLAN_FUN_CTRL_WLAN_RESET;
+
 			reg |= WLAN_FUN_CTRL_WLAN_RESET_RF;
 			DBGPRINT(RT_DEBUG_TRACE, ("Reset(1) WlanFunCtrl.word = 0x%x\n", reg));
-			RTMP_IO_FORCE_WRITE32(pAd, WLAN_FUN_CTRL, reg);	
+			RTMP_IO_FORCE_WRITE32(pAd, WLAN_FUN_CTRL, reg);
 			RtmpusecDelay(20);
 
 #ifdef MT76x2
 			if (!IS_MT76x2(pAd))
-#endif /* MT76x2 */
+#endif
 				reg &= ~WLAN_FUN_CTRL_WLAN_RESET;
 
 			reg &= ~WLAN_FUN_CTRL_WLAN_RESET_RF;
@@ -266,11 +250,10 @@ INT rlt_wlan_chip_onoff(RTMP_ADAPTER *pAd, BOOLEAN bOn, BOOLEAN bResetWLAN)
 		} else
 			RTMP_IO_FORCE_WRITE32(pAd, WLAN_FUN_CTRL, reg);
 	}
-	
+
 	reg = asic_set_wlan_func(pAd, bOn);
 
-	if (bOn)
-	{
+	if (bOn) {
 		RTMP_IO_FORCE_READ32(pAd, MAC_CSR0, &pAd->MACVersion);
 		DBGPRINT(RT_DEBUG_TRACE, ("MACVersion = 0x%08x\n", pAd->MACVersion));
 	}
@@ -279,31 +262,27 @@ INT rlt_wlan_chip_onoff(RTMP_ADAPTER *pAd, BOOLEAN bOn, BOOLEAN bResetWLAN)
 #ifdef MT76x2
 		&& (!IS_MT76x2(pAd))
 #endif /* MT76x2 */
-	)
-	{
-		UINT index = 0;		
+	) {
+		UINT index = 0;
 		u32 value;
-		
-		do
-		{
-			do 
-			{
+
+		do {
+			do {
 				RTMP_IO_FORCE_READ32(pAd, CMB_CTRL, &value);
 
 				/*
 					Check status of PLL_LD & XTAL_RDY.
 					HW issue: Must check PLL_LD&XTAL_RDY when setting EEP to disable PLL power down
 				*/
-				if (((value & CMB_CTRL_PLL_LD) == CMB_CTRL_PLL_LD) && 
+				if (((value & CMB_CTRL_PLL_LD) == CMB_CTRL_PLL_LD) &&
 						((value & CMB_CTRL_XTAL_RDY) == CMB_CTRL_XTAL_RDY))
 					break;
 
 				RtmpusecDelay(20);
 			} while (index++ < MAX_CHECK_COUNT);
 
-			if (index >= MAX_CHECK_COUNT)
-			{
-				DBGPRINT(RT_DEBUG_ERROR, 
+			if (index >= MAX_CHECK_COUNT) {
+				DBGPRINT(RT_DEBUG_ERROR,
 						("Lenny:[boundary]Check PLL_LD ..CMB_CTRL 0x%08x, index=%d!\n",
 						value, index));
 				/*
@@ -311,11 +290,8 @@ INT rlt_wlan_chip_onoff(RTMP_ADAPTER *pAd, BOOLEAN bOn, BOOLEAN bResetWLAN)
 				*/
 				reg = asic_set_wlan_func(pAd, 0);
 				reg = asic_set_wlan_func(pAd, 1);
-
 				index = 0;
-			}
-			else
-			{
+			} else {
 				break;
 			}
 		} while (TRUE);
@@ -324,15 +300,13 @@ INT rlt_wlan_chip_onoff(RTMP_ADAPTER *pAd, BOOLEAN bOn, BOOLEAN bResetWLAN)
 	pAd->WlanFunCtrl.word = reg;
 	RTMP_IO_FORCE_READ32(pAd, WLAN_FUN_CTRL, &reg);
 	DBGPRINT(RT_DEBUG_TRACE,
-		("<== %s():pAd->WlanFunCtrl.word = 0x%x, Reg->WlanFunCtrl=0x%x!\n",
-		__FUNCTION__, pAd->WlanFunCtrl.word, reg));
-	
+			("<== %s():pAd->WlanFunCtrl.word = 0x%x, Reg->WlanFunCtrl=0x%x!\n",
+			__FUNCTION__, pAd->WlanFunCtrl.word, reg));
 
 #ifdef RTMP_MAC_USB
 	if (IS_USB_INF(pAd))
 		RTMP_SEM_EVENT_UP(&pAd->hw_atomic);
-#endif /* RTMP_MAC_USB */
-
+#endif
 	return 0;
 }
 
