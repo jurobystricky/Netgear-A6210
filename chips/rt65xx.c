@@ -28,7 +28,7 @@
 
 #ifdef RT65xx
 
-#include	"rt_config.h"
+#include "rt_config.h"
 
 
 #ifdef RTMP_USB_SUPPORT
@@ -150,9 +150,7 @@ VOID RT65xxUsbAsicRadioOn(RTMP_ADAPTER *pAd, UCHAR Stage)
 #endif
 
 
-VOID RT65xxDisableTxRx(
-	RTMP_ADAPTER *pAd,
-	UCHAR Level)
+VOID RT65xxDisableTxRx(RTMP_ADAPTER *pAd, UCHAR Level)
 {
 	UINT32 MacReg = 0;
 	UINT32 MTxCycle;
@@ -165,8 +163,7 @@ VOID RT65xxDisableTxRx(
 
 	DBGPRINT(RT_DEBUG_TRACE, ("----> %s\n", __FUNCTION__));
 
-	if (Level == RTMP_HALT)
-	{
+	if (Level == RTMP_HALT) {
 		RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_ACTIVE);
 	}
 
@@ -180,8 +177,7 @@ VOID RT65xxDisableTxRx(
 	/*
 		Check page count in TxQ,
 	*/
-	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++)
-	{
+	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++) {
 		BOOLEAN bFree = TRUE;
 		RTMP_IO_READ32(pAd, 0x438, &MacReg);
 		if (MacReg != 0)
@@ -194,15 +190,13 @@ VOID RT65xxDisableTxRx(
 			bFree = FALSE;
 		if (bFree)
 			break;
-		if (MacReg == 0xFFFFFFFF)
-		{
+		if (MacReg == 0xFFFFFFFF) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 			return;
 		}
 	}
 
-	if (MTxCycle >= 2000)
-	{
+	if (MTxCycle >= 2000) {
 		DBGPRINT(RT_DEBUG_ERROR, ("Check TxQ page count max\n"));
 		RTMP_IO_READ32(pAd, 0x0a30, &MacReg);
 		DBGPRINT(RT_DEBUG_TRACE, ("0x0a30 = 0x%08x\n", MacReg));
@@ -218,40 +212,33 @@ VOID RT65xxDisableTxRx(
 	/*
 		Check MAC Tx idle
 	*/
-	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++)
-	{
+	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++) {
 		RTMP_IO_READ32(pAd, MAC_STATUS_CFG, &MacReg);
 		if (MacReg & 0x1)
 			RtmpusecDelay(50);
 		else
 			break;
 
-		if (MacReg == 0xFFFFFFFF)
-		{
+		if (MacReg == 0xFFFFFFFF) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 			return;
 		}
 	}
 
-	if (MTxCycle >= 2000)
-	{
+	if (MTxCycle >= 2000) {
 		DBGPRINT(RT_DEBUG_ERROR, ("Check MAC Tx idle max(0x%08x)\n", MacReg));
 		bResetWLAN = TRUE;
 	}
 
-	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) == FALSE)
-	{
-		if (Level == RTMP_HALT)
-		{
+	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) == FALSE) {
+		if (Level == RTMP_HALT) {
 			/*
 				Disable MAC TX/RX
 			*/
 			RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &MacReg);
 			MacReg &= ~(0x0000000c);
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacReg);
-		}
-		else
-		{
+		} else {
 			/*
 				Disable MAC RX
 			*/
@@ -264,8 +251,7 @@ VOID RT65xxDisableTxRx(
 	/*
 		Check page count in RxQ,
 	*/
-	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++)
-	{
+	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++) {
 		bFree = TRUE;
 		RTMP_IO_READ32(pAd, 0x430, &MacReg);
 
@@ -288,8 +274,7 @@ VOID RT65xxDisableTxRx(
 		if (bFree)
 			CheckFreeTimes++;
 
-		if (MacReg == 0xFFFFFFFF)
-		{
+		if (MacReg == 0xFFFFFFFF) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 			return;
 		}
@@ -302,8 +287,7 @@ VOID RT65xxDisableTxRx(
 
 	RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_POLL_IDLE);
 
-	if (MTxCycle >= 2000)
-	{
+	if (MTxCycle >= 2000) {
 		DBGPRINT(RT_DEBUG_ERROR, ("Check RxQ page count max\n"));
 
 		RTMP_IO_READ32(pAd, 0x0a30, &MacReg);
@@ -320,22 +304,19 @@ VOID RT65xxDisableTxRx(
 	/*
 		Check MAC Rx idle
 	*/
-	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++)
-	{
+	for (MTxCycle = 0; MTxCycle < 2000; MTxCycle++) {
 		RTMP_IO_READ32(pAd, MAC_STATUS_CFG, &MacReg);
 		if (MacReg & 0x2)
 			RtmpusecDelay(50);
 		else
 			break;
-		if (MacReg == 0xFFFFFFFF)
-		{
+		if (MacReg == 0xFFFFFFFF) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 			return;
 		}
 	}
 
-	if (MTxCycle >= 2000)
-	{
+	if (MTxCycle >= 2000) {
 		DBGPRINT(RT_DEBUG_ERROR, ("Check MAC Rx idle max(0x%08x)\n", MacReg));
 		bResetWLAN = TRUE;
 	}
@@ -343,8 +324,7 @@ VOID RT65xxDisableTxRx(
 	StopDmaRx(pAd, Level);
 
 	if ((Level == RTMP_HALT) &&
-		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) == FALSE))
-	{
+		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) == FALSE)) {
 		if (!pAd->chipCap.ram_code_protect)
 			NICEraseFirmware(pAd);
 
@@ -365,17 +345,16 @@ VOID RT65xxDisableTxRx(
 }
 
 
-
-
 VOID dump_bw_info(RTMP_ADAPTER *pAd)
 {
 		UINT32 core_r1, agc_r0, be_r0, band_cfg;
-		static UCHAR *bw_str[]={"20", "10", "40", "80"};
 		UCHAR bw, prim_ch_idx, decode_cap;
-		static UCHAR *decode_str[] = {"0", "20", "40", "20/40",
-									"80", "20/80", "40/80", "20/40/80"};
+#ifdef DBG
+		static UCHAR *bw_str[]={"20", "10", "40", "80"};
+		static UCHAR *decode_str[] = {
+			"0", "20", "40", "20/40", "80", "20/80", "40/80", "20/40/80"};
+#endif
 		UCHAR tx_prim;
-
 
 		RTMP_BBP_IO_READ32(pAd, CORE_R1, &core_r1);
 		RTMP_BBP_IO_READ32(pAd, AGC1_R0, &agc_r0);
