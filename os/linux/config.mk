@@ -413,7 +413,8 @@ endif #// endif of RT2860_MODE == AP //
 
 
 ifeq ($(RT28xx_MODE),STA)
-WFLAGS += -DCONFIG_STA_SUPPORT -DSCAN_SUPPORT -DDBG
+WFLAGS += -DCONFIG_STA_SUPPORT -DSCAN_SUPPORT
+
 
 ifeq ($(HAS_MT76XX_BT_COEXISTENCE_SUPPORT),y)
 WFLAGS += -DMT76XX_BTCOEX_SUPPORT
@@ -1405,14 +1406,7 @@ export CFLAGS
 endif
 
 ifeq ($(PLATFORM),PC)
-	ifneq (,$(findstring 2.4,$(LINUX_SRC)))
-	# Linux 2.4
-	CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -DMODULE -DMODVERSIONS -include $(LINUX_SRC)/include/linux/modversions.h $(WFLAGS)
-	export CFLAGS
-	else
-	# Linux 2.6
-	EXTRA_CFLAGS := $(WFLAGS)
-	endif
+	EXTRA_CFLAGS := $(WFLAGS) $(DBGFLAGS)
 endif
 
 ifeq ($(PLATFORM),INTELP6)
