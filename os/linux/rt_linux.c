@@ -4198,7 +4198,7 @@ Note:
 */
 VOID RtmpOsPktTailAdjust(PNDIS_PACKET pNetPkt, UINT removedTagLen)
 {
-	OS_PKT_TAIL_ADJUST(pNetPkt, removedTagLen);
+	skb_set_tail_pointer(pNetPkt, pNetPkt->len - removedTagLen);
 }
 
 
