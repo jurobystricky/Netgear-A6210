@@ -9550,11 +9550,6 @@ INT	Set_MemDebug_Proc(
 	IN	PRTMP_ADAPTER	pAd,
 	IN	PSTRING			arg)
 {
-#ifdef VENDOR_FEATURE2_SUPPORT
-	printk("Number of Packet Allocated = %lu\n", OS_NumOfPktAlloc);
-	printk("Number of Packet Freed = %lu\n", OS_NumOfPktFree);
-	printk("Offset of Packet Allocated/Freed = %lu\n", OS_NumOfPktAlloc - OS_NumOfPktFree);
-#endif /* VENDOR_FEATURE2_SUPPORT */
 	return TRUE;
 }
 
