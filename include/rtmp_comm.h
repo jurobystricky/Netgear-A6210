@@ -180,17 +180,6 @@ Ndis802_11InfrastructureMax	/* Not a real value, defined as upper bound */
 
 
 /* ======================== Memory ========================================== */
-#ifdef VENDOR_FEATURE2_SUPPORT
-
-extern ULONG OS_NumOfPktAlloc, OS_NumOfPktFree;
-
-#define MEM_DBG_PKT_ALLOC_INC(__pPacket)	OS_NumOfPktAlloc ++;
-#define MEM_DBG_PKT_FREE_INC(__pPacket)		OS_NumOfPktFree ++;
-#else
-#define MEM_DBG_PKT_ALLOC_INC(__pPacket)
-#define MEM_DBG_PKT_FREE_INC(__pPacket)
-#endif /* VENDOR_FEATURE2_SUPPORT */
-
 
 /* All PHY rate summary in TXD */
 /* Preamble MODE in TxD */
