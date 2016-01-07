@@ -117,9 +117,6 @@ RTMP_DRV_USB_COMPLETE_HANDLER	RtmpDrvUsbBulkCmdRspEventComplete;
 
 extern RTMP_NET_ABL_OPS *pRtmpDrvNetOps;
 
-VOID RtmpNetOpsInit(VOID *pNetOpsOrg);
-VOID RtmpNetOpsSet(VOID *pNetOpsOrg);
-
 /* ========================================================================== */
 #if defined(RTMP_MODULE_OS) && defined(OS_ABL_FUNC_SUPPORT)
 /* for UTIL/NETIF module in OS ABL mode */
