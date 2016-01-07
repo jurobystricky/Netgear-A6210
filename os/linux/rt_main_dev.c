@@ -340,7 +340,6 @@ int rt28xx_open(VOID *dev)
 #endif /* P2P_APCLI_SUPPORT */
 #endif /* MBSS_SUPPORT */
 
-
 #ifdef APCLI_SUPPORT
 #if defined(P2P_APCLI_SUPPORT) || defined(RT_CFG80211_P2P_CONCURRENT_DEVICE)
 #else
@@ -362,17 +361,10 @@ int rt28xx_open(VOID *dev)
 #endif /* LINUX */
 
 	RTMPDrvOpen(pAd);
-
-#ifdef VENDOR_FEATURE2_SUPPORT
-	printk("Number of Packet Allocated in open = %lu\n", OS_NumOfPktAlloc);
-	printk("Number of Packet Freed in open = %lu\n", OS_NumOfPktFree);
-#endif /* VENDOR_FEATURE2_SUPPORT */
-
 	return retval;
 
 err:
 	RTMP_DRIVER_IRQ_RELEASE(pAd);
-
 	return -1;
 }
 
@@ -537,7 +529,6 @@ int rt28xx_send_packets(struct sk_buff *skb, struct net_device *ndev)
 	}
 
 	NdisZeroMemory((PUCHAR)&skb->cb[CB_OFF], 26);
-	MEM_DBG_PKT_ALLOC_INC(skb);
 
 	return rt28xx_packet_xmit(skb);
 }
