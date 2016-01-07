@@ -209,8 +209,8 @@ BOOLEAN CFG80211_checkScanTable(VOID *pAdCB);
 VOID CFG80211_P2pClientSendNullFrame(VOID *pAdCB, INT PwrMgmt);
 BOOLEAN CFG80211DRV_OpsRemainOnChannel(VOID *pAdOrg, VOID *pData, UINT32 duration);
 BOOLEAN CFG80211DRV_OpsCancelRemainOnChannel(VOID *pAdOrg, UINT32 cookie);
-BOOLEAN CFG80211_CheckActionFrameType(RTMP_ADAPTER  *pAd, PUCHAR preStr, PUCHAR pData,
-	UINT32 length);
+BOOLEAN CFG80211_CheckActionFrameType(RTMP_ADAPTER  *pAd, PUCHAR preStr, 
+		VOID *pData, UINT32 length);
 BOOLEAN CFG80211_SyncPacketWmmIe(RTMP_ADAPTER *pAd, VOID *pData, ULONG dataLen);
 BOOLEAN CFG80211_HandleP2pMgmtFrame(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR OpMode);
 INT CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data);
