@@ -2671,7 +2671,7 @@ if (0) {
 		return;
 	}
 
-	STATS_INC_RX_PACKETS(pAd, FromWhichBSSID);
+//	STATS_INC_RX_PACKETS(pAd, FromWhichBSSID);
 
 #ifdef RTMP_MAC_USB
 #ifdef DOT11_N_SUPPORT
@@ -2786,7 +2786,7 @@ if (0) {
 		return;
 	}
 
-	STATS_INC_RX_PACKETS(pAd, FromWhichBSSID);
+//	STATS_INC_RX_PACKETS(pAd, FromWhichBSSID);
 
 #ifdef RTMP_MAC_USB
 #ifdef DOT11_N_SUPPORT
