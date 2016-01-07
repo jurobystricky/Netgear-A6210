@@ -370,30 +370,6 @@ VOID RtmpOsIntUnLock(NDIS_SPIN_LOCK *pLockOrg, ULONG IrqFlags);
 VOID RtmpOsGetPid(ULONG *pDst, ULONG PID);
 VOID RtmpOsTaskPidInit(RTMP_OS_PID *pPid);
 
-/* OS I/O */
-VOID RTMP_PCI_Writel(ULONG Value, VOID *pAddr);
-VOID RTMP_PCI_Writew(ULONG Value, VOID *pAddr);
-VOID RTMP_PCI_Writeb(ULONG Value, VOID *pAddr);
-ULONG RTMP_PCI_Readl(VOID *pAddr);
-ULONG RTMP_PCI_Readw(VOID *pAddr);
-ULONG RTMP_PCI_Readb(VOID *pAddr);
-
-int RtmpOsPciConfigReadWord(
-	IN	VOID					*pDev,
-	IN	UINT32					Offset,
-	OUT UINT16					*pValue);
-
-int RtmpOsPciConfigWriteWord(VOID *pDev, UINT32 Offset, UINT16 Value);
-int RtmpOsPciConfigReadDWord(VOID *pDev, UINT32 Offset, UINT32 *pValue);
-int RtmpOsPciConfigWriteDWord(VOID *pDev, UINT32 Offset, UINT32 Value);
-
-int RtmpOsPciFindCapability(VOID *pDev, INT Cap);
-
-VOID *RTMPFindHostPCIDev(VOID *pPciDevSrc);
-
-int RtmpOsPciMsiEnable(VOID *pDev);
-VOID RtmpOsPciMsiDisable(VOID *pDev);
-
 /* OS Wireless */
 ULONG RtmpOsMaxScanDataGet(VOID);
 
@@ -473,12 +449,6 @@ VOID RtmpDrvAllRFPrint(
 	IN VOID *pReserved,
 	IN UCHAR *pBuf,
 	IN UINT32 BufLen);
-
-int RtmpOSIRQRelease(
-	IN	PNET_DEV				pNetDev,
-	IN	UINT32					infType,
-	IN	PPCI_DEV				pci_dev,
-	IN	BOOLEAN					*pHaveMsi);
 
 VOID RtmpOsWlanEventSet(
 	IN	VOID					*pReserved,
