@@ -284,7 +284,7 @@ VOID RtmpOsMlmeUp(RTMP_OS_TASK *pMlmeQTask);
 
 VOID RtmpOsInitCompletion(RTMP_OS_COMPLETION *pCompletion);
 VOID RtmpOsExitCompletion(RTMP_OS_COMPLETION *pCompletion);
-VOID RtmpOsComplete(RTMP_OS_COMPLETION *pCompletion);
+BOOLEAN RtmpOsComplete(RTMP_OS_COMPLETION *pCompletion);
 ULONG RtmpOsWaitForCompletionTimeout(RTMP_OS_COMPLETION *pCompletion, ULONG Timeout); 
 
 /* OS Task */
