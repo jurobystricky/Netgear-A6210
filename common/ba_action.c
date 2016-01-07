@@ -1738,9 +1738,6 @@ static VOID ba_enqueue_reordering_packet(
 
 		convert_reordering_packet_to_preAMSDU_or_802_3_packet(pAd, pRxBlk, FromWhichBSSID);
 
-		STATS_INC_RX_PACKETS(pAd, FromWhichBSSID);
-
-
 		/* it is necessary for reordering packet to record
 			which BSS it come from
 		*/
@@ -1805,10 +1802,6 @@ static VOID ba_enqueue_reordering_packet_hdr_trns(
 		RTMP_OS_PKT_INIT(pRxBlk->pRxPacket,
 					get_netdev_from_bssid(pAd, FromWhichBSSID),
 					pRxBlk->pTransData, pRxBlk->TransDataSize);
-
-
-		STATS_INC_RX_PACKETS(pAd, FromWhichBSSID);
-
 
 		/* it is necessary for reordering packet to record
 			which BSS it come from
