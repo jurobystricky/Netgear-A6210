@@ -351,7 +351,6 @@ void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 	PNDIS_PACKET pRxPkt = pPacket;
 
 	ASSERT(pPacket);
-	MEM_DBG_PKT_FREE_INC(pPacket);
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef APCLI_SUPPORT
@@ -402,7 +401,6 @@ void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 				RtmpOsPktRcvHandle(pRxPkt);
 			} else {
 				dev_kfree_skb_any(pRxPkt);
-				MEM_DBG_PKT_FREE_INC(pAd);
 			}
 		} else {
 			RtmpOsPktProtocolAssign(pRxPkt);
