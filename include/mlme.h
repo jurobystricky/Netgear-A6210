@@ -32,10 +32,6 @@
 
 #include "rtmp_dot11.h"
 
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
-
-
 /* maximum supported capability information - */
 /* ESS, IBSS, Privacy, Short Preamble, Spectrum mgmt, Short Slot */
 #define SUPPORTED_CAPABILITY_INFO   0x0533
@@ -1117,10 +1113,6 @@ typedef struct _MLME_AUX {
 	RALINK_TIMER_STRUCT WpaDisassocAndBlockAssocTimer;
 #endif /* APCLI_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
-
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
-
 } MLME_AUX, *PMLME_AUX;
 
 typedef struct _MLME_ADDBA_REQ_STRUCT{
@@ -1181,9 +1173,6 @@ typedef struct _MLME_START_REQ_STRUCT {
     CHAR        Ssid[MAX_LEN_OF_SSID];
     UCHAR       SsidLen;
 } MLME_START_REQ_STRUCT, *PMLME_START_REQ_STRUCT;
-
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
 
 typedef struct GNU_PACKED _EID_STRUCT{
     UCHAR   Eid;
