@@ -189,7 +189,6 @@ INT RtmpTimerQThread(ULONG Context)
 	RtmpOSTaskCustomize(pTask);
 	RtmpTimerQHandle(pAd);
 
-	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__FUNCTION__));
 	/* notify the exit routine that we're actually exiting now
 	 *
 	 * complete()/wait_for_completion() is similar to up()/down(),
@@ -206,6 +205,7 @@ INT RtmpTimerQThread(ULONG Context)
 	 */
 	RtmpOSTaskNotifyToExit(pTask);
 
+	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__FUNCTION__));
 	return 0;
 
 }
