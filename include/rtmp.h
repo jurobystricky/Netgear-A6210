@@ -3985,13 +3985,6 @@ struct _RTMP_ADAPTER {
 #define TIME_ONE_SECOND		(1000000/TIME_BASE)
 	UCHAR flg_be_adjust;
 	ULONG be_adjust_last_time;
-
-#ifdef IKANOS_VX_1X0
-	struct IKANOS_TX_INFO IkanosTxInfo;
-	struct IKANOS_TX_INFO IkanosRxInfo[HW_BEACON_MAX_NUM + MAX_WDS_ENTRY +
-					   MAX_APCLI_NUM + MAX_MESH_NUM];
-#endif /* IKANOS_VX_1X0 */
-
 	UINT8 FlgCtsEnabled;
 	UINT8 PM_FlgSuspend;
 	UCHAR FifoUpdateDone, FifoUpdateRx;
