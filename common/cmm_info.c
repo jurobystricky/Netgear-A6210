@@ -1250,7 +1250,7 @@ PRTMP_ADAPTER pAd,
 */
 BOOLEAN Set_Debug_Proc(RTMP_ADAPTER *pAd, PSTRING arg)
 {
-	ULONG dbg;
+	u32 dbg;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("==>%s()\n", __FUNCTION__));
 
@@ -1258,7 +1258,7 @@ BOOLEAN Set_Debug_Proc(RTMP_ADAPTER *pAd, PSTRING arg)
 	if ( dbg <= RT_DEBUG_LOUD)
 		RTDebugLevel = dbg;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("<==%s(RTDebugLevel = %ld)\n",
+	DBGPRINT(RT_DEBUG_TRACE, ("<==%s(RTDebugLevel = %d)\n",
 				__FUNCTION__, RTDebugLevel));
 
 	return TRUE;

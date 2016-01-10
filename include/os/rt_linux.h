@@ -629,11 +629,11 @@ typedef struct os_cookie * POS_COOKIE;
 
 #ifdef DBG
 
-extern ULONG RTDebugLevel;
+extern u32 RTDebugLevel;
 extern ULONG RTDebugFunc;
 
 #define DBGPRINT_RAW(Level, Fmt)    \
-do {                                   \
+do {						\
 	ULONG __gLevel = (Level) & 0xff;\
 	ULONG __fLevel = ((Level) & 0xffffff00);\
 	if (__gLevel <= RTDebugLevel)      \
