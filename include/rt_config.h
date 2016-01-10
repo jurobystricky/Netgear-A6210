@@ -31,18 +31,14 @@
 #ifndef	__RT_CONFIG_H__
 #define	__RT_CONFIG_H__
 
-
 #include "rtmp_comm.h"
-
 #include "rtmp_def.h"
 #include "rtmp_chip.h"
 #include "rtmp_timer.h"
 
-
 #ifdef AGS_SUPPORT
 #include "ags.h"
-#endif /* AGS_SUPPORT */
-
+#endif
 
 #include "mlme.h"
 #include "crypt_md5.h"
@@ -50,15 +46,16 @@
 #include "crypt_hmac.h"
 #include "crypt_aes.h"
 #include "crypt_arc4.h"
-/*#include "rtmp_cmd.h" */
 #include "rtmp.h"
 #include "wpa.h"
 #include "chlist.h"
 #include "spectrum.h"
+
 #ifdef CONFIG_AP_SUPPORT
 #include "ap.h"
 #include "ap_autoChSel.h"
-#endif /* CONFIG_AP_SUPPORT */
+#endif
+
 #include "rt_os_util.h"
 
 #include "eeprom.h"
@@ -72,56 +69,39 @@
 
 #include "rt_os_net.h"
 
-
 #ifdef UAPSD_SUPPORT
 #include "uapsd.h"
-#endif /* UAPSD_SUPPORT */
+#endif
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef MBSS_SUPPORT
 #include "ap_mbss.h"
-#endif /* MBSS_SUPPORT */
-
+#endif
 
 #ifdef APCLI_SUPPORT
 #include "ap_apcli.h"
-#endif /* APCLI_SUPPORT */
-
+#endif
 
 #include "ap_ids.h"
 #include "ap_cfg.h"
 
 #endif /* CONFIG_AP_SUPPORT */
 
-
-
 #ifdef CONFIG_STA_SUPPORT
 #include "sta.h"
-#endif /* CONFIG_STA_SUPPORT */
+#endif
 
 #ifdef BLOCK_NET_IF
 #include "netif_block.h"
-#endif /* BLOCK_NET_IF */
-
+#endif
 
 #ifdef RALINK_ATE
 #include "rt_ate.h"
-#endif /* RALINK_ATE */
-
-
-
-
-
-
-
+#endif
 
 #if defined(AP_WSC_INCLUDED) || defined(STA_WSC_INCLUDED)
 #define WSC_INCLUDED
 #endif
-
-#ifdef CONFIG_AP_SUPPORT
-#endif /* CONFIG_AP_SUPPORT */
-
 
 #ifdef APCLI_WPA_SUPPLICANT_SUPPORT
 #ifndef APCLI_SUPPORT
@@ -130,66 +110,46 @@
 #define WPA_SUPPLICANT_SUPPORT
 #endif /* APCLI_WPA_SUPPLICANT_SUPPORT */
 
-
 #ifdef CONFIG_STA_SUPPORT
 #ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
 #ifndef WPA_SUPPLICANT_SUPPORT
 #error "Build for being controlled by NetworkManager or wext, please set HAS_WPA_SUPPLICANT=y and HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y"
 #endif /* WPA_SUPPLICANT_SUPPORT */
 #endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
-
 #endif /* CONFIG_STA_SUPPORT */
-
-
-
-#ifdef IKANOS_VX_1X0
-#include "vr_ikans.h"
-#endif /* IKANOS_VX_1X0 */
-
-
 
 #ifdef DOT11W_PMF_SUPPORT
 #include "pmf.h"
-#endif /* DOT11W_PMF_SUPPORT */
-
-
-
-
+#endif
 
 #ifdef DOT11_VHT_AC
 #include "vht.h"
-#endif /* DOT11_VHT_AC */
+#endif
+
 #ifdef CONFIG_STA_SUPPORT
 #include "sta_cfg.h"
-#endif /* CONFIG_STA_SUPPORT */
-
-
-
+#endif
 
 #ifdef WORKQUEUE_BH
 #include <linux/workqueue.h>
-#endif /* WORKQUEUE_BH / */
+#endif
 
 #ifdef RTMP_FREQ_CALIBRATION_SUPPORT
 #include "frq_cal.h"
-#endif /* RTMP_FREQ_CALIBRATION_SUPPORT */
+#endif
 
 #ifdef TXBF_SUPPORT
 #include "rt_txbf.h"
-#endif /* TXBF_SUPPORT */
-
+#endif
 
 #ifdef RLT_MAC
 #include "mac_ral/fce.h"
-#endif /* RLT_MAC */
+#endif
 
-
-#ifdef LINUX
 #ifdef RT_CFG80211_SUPPORT
 #include "cfg80211extr.h"
 #include "cfg80211_cmm.h"
-#endif /* RT_CFG80211_SUPPORT */
-#endif /* LINUX */
+#endif
 
 #endif	/* __RT_CONFIG_H__ */
 
