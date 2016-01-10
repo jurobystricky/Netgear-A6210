@@ -220,8 +220,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 
 	/* We should read EEPROM for all cases */
 	NICReadEEPROMParameters(pAd, (PSTRING)pDefaultMac);
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
+
 	DBGPRINT(RT_DEBUG_OFF, ("2. Phy Mode = %d\n", pAd->CommonCfg.PhyMode));
 
 	/* After operation mode is finialized, init the AP or STA mode */
@@ -345,10 +344,6 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 #endif /* CONFIG_AP_SUPPORT */
 
 	/* APInitialize(pAd);*/
-
-#ifdef IKANOS_VX_1X0
-	VR_IKANOS_FP_Init(pAd->ApCfg.BssidNum, pAd->PermanentAddress);
-#endif /* IKANOS_VX_1X0 */
 
 #ifdef RTMP_MAC_USB
 	if (pAd->chipCap.MCUType == M8051) {
@@ -582,8 +577,6 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 
 	RTMP_CLEAR_PSFLAG(pAd, fRTMP_PS_MCU_SLEEP);
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef RTMP_MAC
 	// TODO: shiang-usw, check this for RMTP_MAC
@@ -683,7 +676,6 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 	UINT32 i = 0;
 
-
 #ifdef RT_CFG80211_SUPPORT
 #ifdef CONFIG_AP_SUPPORT
 		if (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP && RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_START_UP))
@@ -705,10 +697,9 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef CONFIG_STA_SUPPORT
 #ifdef CREDENTIAL_STORE
-		if (pAd->IndicateMediaState == NdisMediaStateConnected)
+		if (pAd->IndicateMediaState == NdisMediaStateConnected) {
 			StoreConnectInfo(pAd);
-		else
-		{
+		} else {
 			RTMP_SEM_LOCK(&pAd->StaCtIf.Lock);
 			pAd->StaCtIf.Changeable = FALSE;
 			RTMP_SEM_UNLOCK(&pAd->StaCtIf.Lock);
@@ -730,7 +721,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 		RTMPPCIeLinkCtrlValueRestore(pAd, RESTORE_CLOSE);
 #endif /* PCIE_PS_SUPPORT */
 
-		/* If dirver doesn't wake up firmware here,*/
+		/* If driver doesn't wake up firmware here,*/
 		/* NICLoadFirmware will hang forever when interface is up again.*/
 		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE))
 		{
@@ -761,9 +752,6 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 #endif /* EXT_BUILD_CHANNEL_LIST */
 	pAd->CommonCfg.bCountryFlag = FALSE;
 
-
-
-
 	for (i = 0 ; i < NUM_OF_TX_RING; i++)
 	{
 		while (pAd->DeQueueRunning[i] == TRUE)
@@ -779,7 +767,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 		BOOLEAN Cancelled = FALSE;
 #ifdef RTMP_MAC_USB
 		RTMPCancelTimer(&pAd->CommonCfg.BeaconUpdateTimer, &Cancelled);
-#endif /* RTMP_MAC_USB */
+#endif
 
 #ifdef DOT11N_DRAFT3
 		if (pAd->CommonCfg.Bss2040CoexistFlag & BSS_2040_COEXIST_TIMER_FIRED)
@@ -799,7 +787,6 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 	/* Close net tasklets*/
 	RtmpNetTaskExit(pAd);
-
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
@@ -828,11 +815,8 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 /*#endif  AUTO_CH_SELECT_ENHANCE */
 	}
 #endif /* CONFIG_AP_SUPPORT */
-
 	MeasureReqTabExit(pAd);
 	TpcReqTabExit(pAd);
-
-
 
 	/* Close kernel threads*/
 	RtmpMgmtTaskExit(pAd);
@@ -846,7 +830,6 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 		ChannelInfoDestroy(pAd);
 	}
 #endif /* CONFIG_AP_SUPPORT */
-
 
 	/* Free IRQ*/
 	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE))
@@ -883,11 +866,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 	/* Free BA reorder resource*/
 	ba_reordering_resource_release(pAd);
 #endif /* DOT11_N_SUPPORT */
-
 	UserCfgExit(pAd); /* must after ba_reordering_resource_release */
-
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
 
 	RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_START_UP);
 
@@ -908,9 +887,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef RTMP_TIMER_TASK_SUPPORT
 	NdisFreeSpinLock(&pAd->TimerQLock);
-#endif /* RTMP_TIMER_TASK_SUPPORT */
-
-
+#endif
 }
 
 
