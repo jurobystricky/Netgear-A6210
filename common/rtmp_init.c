@@ -3008,10 +3008,10 @@ VOID RTMP_AllTimerListRelease(RTMP_ADAPTER *pAd)
 
 	/* try to find old entry */
 	pObj = (LIST_RESOURCE_OBJ_ENTRY *)(pRscList->pHead);
-	while (1) {
-		if (pObj == NULL)
-			break;
-		DBGPRINT(RT_DEBUG_TRACE, ("%s: Cancel timer obj %lx!\n", __FUNCTION__, (ULONG)(pObj->pRscObj)));
+	while (pObj != NULL) {
+		DBGPRINT(RT_DEBUG_TRACE, ("%s: Cancel timer obj %lx!\n", 
+			__FUNCTION__, (ULONG)(pObj->pRscObj)));
+
 		pObjOld = pObj;
 		pObj = pObj->pNext;
 		RTMPReleaseTimer(pObjOld->pRscObj, &Cancel);
@@ -3205,7 +3205,7 @@ VOID RTMPCancelTimer(RALINK_TIMER_STRUCT *pTimer, BOOLEAN *pCancelled)
 
 		DBGPRINT(RT_DEBUG_INFO,("%s: %lx\n",__FUNCTION__, (ULONG)pTimer));
 	} else {
-		DBGPRINT(RT_DEBUG_INFO,("RTMPCancelTimer failed, Timer hasn't been initialize!\n"));
+		DBGPRINT(RT_DEBUG_WARN,("RTMPCancelTimer failed, Timer hasn't been initialized!\n"));
 	}
 
 	RTMP_SEM_UNLOCK(&TimerSemLock);
@@ -3238,9 +3238,9 @@ VOID RTMPReleaseTimer(RALINK_TIMER_STRUCT *pTimer, BOOLEAN *pCancelled)
 
 		RTMP_TimerListRelease(pTimer->pAd, pTimer);
 
-		DBGPRINT(RT_DEBUG_INFO,("%s: %lx\n",__FUNCTION__, (ULONG)pTimer));
+		DBGPRINT(RT_DEBUG_INFO,("%s: %p\n",__FUNCTION__, pTimer));
 	} else {
-		DBGPRINT(RT_DEBUG_INFO,("RTMPReleasefailed, Timer hasn't been initialize!\n"));
+		DBGPRINT(RT_DEBUG_WARN,("RTMPReleasTimer failed, Timer hasn't been initialized!\n"));
 	}
 
 	RTMP_SEM_UNLOCK(&TimerSemLock);
