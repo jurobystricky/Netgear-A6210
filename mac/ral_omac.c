@@ -26,6 +26,7 @@
 
 #include "rt_config.h"
 
+#error FIX ME IF USED
 
 INT rtmp_get_rxwi_phymode(RXWI_STRUC *rxwi)
 {
