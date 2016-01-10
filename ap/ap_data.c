@@ -4388,10 +4388,6 @@ VOID APHandleRxDataFrame(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk)
 			pEntry->RxBytes += pRxBlk->MPDUtotalByteCnt;
 			INC_COUNTER64(pEntry->RxPackets);
 		}
-#ifdef IKANOS_VX_1X0
-		RTMP_SET_PACKET_IF(pRxPacket, FromWhichBSSID);
-#endif /* IKANOS_VX_1X0 */
-
 		APRxDataFrameAnnounce(pAd, pEntry, pRxBlk, FromWhichBSSID);
 	}
 	else
@@ -4765,9 +4761,6 @@ if (0 /*!(pRxInfo->Mcast || pRxInfo->Bcast)*/){
 			pEntry->RxBytes+=pRxBlk->MPDUtotalByteCnt;
 			INC_COUNTER64(pEntry->RxPackets);
 		}
-#ifdef IKANOS_VX_1X0
-		RTMP_SET_PACKET_IF(pRxPacket, FromWhichBSSID);
-#endif /* IKANOS_VX_1X0 */
 		APRxDataFrameAnnounce_Hdr_Trns(pAd, pEntry, pRxBlk, FromWhichBSSID);
 	}
 	else
