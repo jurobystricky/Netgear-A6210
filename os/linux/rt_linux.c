@@ -54,13 +54,9 @@
 #define RT_CONFIG_IF_OPMODE_ON_STA(__OpMode)
 #endif
 
-#ifdef DBG
-ULONG RTDebugLevel = RT_DEBUG_WARN;
-ULONG RTDebugFunc = 0;
-#endif
 
 #ifdef OS_ABL_FUNC_SUPPORT
-ULONG RTPktOffsetData = 0, RTPktOffsetLen = 0, RTPktOffsetCB = 0;
+static ULONG RTPktOffsetData = 0, RTPktOffsetLen = 0, RTPktOffsetCB = 0;
 #endif
 
 /*
@@ -70,10 +66,7 @@ ULONG RTPktOffsetData = 0, RTPktOffsetLen = 0, RTPktOffsetCB = 0;
 static BOOLEAN FlgIsUtilInit = FALSE;
 OS_NDIS_SPIN_LOCK UtilSemLock;
 
-#ifdef OS_ABL_FUNC_SUPPORT
-static BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen);
-static BOOLEAN RTMP_OS_Remove_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc);
-#endif
+static void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev);
 
 /*
 ========================================================================
@@ -98,9 +91,8 @@ VOID RtmpUtilInit(VOID)
 }
 
 /* timeout -- ms */
-static inline VOID __RTMP_SetPeriodicTimer(
-	IN OS_NDIS_MINIPORT_TIMER * pTimer,
-	IN unsigned long timeout)
+static inline VOID __RTMP_SetPeriodicTimer(OS_NDIS_MINIPORT_TIMER * pTimer,
+	unsigned long timeout)
 {
 	timeout = ((timeout * OS_HZ) / 1000);
 	pTimer->expires = jiffies + timeout;
@@ -108,11 +100,9 @@ static inline VOID __RTMP_SetPeriodicTimer(
 }
 
 /* convert NdisMInitializeTimer --> RTMP_OS_Init_Timer */
-static inline VOID __RTMP_OS_Init_Timer(
-	IN VOID *pReserved,
-	IN OS_NDIS_MINIPORT_TIMER * pTimer,
-	IN TIMER_FUNCTION function,
-	IN PVOID data)
+static inline VOID __RTMP_OS_Init_Timer(VOID *pReserved,
+	OS_NDIS_MINIPORT_TIMER * pTimer, TIMER_FUNCTION function,
+	PVOID data)
 {
 	if (!timer_pending(pTimer)) {
 		init_timer(pTimer);
@@ -121,9 +111,8 @@ static inline VOID __RTMP_OS_Init_Timer(
 	}
 }
 
-static inline VOID __RTMP_OS_Add_Timer(
-	IN OS_NDIS_MINIPORT_TIMER * pTimer,
-	IN unsigned long timeout)
+static inline VOID __RTMP_OS_Add_Timer(OS_NDIS_MINIPORT_TIMER * pTimer,
+	unsigned long timeout)
 {
 	if (timer_pending(pTimer))
 		return;
@@ -133,17 +122,15 @@ static inline VOID __RTMP_OS_Add_Timer(
 	add_timer(pTimer);
 }
 
-static inline VOID __RTMP_OS_Mod_Timer(
-	IN OS_NDIS_MINIPORT_TIMER * pTimer,
-	IN unsigned long timeout)
+static inline VOID __RTMP_OS_Mod_Timer(OS_NDIS_MINIPORT_TIMER * pTimer,
+	unsigned long timeout)
 {
 	timeout = ((timeout * OS_HZ) / 1000);
 	mod_timer(pTimer, jiffies + timeout);
 }
 
-static inline VOID __RTMP_OS_Del_Timer(
-	IN OS_NDIS_MINIPORT_TIMER * pTimer,
-	OUT BOOLEAN *pCancelled)
+static inline VOID __RTMP_OS_Del_Timer(OS_NDIS_MINIPORT_TIMER * pTimer,
+	BOOLEAN *pCancelled)
 {
 	if (timer_pending(pTimer))
 		*pCancelled = del_timer_sync(pTimer);
@@ -151,8 +138,7 @@ static inline VOID __RTMP_OS_Del_Timer(
 		*pCancelled = TRUE;
 }
 
-static inline VOID __RTMP_OS_Release_Timer(
-	IN OS_NDIS_MINIPORT_TIMER * pTimer)
+static inline VOID __RTMP_OS_Release_Timer(OS_NDIS_MINIPORT_TIMER * pTimer)
 {
 	/* nothing to do */
 }
@@ -322,9 +308,8 @@ NDIS_STATUS RTMPAllocateNdisPacket(VOID *pReserved, PNDIS_PACKET *ppPacket,
 		NdisMoveMemory(pPacket->data, pHeader, HeaderLen);
 	if (DataLen > 0)
 		NdisMoveMemory(pPacket->data + HeaderLen, pData, DataLen);
-	skb_put(pPacket, HeaderLen + DataLen);
-/* printk(KERN_ERR "%s : pPacket = %p, len = %d\n", __FUNCTION__, pPacket, GET_OS_PKT_LEN(pPacket));*/
 
+	skb_put(pPacket, HeaderLen + DataLen);
 	*ppPacket = (PNDIS_PACKET)pPacket;
 
 	return NDIS_STATUS_SUCCESS;
@@ -487,7 +472,7 @@ PNDIS_PACKET duplicate_pkt_with_VLAN(PNET_DEV pNetDev, USHORT VLAN_VID,
 
 	========================================================================
 */
-BOOLEAN RTMPL2FrameTxAction(VOID * pCtrlBkPtr, PNET_DEV pNetDev, 
+BOOLEAN RTMPL2FrameTxAction(VOID * pCtrlBkPtr, PNET_DEV pNetDev,
 	RTMP_CB_8023_PACKET_ANNOUNCE _announce_802_3_packet, UCHAR apidx,
 	UCHAR *pData, UINT32 data_len, UCHAR OpMode)
 {
@@ -495,7 +480,7 @@ BOOLEAN RTMPL2FrameTxAction(VOID * pCtrlBkPtr, PNET_DEV pNetDev,
 
 	if (!skb) {
 		DBGPRINT(RT_DEBUG_ERROR,
-				("%s : Error! Can't allocate a skb.\n", 
+				("%s : Error! Can't allocate a skb.\n",
 				__FUNCTION__));
 		return FALSE;
 	}
@@ -511,15 +496,14 @@ BOOLEAN RTMPL2FrameTxAction(VOID * pCtrlBkPtr, PNET_DEV pNetDev,
 	/* End this frame */
 	skb_put(GET_OS_PKT_TYPE(skb), data_len);
 
-	DBGPRINT(RT_DEBUG_TRACE, ("%s doen\n", __FUNCTION__));
-
 	_announce_802_3_packet(pCtrlBkPtr, skb, OpMode);
 
+	DBGPRINT(RT_DEBUG_TRACE, ("%s done\n", __FUNCTION__));
 	return TRUE;
 }
 
 
-PNDIS_PACKET ExpandPacket(VOID *pReserved, PNDIS_PACKET pPacket, 
+PNDIS_PACKET ExpandPacket(VOID *pReserved, PNDIS_PACKET pPacket,
 	UINT32 ext_head_len, UINT32 ext_tail_len)
 {
 	struct sk_buff *skb, *newskb;
@@ -613,7 +597,7 @@ void wlan_802_11_to_802_3_packet(PNET_DEV pNetDev, UCHAR OpMode, USHORT VLAN_VID
 		data_p = skb_push(pOSPkt, LENGTH_802_3 + VLAN_Size);
 
 		VLAN_8023_Header_Copy(VLAN_VID, VLAN_Priority,
-				pHeader802_3, LENGTH_802_3, data_p, 
+				pHeader802_3, LENGTH_802_3, data_p,
 				FromWhichBSSID, TPID);
 	}
 #endif /* CONFIG_AP_SUPPORT */
@@ -804,17 +788,17 @@ static inline NDIS_STATUS __RtmpOSTaskKill(OS_TASK *pTask)
 #else
 	CHECK_PID_LEGALITY(pTask->taskPID) {
 		DBGPRINT(RT_DEBUG_TRACE,
-			 ("Terminate the task(%s) with pid(%d)!\n",
-			  pTask->taskName, GET_PID_NUMBER(pTask->taskPID)));
+				("Terminate the task(%s) with pid(%d)!\n",
+				pTask->taskName, GET_PID_NUMBER(pTask->taskPID)));
 		mb();
 		pTask->task_killed = 1;
 		mb();
 		ret = KILL_THREAD_PID(pTask->taskPID, SIGTERM, 1);
 		if (ret) {
 			printk(KERN_WARNING
-				   "kill task(%s) with pid(%d) failed(retVal=%d)!\n",
-				   pTask->taskName, GET_PID_NUMBER(pTask->taskPID),
-				   ret);
+					"kill task(%s) with pid(%d) failed(retVal=%d)!\n",
+					pTask->taskName, GET_PID_NUMBER(pTask->taskPID),
+					ret);
 		} else {
 			wait_for_completion(&pTask->taskComplete);
 			pTask->taskPID = THREAD_PID_INIT_VALUE;
@@ -845,7 +829,7 @@ static inline void __RtmpOSTaskCustomize(OS_TASK *pTask)
 {
 #ifndef KTHREAD_SUPPORT
 
-	daemonize((PSTRING) & pTask->taskName[0] /*"%s",pAd->net_dev->name */ );
+	daemonize((PSTRING) &pTask->taskName[0] /*"%s",pAd->net_dev->name */ );
 
 	allow_signal(SIGTERM);
 	allow_signal(SIGKILL);
@@ -1167,13 +1151,15 @@ UCHAR get_sniffer_mode(VOID *pDev)
 	return priv_info->sniffer_mode;
 }
 
-VOID set_sniffer_mode(VOID *net_dev, UCHAR sniffer_mode)
+#if 0 //JB removed
+static VOID set_sniffer_mode(VOID *net_dev, UCHAR sniffer_mode)
 {
 	struct mt_dev_priv *priv_info;
 
 	priv_info = (struct mt_dev_priv *)netdev_priv((struct net_device *)net_dev);
 	priv_info->sniffer_mode = sniffer_mode;
 }
+#endif //0
 
 /*
 ========================================================================
@@ -1195,7 +1181,8 @@ char *RtmpOsGetNetDevName(VOID *pDev)
 }
 
 
-UINT32 RtmpOsGetNetIfIndex(IN VOID *pDev) {
+UINT32 RtmpOsGetNetIfIndex(IN VOID *pDev)
+{
 	return ((PNET_DEV) pDev)->ifindex;
 }
 
@@ -1290,8 +1277,8 @@ static int RtmpOSNetDevRequestName(INT32 MC_RowID, UINT32 *pIoctlIF,
 		Status = NDIS_STATUS_SUCCESS;
 	} else {
 		DBGPRINT(RT_DEBUG_ERROR,
-			 ("Cannot request DevName with preifx(%s) and in range(0~32) as suffix from OS!\n",
-			  pPrefixStr));
+				("Cannot request DevName with preifx(%s) and in range(0~32) as suffix from OS!\n",
+				pPrefixStr));
 		Status = NDIS_STATUS_FAILURE;
 	}
 
@@ -1308,6 +1295,8 @@ void RtmpOSNetDevFree(PNET_DEV pNetDev)
 	ASSERT(pNetDev);
 
 	free_netdev(pNetDev);
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: freed %p", __FUNCTION__, pNetDev));
+
 }
 
 static INT RtmpOSNetDevAlloc(PNET_DEV *new_dev_p, UINT32 privDataSize)
@@ -1341,7 +1330,7 @@ static INT RtmpOSNetDevOpsAlloc(PVOID *pNetDevOps)
 #endif
 
 
-void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
+static void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
 {
 	/*
 	   every time dev_get_by_name is called, and it has returned a valid struct
@@ -1352,15 +1341,16 @@ void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
 		dev_put(pNetDev);
 }
 
-
-INT RtmpOSNetDevDestory(VOID *pReserved, PNET_DEV pNetDev)
+#if 0 //JB removed
+static INT RtmpOSNetDevDestory(VOID *pReserved, PNET_DEV pNetDev)
 {
 
 	/* TODO: Need to fix this */
 	printk("WARNING: This function(%s) not implement yet!!!\n",
-		   __FUNCTION__);
+			__FUNCTION__);
 	return 0;
 }
+#endif
 
 
 void RtmpOSNetDevDetach(PNET_DEV pNetDev)
@@ -1368,7 +1358,6 @@ void RtmpOSNetDevDetach(PNET_DEV pNetDev)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
 	struct net_device_ops *pNetDevOps = (struct net_device_ops *)pNetDev->netdev_ops;
 #endif
-
 	unregister_netdevice(pNetDev);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
@@ -1514,7 +1503,9 @@ PNET_DEV RtmpOSNetDevCreate(INT32 MC_RowID, UINT32 *pIoctlIF, INT devType,
 	/* allocate a new network device */
 	status = RtmpOSNetDevAlloc(&pNetDev, privMemSize);
 	if (status != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_ERROR, ("Allocate network device fail (%s)...\n", pNamePrefix));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("Allocate network device fail (%s)...\n",
+				pNamePrefix));
 		return NULL;
 	}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
@@ -1534,13 +1525,15 @@ PNET_DEV RtmpOSNetDevCreate(INT32 MC_RowID, UINT32 *pIoctlIF, INT devType,
 	if (status != NDIS_STATUS_SUCCESS) {
 		/* error! no any available ra name can be used! */
 		DBGPRINT(RT_DEBUG_ERROR,
-					("Assign inf name (%s with suffix 0~32) failed\n", pNamePrefix));
+				("Assign inf name (%s with suffix 0~32) failed\n",
+				pNamePrefix));
 		RtmpOSNetDevFree(pNetDev);
 
 		return NULL;
 	} else {
-		DBGPRINT(RT_DEBUG_TRACE, ("The name of the new %s interface is %s\n",
-			  pNamePrefix, pNetDev->name));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("%s: The name of the new %s interface is %s\n",
+				__FUNCTION__, pNamePrefix, pNetDev->name));
 	}
 
 	return pNetDev;
@@ -1563,7 +1556,7 @@ UCHAR VLAN_8023_Header_Copy(USHORT VLAN_VID, USHORT VLAN_Priority, PUCHAR pHeade
 
 #ifndef RT_BIG_ENDIAN
 		TCI = SWAP16(TCI);
-#endif /* RT_BIG_ENDIAN */
+#endif
 
 		/* copy dst + src MAC (12B) */
 		memcpy(pData, pHeader802_3, LENGTH_802_3_NO_TYPE);
@@ -1668,8 +1661,8 @@ VOID RtmpDrvAllMacPrint(VOID *pReserved, UINT32 *pBufMac, UINT32 AddrStart,
 	file_w = filp_open(fileName, O_WRONLY | O_CREAT, 0);
 	if (IS_ERR(file_w)) {
 		DBGPRINT(RT_DEBUG_TRACE,
-			 ("-->2) %s: Error %ld opening %s\n", __FUNCTION__,
-			  -PTR_ERR(file_w), fileName));
+				("-->2) %s: Error %ld opening %s\n", __FUNCTION__,
+				-PTR_ERR(file_w), fileName));
 	} else {
 		if (file_w->f_op && file_w->f_op->write) {
 			file_w->f_pos = 0;
@@ -2185,7 +2178,7 @@ void OS_CLEAR_BIT(int bit, unsigned long *flags)
 }
 
 #ifndef BB_SOC
-void OS_LOAD_CODE_FROM_BIN(unsigned char **image, char *bin_name, void *inf_dev, 
+void OS_LOAD_CODE_FROM_BIN(unsigned char **image, char *bin_name, void *inf_dev,
 	UINT32 *code_len)
 {
 	struct device *dev;
@@ -2196,7 +2189,7 @@ void OS_LOAD_CODE_FROM_BIN(unsigned char **image, char *bin_name, void *inf_dev,
 #endif
 
 	if (request_firmware(&fw_entry, bin_name, dev) != 0) {
-		DBGPRINT(RT_DEBUG_ERROR, 
+		DBGPRINT(RT_DEBUG_ERROR,
 				("%s:fw not available(/lib/firmware/%s)\n",
 				__FUNCTION__, bin_name));
 		*image = NULL;
@@ -2210,1978 +2203,6 @@ void OS_LOAD_CODE_FROM_BIN(unsigned char **image, char *bin_name, void *inf_dev,
 	release_firmware(fw_entry);
 }
 #endif /* !BB_SOC */
-
-#ifdef OS_ABL_FUNC_SUPPORT
-/*
-========================================================================
-Routine Description:
-	Change/Recover file UID/GID.
-
-Arguments:
-	pOSFSInfoOrg	- the file
-	bSet		- Change (TRUE) or Recover (FALSE)
-
-Return Value:
-	None
-
-Note:
-	rt_linux.h, not rt_drv.h
-========================================================================
-*/
-void RtmpOSFSInfoChange(RTMP_OS_FS_INFO *pOSFSInfoOrg, BOOLEAN bSet)
-{
-	OS_FS_INFO *pOSFSInfo;
-
-	if (bSet == TRUE) {
-		os_alloc_mem(NULL, (UCHAR **) & (pOSFSInfoOrg->pContent),
-				 sizeof (OS_FS_INFO));
-		if (pOSFSInfoOrg->pContent == NULL) {
-			DBGPRINT(RT_DEBUG_ERROR, ("%s: alloc file info fail!\n", __FUNCTION__));
-			return;
-		} else
-			memset(pOSFSInfoOrg->pContent, 0, sizeof (OS_FS_INFO));
-	}
-
-	pOSFSInfo = (OS_FS_INFO *) (pOSFSInfoOrg->pContent);
-	if (pOSFSInfo == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: pOSFSInfo == NULL!\n", __FUNCTION__));
-		return;
-	}
-
-	__RtmpOSFSInfoChange(pOSFSInfo, bSet);
-
-	if (bSet == FALSE) {
-		if (pOSFSInfoOrg->pContent != NULL) {
-			os_free_mem(NULL, pOSFSInfoOrg->pContent);
-			pOSFSInfoOrg->pContent = NULL;
-		}
-	}
-}
-
-VOID RtmpOsInitCompletion(RTMP_OS_COMPLETION *pCompletion)
-{
-	RTMP_OS_Alloc_RscOnly(pCompletion, sizeof(struct completion));
-
-	init_completion((struct completion *)(pCompletion->pContent));
-}
-
-VOID RtmpOsExitCompletion(RTMP_OS_COMPLETION *pCompletion)
-{
-	if (pCompletion->pContent == NULL)
-		return FALSE;
-
-	os_free_mem(NULL, pCompletion->pContent);
-	pCompletion->pContent = NULL;
-}
-
-BOOLEAN RtmpOsComplete(RTMP_OS_COMPLETION *pCompletion)
-{
-	if (pCompletion->pContent == NULL)
-		return FALSE;
-
-	complete((struct completion *)(pCompletion->pContent));
-
-	return TRUE;
-}
-
-ULONG RtmpOsWaitForCompletionTimeout(RTMP_OS_COMPLETION *pCompletion, ULONG Timeout)
-{
-	return wait_for_completion_timeout((struct completion *)(pCompletion->pContent), Timeout);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Activate a tasklet.
-
-Arguments:
-	pTasklet	- the tasklet
-
-Return Value:
-	TRUE or FALSE
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsTaskletSche(RTMP_NET_TASK_STRUCT *pTasklet)
-{
-	if (pTasklet->pContent == NULL)
-		return FALSE;
-
-#ifdef WORKQUEUE_BH
-	schedule_work((struct work_struct *)(pTasklet->pContent));
-#else
-	tasklet_hi_schedule((OS_NET_TASK_STRUCT *) (pTasklet->pContent));
-#endif /* WORKQUEUE_BH */
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize a tasklet.
-
-Arguments:
-	pTasklet	- the tasklet
-
-Return Value:
-	TRUE or FALSE
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsTaskletInit(
-	RTMP_NET_TASK_STRUCT *pTasklet,
-	VOID (*pFunc) (unsigned long data),
-	ULONG Data,
-	LIST_HEADER *pTaskletList)
-{
-#ifdef WORKQUEUE_BH
-	if (RTMP_OS_Alloc_RscOnly(pTasklet, sizeof (struct work_struct)) == FALSE)
-		return FALSE;
-
-	INIT_WORK((struct work_struct *)(pTasklet->pContent), pFunc);
-#else
-
-	if (RTMP_OS_Alloc_RscOnly(pTasklet, sizeof (OS_NET_TASK_STRUCT)) == FALSE)
-		return FALSE;
-
-	tasklet_init((OS_NET_TASK_STRUCT *) (pTasklet->pContent), pFunc, Data);
-#endif /* WORKQUEUE_BH */
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Delete a tasklet.
-
-Arguments:
-	pTasklet	- the tasklet
-
-Return Value:
-	TRUE or FALSE
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsTaskletKill(RTMP_NET_TASK_STRUCT *pTasklet)
-{
-	if (pTasklet->pContent != NULL) {
-#ifdef WORKQUEUE_BH
-		cancel_work_sync((OS_NET_TASK_STRUCT *) (pTasklet->pContent));
-#else
-		tasklet_kill((OS_NET_TASK_STRUCT *) (pTasklet->pContent));
-#endif /* WORKQUEUE_BH */
-
-		os_free_mem(NULL, pTasklet->pContent);
-		pTasklet->pContent = NULL;
-	}
-
-	return TRUE;
-}
-
-
-VOID RtmpOsTaskletDataAssign(RTMP_NET_TASK_STRUCT *pTasklet, ULONG Data)
-{
-#ifndef WORKQUEUE_BH
-	if (pTasklet->pContent != NULL)
-		((OS_NET_TASK_STRUCT *) (pTasklet->pContent))->data = Data;
-#endif /* WORKQUEUE_BH */
-}
-
-
-INT32 RtmpOsTaskIsKilled(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask == NULL)
-		return 1;
-	return pTask->task_killed;
-}
-
-
-VOID RtmpOsTaskWakeUp(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask == NULL)
-		return;
-
-#ifdef KTHREAD_SUPPORT
-	WAKE_UP(pTask);
-#else
-	RTMP_SEM_EVENT_UP(&pTask->taskSema);
-#endif
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Check if the task is legal.
-
-Arguments:
-	pPkt		- the packet
-	pDev		- the device
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-#if 0 //JB seriously?
-BOOLEAN RtmpOsCheckTaskLegality(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (!pTask)
-		return FALSE;
-
-#ifdef KTHREAD_SUPPORT
-	if (pTask->kthread_task == NULL)
-#else
-	CHECK_PID_LEGALITY(pTask->taskPID);
-	else
-#endif
-	return FALSE;
-
-	return TRUE;
-}
-#endif //0
-
-
-BOOLEAN RtmpOsCheckTaskLegality(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (!pTask)
-		return FALSE;
-
-#ifdef KTHREAD_SUPPORT
-	if (pTask->kthread_task == NULL)
-		return FALSE;
-	return TRUE;
-#else
-	CHECK_PID_LEGALITY(pTask->taskPID)
-		return TRUE;
-	return FALSE;
-#endif
-}
-
-
-
-/* timeout -- ms */
-VOID RTMP_SetPeriodicTimer(NDIS_MINIPORT_TIMER *pTimerOrg, ULONG timeout)
-{
-	OS_NDIS_MINIPORT_TIMER *pTimer;
-
-	pTimer = (OS_NDIS_MINIPORT_TIMER *) (pTimerOrg->pContent);
-	if (pTimer)
-		__RTMP_SetPeriodicTimer(pTimer, timeout);
-}
-
-
-/* convert NdisMInitializeTimer --> RTMP_OS_Init_Timer */
-VOID RTMP_OS_Init_Timer(VOID *pReserved, NDIS_MINIPORT_TIMER *pTimerOrg,
-	TIMER_FUNCTION function, PVOID data, LIST_HEADER *pTimerList)
-{
-	OS_NDIS_MINIPORT_TIMER *pTimer;
-
-	if (RTMP_OS_Alloc_RscOnly(pTimerOrg, sizeof (OS_NDIS_MINIPORT_TIMER)) == FALSE)
-		return;
-
-	pTimer = (OS_NDIS_MINIPORT_TIMER *) (pTimerOrg->pContent);
-	if (pTimer)
-		__RTMP_OS_Init_Timer(pReserved, pTimer, function, data);
-}
-
-
-VOID RTMP_OS_Add_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, ULONG timeout)
-{
-	OS_NDIS_MINIPORT_TIMER *pTimer;
-
-	 pTimer = (OS_NDIS_MINIPORT_TIMER *) (pTimerOrg->pContent);
-
-	if (pTimer) {
-		if (timer_pending(pTimer))
-			return;
-
-		__RTMP_OS_Add_Timer(pTimer, timeout);
-	}
-}
-
-
-VOID RTMP_OS_Mod_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, ULONG timeout)
-{
-	OS_NDIS_MINIPORT_TIMER *pTimer;
-
-	pTimer = (OS_NDIS_MINIPORT_TIMER *) (pTimerOrg->pContent);
-	if (pTimer)
-		__RTMP_OS_Mod_Timer(pTimer, timeout);
-}
-
-
-VOID RTMP_OS_Del_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, BOOLEAN *pCancelled)
-{
-	OS_NDIS_MINIPORT_TIMER *pTimer;
-
-	pTimer = (OS_NDIS_MINIPORT_TIMER *) (pTimerOrg->pContent);
-	if (pTimer)
-		__RTMP_OS_Del_Timer(pTimer, pCancelled);
-}
-
-
-VOID RTMP_OS_Release_Timer(NDIS_MINIPORT_TIMER *pTimerOrg)
-{
-	OS_NDIS_MINIPORT_TIMER *pTimer;
-
-	pTimer = (OS_NDIS_MINIPORT_TIMER *) (pTimerOrg->pContent);
-	if (pTimer) {
-		__RTMP_OS_Release_Timer(pTimer);
-
-		os_free_mem(NULL, pTimer);
-		pTimerOrg->pContent = NULL;
-	}
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Allocate a OS resource.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	pRsc		- the resource
-	RscLen		- resource length
-
-Return Value:
-	TRUE or FALSE
-
-Note:
-========================================================================
-*/
-BOOLEAN RTMP_OS_Alloc_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc,
-	UINT32 RscLen)
-{
-	OS_RSTRUC *pRsc = (OS_RSTRUC *) pRscSrc;
-
-	if (pRsc->pContent == NULL) {
-		/* new entry */
-		os_alloc_mem(NULL, (UCHAR **) & (pRsc->pContent), RscLen);
-		if (pRsc->pContent == NULL) {
-			DBGPRINT(RT_DEBUG_ERROR,
-				 ("%s: alloc timer fail!\n", __FUNCTION__));
-			return FALSE;
-		} else {
-			LIST_RESOURCE_OBJ_ENTRY *pObj;
-
-			/* allocate resource record entry */
-			os_alloc_mem(NULL, (UCHAR **) & (pObj),
-					 sizeof (LIST_RESOURCE_OBJ_ENTRY));
-			if (pObj == NULL) {
-				DBGPRINT(RT_DEBUG_ERROR,
-					 ("%s: alloc timer obj fail!\n",
-					  __FUNCTION__));
-				os_free_mem(NULL, pRsc->pContent);
-				pRsc->pContent = NULL;
-				return FALSE;
-			} else {
-				memset(pRsc->pContent, 0, RscLen);
-				pObj->pRscObj = (VOID *) pRsc;
-
-				OS_SEM_LOCK(&UtilSemLock);
-				insertTailList(pRscList, (LIST_ENTRY *) pObj);
-				OS_SEM_UNLOCK(&UtilSemLock);
-			}
-		}
-	}
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Allocate a OS resource.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	pRsc		- the resource
-	RscLen		- resource length
-
-Return Value:
-	TRUE or FALSE
-
-Note:
-========================================================================
-*/
-static BOOLEAN RTMP_OS_Alloc_RscOnly(VOID *pRscSrc, UINT32 RscLen)
-{
-	OS_RSTRUC *pRsc = (OS_RSTRUC *) pRscSrc;
-
-	if (pRsc->pContent == NULL) {
-		/* new entry */
-		os_alloc_mem(NULL, (UCHAR **) & (pRsc->pContent), RscLen);
-		if (pRsc->pContent == NULL) {
-			DBGPRINT(RT_DEBUG_ERROR,
-				 ("%s: alloc timer fail!\n", __FUNCTION__));
-			return FALSE;
-		}
-		memset(pRsc->pContent, 0, RscLen);
-	}
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Remove a OS resource.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	pRsc		- the resource
-
-Return Value:
-	TRUE or FALSE
-
-Note:
-========================================================================
-*/
-static BOOLEAN RTMP_OS_Remove_Rsc(LIST_HEADER *pRscList, VOID *pRscSrc)
-{
-	LIST_RESOURCE_OBJ_ENTRY *pObj;
-	OS_RSTRUC *pRscHead, *pRsc, *pRscRev = (OS_RSTRUC *) pRscSrc;
-	pRscHead = NULL;
-
-	OS_SEM_LOCK(&UtilSemLock);
-	while (TRUE) {
-		pObj = (LIST_RESOURCE_OBJ_ENTRY *) removeHeadList(pRscList);
-		if (pRscHead == NULL)
-			pRscHead = pObj->pRscObj; /* backup first entry */
-		else if (((ULONG)pRscHead) == ((ULONG)(pObj->pRscObj)))
-			break; /* has searched all entries */
-
-		pRsc = (OS_RSTRUC *) (pObj->pRscObj);
-		if ((ULONG)pRsc == (ULONG)pRscRev)
-			break; /* find it */
-
-		/* re-insert it */
-		insertTailList(pRscList, (LIST_ENTRY *) pObj);
-	}
-	OS_SEM_UNLOCK(&UtilSemLock);
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Free all timers.
-
-Arguments:
-	pAd		- WLAN control block pointer
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-static VOID RTMP_OS_Free_Rscs(LIST_HEADER *pRscList)
-{
-	LIST_RESOURCE_OBJ_ENTRY *pObj;
-	OS_RSTRUC *pRsc;
-
-	OS_SEM_LOCK(&UtilSemLock);
-	while (TRUE) {
-		pObj = (LIST_RESOURCE_OBJ_ENTRY *) removeHeadList(pRscList);
-		if (pObj == NULL)
-			break;
-		pRsc = (OS_RSTRUC *) (pObj->pRscObj);
-
-		if (pRsc->pContent != NULL) {
-			/* free the timer memory */
-			os_free_mem(NULL, pRsc->pContent);
-			pRsc->pContent = NULL;
-		} else {
-			/*
-			   The case is possible because some timers are released during
-			   the driver life time, EX: we will release some timers in
-			   MacTableDeleteEntry().
-			   But we do not recommend the behavior, i.e. not to release
-			   timers in the driver life time; Or we can not cancel the
-			   timer for timer preemption problem.
-			 */
-		}
-
-		os_free_mem(NULL, pObj);	/* free the timer record entry */
-	}
-	OS_SEM_UNLOCK(&UtilSemLock);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Allocate a kernel task.
-
-Arguments:
-	pTask		- the task
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOSTaskAlloc(RTMP_OS_TASK *pTask, LIST_HEADER *pTaskList)
-{
-	if (RTMP_OS_Alloc_RscOnly(pTask, sizeof (OS_TASK)) == FALSE) {
-		DBGPRINT(RT_DEBUG_ERROR,
-			 ("%s: alloc task fail!\n", __FUNCTION__));
-		return FALSE;	/* allocate fail */
-	}
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Free a kernel task.
-
-Arguments:
-	pTask		- the task
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOSTaskFree(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask != NULL) {
-		os_free_mem(NULL, pTask);
-		pTaskOrg->pContent = NULL;
-	}
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Kill a kernel task.
-
-Arguments:
-	pTaskOrg	- the task
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-NDIS_STATUS RtmpOSTaskKill(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-	NDIS_STATUS Status;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask != NULL) {
-		Status = __RtmpOSTaskKill(pTask);
-		RtmpOSTaskFree(pTaskOrg);
-		return Status;
-	}
-
-	return NDIS_STATUS_FAILURE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Notify kernel the task exit.
-
-Arguments:
-	pTaskOrg	- the task
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-INT RtmpOSTaskNotifyToExit(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask == NULL)
-		return 0;
-	return __RtmpOSTaskNotifyToExit(pTask);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Customize the task.
-
-Arguments:
-	pTaskOrg	- the task
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOSTaskCustomize(RTMP_OS_TASK *pTaskOrg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask)
-		__RtmpOSTaskCustomize(pTask);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Activate a kernel task.
-
-Arguments:
-	pTaskOrg	- the task
-	fn		- task handler
-	arg		- task input argument
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-NDIS_STATUS RtmpOSTaskAttach(
-	RTMP_OS_TASK *pTaskOrg,
-	RTMP_OS_TASK_CALLBACK fn,
-	ULONG arg)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask == NULL)
-		return NDIS_STATUS_FAILURE;
-	return __RtmpOSTaskAttach(pTask, fn, arg);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize a kernel task.
-
-Arguments:
-	pTaskOrg	- the task
-	pTaskName	- task name
-	pPriv		- task input argument
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-NDIS_STATUS RtmpOSTaskInit(RTMP_OS_TASK *pTaskOrg, PSTRING pTaskName, VOID *pPriv,
-	LIST_HEADER *pTaskList, LIST_HEADER *pSemList)
-{
-	OS_TASK *pTask;
-
-	if (RtmpOSTaskAlloc(pTaskOrg, pTaskList) == FALSE)
-		return NDIS_STATUS_FAILURE;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask == NULL)
-		return NDIS_STATUS_FAILURE;
-
-	return __RtmpOSTaskInit(pTask, pTaskName, pPriv, pSemList);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Wait for a event in the task.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	pTaskOrg	- the task
-
-Return Value:
-	TRUE
-	FALSE
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOSTaskWait(VOID *pReserved, RTMP_OS_TASK *pTaskOrg, INT32 *pStatus)
-{
-	OS_TASK *pTask;
-
-	pTask = (OS_TASK *) (pTaskOrg->pContent);
-	if (pTask == NULL)
-		return FALSE;
-
-	return __RtmpOSTaskWait(pReserved, pTask, pStatus);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Get private data for the task.
-
-Arguments:
-	pTaskOrg	- the task
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID *RtmpOsTaskDataGet(RTMP_OS_TASK *pTaskOrg)
-{
-	if (pTaskOrg->pContent == NULL)
-		return NULL;
-
-	return (((OS_TASK *) (pTaskOrg->pContent))->priv);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Allocate a lock.
-
-Arguments:
-	pLock		- the lock
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsAllocateLock(NDIS_SPIN_LOCK *pLock, LIST_HEADER *pLockList)
-{
-	if (RTMP_OS_Alloc_RscOnly(pLock, sizeof (OS_NDIS_SPIN_LOCK)) == FALSE) {
-		DBGPRINT(RT_DEBUG_ERROR,
-			 ("%s: alloc lock fail!\n", __FUNCTION__));
-		return FALSE;	/* allocate fail */
-	}
-
-	OS_NdisAllocateSpinLock(pLock->pContent);
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Free a lock.
-
-Arguments:
-	pLockOrg	- the lock
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsFreeSpinLock(NDIS_SPIN_LOCK *pLockOrg)
-{
-	/* we will free all locks memory in RTMP_OS_FREE_LOCK() */
-	OS_NDIS_SPIN_LOCK *pLock;
-
-	pLock = (OS_NDIS_MINIPORT_TIMER *) (pLockOrg->pContent);
-	if (pLock != NULL) {
-		OS_NdisFreeSpinLock(pLock);
-
-		os_free_mem(NULL, pLock);
-		pLockOrg->pContent = NULL;
-	}
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Spin lock bh.
-
-Arguments:
-	pLockOrg	- the lock
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsSpinLockBh(NDIS_SPIN_LOCK *pLockOrg)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-
-	pLock = (OS_NDIS_SPIN_LOCK *) (pLockOrg->pContent);
-	if (pLock != NULL) {
-		OS_SEM_LOCK(pLock);
-	} else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Spin unlock bh.
-
-Arguments:
-	pLockOrg	- the lock
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsSpinUnLockBh(NDIS_SPIN_LOCK *pLockOrg)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-
-	pLock = (OS_NDIS_SPIN_LOCK *) (pLockOrg->pContent);
-	if (pLock != NULL) {
-		OS_SEM_UNLOCK(pLock);
-	} else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Interrupt lock.
-
-Arguments:
-	pLockOrg	- the lock
-	pIrqFlags	- the lock flags
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsIntLock(NDIS_SPIN_LOCK *pLockOrg, ULONG *pIrqFlags)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-
-	pLock = (OS_NDIS_SPIN_LOCK *) (pLockOrg->pContent);
-	if (pLock != NULL) {
-		OS_INT_LOCK(pLock, *pIrqFlags);
-	} else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Interrupt unlock.
-
-Arguments:
-	pLockOrg	- the lock
-	IrqFlags	- the lock flags
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-void RtmpOsIntUnLock(NDIS_SPIN_LOCK *pLockOrg, ULONG IrqFlags)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-
-	pLock = (OS_NDIS_SPIN_LOCK *) (pLockOrg->pContent);
-	if (pLock != NULL) {
-		OS_INT_UNLOCK(pLock, IrqFlags);
-	} else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-void RtmpOsSpinLockIrqSave(NDIS_SPIN_LOCK *lock, unsigned long *flags)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-	pLock = (OS_NDIS_SPIN_LOCK *) (lock->pContent);
-
-	if (pLock != NULL)
-		spin_lock_irqsave((spinlock_t *)(pLock), *flags);
-	else
-		printk("lock> warning! the lock was freed!\n");
-
-}
-
-void RtmpOsSpinUnlockIrqRestore(NDIS_SPIN_LOCK *lock, unsigned long *flags)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-	pLock = (OS_NDIS_SPIN_LOCK *) (lock->pContent);
-
-	if (pLock != NULL)
-		spin_unlock_irqrestore((spinlock_t *)(pLock), *flags);
-	else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-void RtmpOsSpinLockIrq(NDIS_SPIN_LOCK *lock)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-	pLock = (OS_NDIS_SPIN_LOCK *) (lock->pContent);
-
-	if (pLock != NULL)
-		spin_lock_irq((spinlock_t *)(pLock));
-	else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-void RtmpOsSpinUnlockIrq(NDIS_SPIN_LOCK *lock)
-{
-	OS_NDIS_SPIN_LOCK *pLock;
-	pLock = (OS_NDIS_SPIN_LOCK *) (lock->pContent);
-
-	if (pLock != NULL)
-		spin_unlock_irq((spinlock_t *)(pLock));
-	else
-		printk("lock> warning! the lock was freed!\n");
-}
-
-/*
-========================================================================
-Routine Description:
-	Get MAC address for the network interface.
-
-Arguments:
-	pDev		- the device
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-unsigned char *RtmpOsNetDevGetPhyAddr(VOID *pDev)
-{
-	return RTMP_OS_NETDEV_GET_PHYADDR((PNET_DEV) pDev);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Start network interface TX queue.
-
-Arguments:
-	pDev		- the device
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsNetQueueStart(PNET_DEV pDev)
-{
-	RTMP_OS_NETDEV_START_QUEUE(pDev);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Stop network interface TX queue.
-
-Arguments:
-	pDev		- the device
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsNetQueueStop(PNET_DEV pDev)
-{
-	RTMP_OS_NETDEV_STOP_QUEUE(pDev);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Wake up network interface TX queue.
-
-Arguments:
-	pDev		- the device
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsNetQueueWake(PNET_DEV pDev)
-{
-	RTMP_OS_NETDEV_WAKE_QUEUE(pDev);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Assign network interface to the packet.
-
-Arguments:
-	pPkt		- the packet
-	pDev		- the device
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsSetPktNetDev(VOID *pPkt, VOID *pDev)
-{
-	SET_OS_PKT_NETDEV(pPkt, (PNET_DEV) pDev);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Assign network interface type.
-
-Arguments:
-	pDev		- the device
-	Type		- the type
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsSetNetDevType(VOID *pDev, USHORT Type)
-{
-	RTMP_OS_NETDEV_SET_TYPE((PNET_DEV) pDev, Type);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Assign network interface type for monitor mode.
-
-Arguments:
-	pDev		- the device
-	Type		- the type
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsSetNetDevTypeMonitor(VOID *pDev)
-{
-	RTMP_OS_NETDEV_SET_TYPE((PNET_DEV) pDev, ARPHRD_IEEE80211_PRISM);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Wait for a moment.
-
-Arguments:
-	Time		- micro second
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsWait(UINT32 Time)
-{
-	OS_WAIT(Time);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Check if b is smaller than a.
-
-Arguments:
-	Time		- micro second
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-UINT32 RtmpOsTimerAfter(ULONG a, ULONG b)
-{
-	return RTMP_TIME_AFTER(a, b);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Check if b is not smaller than a.
-
-Arguments:
-	Time		- micro second
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-UINT32 RtmpOsTimerBefore(ULONG a, ULONG b)
-{
-	return RTMP_TIME_BEFORE(a, b);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Get current system time.
-
-Arguments:
-	pTime		- system time (tick)
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsGetSystemUpTime(ULONG *pTime)
-{
-	NdisGetSystemUpTime(pTime);
-}
-
-/*
-========================================================================
-Routine Description:
-	Get OS tick unit.
-
-Arguments:
-	pOps		- Utility table
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-UINT32 RtmpOsTickUnitGet(VOID)
-{
-	return HZ;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	ntohs
-
-Arguments:
-	Value		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-UINT16 RtmpOsNtohs(UINT16 Value)
-{
-	return OS_NTOHS(Value);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	htons
-
-Arguments:
-	Value		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-UINT16 RtmpOsHtons(UINT16 Value)
-{
-	return OS_HTONS(Value);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	ntohl
-
-Arguments:
-	Value		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-UINT32 RtmpOsNtohl(UINT32 Value)
-{
-	return OS_NTOHL(Value);
-}
-
-/*
-========================================================================
-Routine Description:
-	htonl
-
-Arguments:
-	Value		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-UINT32 RtmpOsHtonl(UINT32 Value)
-{
-	return OS_HTONL(Value);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	get_unaligned for 16-bit value.
-
-Arguments:
-	pWord		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-UINT16 RtmpOsGetUnaligned(UINT16 *pWord)
-{
-	return get_unaligned(pWord);
-}
-
-/*
-========================================================================
-Routine Description:
-	get_unaligned for 32-bit value.
-
-Arguments:
-	pWord		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-UINT32 RtmpOsGetUnaligned32(UINT32 *pWord)
-{
-	return get_unaligned(pWord);
-}
-
-/*
-========================================================================
-Routine Description:
-	get_unaligned for long-bit value.
-
-Arguments:
-	pWord		- the value
-
-Return Value:
-	the value
-
-Note:
-========================================================================
-*/
-ULONG RtmpOsGetUnalignedlong(ULONG *pWord)
-{
-	return get_unaligned(pWord);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Get maximum scan data length.
-
-Arguments:
-	None
-
-Return Value:
-	length
-
-Note:
-	Used in site servey.
-========================================================================
-*/
-ULONG RtmpOsMaxScanDataGet(VOID)
-{
-	return IW_SCAN_MAX_DATA;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	copy_from_user
-
-Arguments:
-	to		-
-	from		-
-	n		- size
-
-Return Value:
-	copy size
-
-Note:
-========================================================================
-*/
-ULONG RtmpOsCopyFromUser(VOID *to, const void *from, ULONG n)
-{
-	return (copy_from_user(to, from, n));
-}
-
-
-/*
-========================================================================
-Routine Description:
-	copy_to_user
-
-Arguments:
-	to		-
-	from		-
-	n		- size
-
-Return Value:
-	copy size
-
-Note:
-========================================================================
-*/
-ULONG RtmpOsCopyToUser(VOID *to, const void *from, ULONG n)
-{
-	return (copy_to_user(to, from, n));
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize a semaphore.
-
-Arguments:
-	pSem		- the semaphore
-
-Return Value:
-	TRUE		- Successfully
-	FALSE		- Fail
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsSemaInitLocked(RTMP_OS_SEM *pSem, LIST_HEADER *pSemList)
-{
-	if (RTMP_OS_Alloc_RscOnly(pSem, sizeof (OS_SEM)) == FALSE) {
-		DBGPRINT(RT_DEBUG_ERROR, 
-				("%s: alloc semaphore fail!\n", 
-				__FUNCTION__));
-		return FALSE;
-	}
-
-	OS_SEM_EVENT_INIT_LOCKED((OS_SEM *) (pSem->pContent));
-	return TRUE;
-}
-
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize a semaphore.
-
-Arguments:
-	pSemOrg		- the semaphore
-
-Return Value:
-	TRUE		- Successfully
-	FALSE		- Fail
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsSemaInit(RTMP_OS_SEM *pSem, LIST_HEADER *pSemList)
-{
-	if (RTMP_OS_Alloc_RscOnly(pSem, sizeof (OS_SEM)) == FALSE) {
-		DBGPRINT(RT_DEBUG_ERROR,
-			 ("%s: alloc semaphore fail!\n", __FUNCTION__));
-		return FALSE;
-	}
-
-	OS_SEM_EVENT_INIT((OS_SEM *) (pSem->pContent));
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Destroy a semaphore.
-
-Arguments:
-	pSemOrg		- the semaphore
-
-Return Value:
-	TRUE		- Successfully
-	FALSE		- Fail
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsSemaDestory(RTMP_OS_SEM *pSemOrg)
-{
-	OS_SEM *pSem;
-
-	pSem = (OS_SEM *) (pSemOrg->pContent);
-	if (pSem != NULL) {
-		OS_SEM_EVENT_DESTORY(pSem);
-
-		os_free_mem(NULL, pSem);
-		pSemOrg->pContent = NULL;
-	} else
-		printk("sem> warning! double-free sem!\n");
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Wait a semaphore.
-
-Arguments:
-	pSemOrg		- the semaphore
-
-Return Value:
-	0		- Successfully
-	Otherwise	- Fail
-
-Note:
-========================================================================
-*/
-INT32 RtmpOsSemaWaitInterruptible(RTMP_OS_SEM *pSemOrg)
-{
-	OS_SEM *pSem;
-	INT Status = -1;
-
-	pSem = (OS_SEM *) (pSemOrg->pContent);
-	if (pSem != NULL)
-		OS_SEM_EVENT_WAIT(pSem, Status);
-	return Status;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Wake up a semaphore.
-
-Arguments:
-	pSemOrg		- the semaphore
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsSemaWakeUp(RTMP_OS_SEM *pSemOrg)
-{
-	OS_SEM *pSem;
-
-	pSem = (OS_SEM *) (pSemOrg->pContent);
-	if (pSem != NULL)
-		OS_SEM_EVENT_UP(pSem);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Check if we are in a interrupt.
-
-Arguments:
-	None
-
-Return Value:
-	0		- No
-	Otherwise	- Yes
-
-Note:
-========================================================================
-*/
-INT32 RtmpOsIsInInterrupt(VOID)
-{
-	return (in_interrupt());
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Copy the data buffer to the packet frame body.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	pNetPkt		- the packet
-	ThisFrameLen	- copy length
-	pData		- the data buffer
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsPktBodyCopy(
-	PNET_DEV pNetDev,
-	PNDIS_PACKET pNetPkt,
-	ULONG ThisFrameLen,
-	PUCHAR pData)
-{
-	memcpy(skb_put(pNetPkt, ThisFrameLen), pData, ThisFrameLen);
-	SET_OS_PKT_NETDEV(pNetPkt, pNetDev);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Check if the packet is cloned.
-
-Arguments:
-	pNetPkt		- the packet
-
-Return Value:
-	TRUE		- Yes
-	Otherwise	- No
-
-Note:
-========================================================================
-*/
-INT RtmpOsIsPktCloned(PNDIS_PACKET pNetPkt)
-{
-	return OS_PKT_CLONED(pNetPkt);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Duplicate a packet.
-
-Arguments:
-	pNetPkt		- the packet
-
-Return Value:
-	the new packet
-
-Note:
-========================================================================
-*/
-PNDIS_PACKET RtmpOsPktCopy(PNDIS_PACKET pNetPkt)
-{
-	return skb_copy(RTPKT_TO_OSPKT(pNetPkt), GFP_ATOMIC);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Clone a packet.
-
-Arguments:
-	pNetPkt		- the packet
-
-Return Value:
-	the cloned packet
-
-Note:
-========================================================================
-*/
-PNDIS_PACKET RtmpOsPktClone(PNDIS_PACKET pNetPkt)
-{
-	return skb_clone(RTPKT_TO_OSPKT(pNetPkt), MEM_ALLOC_FLAG);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Assign the data pointer for the packet.
-
-Arguments:
-	pNetPkt		- the packet
-	*pData		- the data buffer
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsPktDataPtrAssign(PNDIS_PACKET pNetPkt, UCHAR *pData)
-{
-	SET_OS_PKT_DATAPTR(pNetPkt, pData);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Assign the data length for the packet.
-
-Arguments:
-	pNetPkt		- the packet
-	Len		- the data length
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsPktLenAssign(PNDIS_PACKET pNetPkt, LONG Len)
-{
-	SET_OS_PKT_LEN(pNetPkt, Len);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Adjust the tail pointer for the packet.
-
-Arguments:
-	pNetPkt		- the packet
-	removedTagLen	- the size for adjustment
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsPktTailAdjust(PNDIS_PACKET pNetPkt, UINT removedTagLen)
-{
-	skb_set_tail_pointer(pNetPkt, pNetPkt->len - removedTagLen);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Adjust the data pointer for the packet.
-
-Arguments:
-	pNetPkt		- the packet
-	Len		- the size for adjustment
-
-Return Value:
-	the new data pointer for the packet
-
-Note:
-========================================================================
-*/
-PUCHAR RtmpOsPktTailBufExtend(PNDIS_PACKET pNetPkt, UINT Len)
-{
-	return OS_PKT_TAIL_BUF_EXTEND(pNetPkt, Len);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	adjust headroom for the packet.
-
-Arguments:
-	pNetPkt		- the packet
-	Len		- the size for adjustment
-
-Return Value:
-	the new data pointer for the packet
-
-Note:
-========================================================================
-*/
-VOID RtmpOsPktReserve(PNDIS_PACKET pNetPkt, UINT Len)
-{
-	OS_PKT_RESERVE(pNetPkt, Len);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Adjust the data pointer for the packet.
-
-Arguments:
-	pNetPkt		- the packet
-	Len		- the size for adjustment
-
-Return Value:
-	the new data pointer for the packet
-
-Note:
-========================================================================
-*/
-PUCHAR RtmpOsPktHeadBufExtend(PNDIS_PACKET pNetPkt, UINT Len)
-{
-	return OS_PKT_HEAD_BUF_EXTEND(pNetPkt, Len);
-}
-
-
-INT32 RtmpThreadPidKill(RTMP_OS_PID PID)
-{
-	return KILL_THREAD_PID(PID, SIGTERM, 1);
-}
-
-
-long RtmpOsSimpleStrtol(const char *cp, char **endp, unsigned int base)
-{
-	return simple_strtol(cp, endp, base);
-}
-
-
-BOOLEAN RtmpOsPktOffsetInit(VOID)
-{
-	struct sk_buff *pPkt = NULL;
-
-	if ((RTPktOffsetData == 0) && (RTPktOffsetLen == 0)
-		&& (RTPktOffsetCB == 0)) {
-		pPkt = kmalloc(sizeof (struct sk_buff), GFP_ATOMIC);
-		if (pPkt == NULL)
-			return FALSE;
-
-		RTPktOffsetData = (ULONG) (&(pPkt->data)) - (ULONG) pPkt;
-		RTPktOffsetLen = (ULONG) (&(pPkt->len)) - (ULONG) pPkt;
-		RTPktOffsetCB = (ULONG) (pPkt->cb) - (ULONG) pPkt;
-		kfree(pPkt);
-
-		DBGPRINT(RT_DEBUG_TRACE,
-				("packet> data offset = %lu\n", RTPktOffsetData));
-		DBGPRINT(RT_DEBUG_TRACE,
-				("packet> len offset = %lu\n", RTPktOffsetLen));
-		DBGPRINT(RT_DEBUG_TRACE,
-				("packet> cb offset = %lu\n", RTPktOffsetCB));
-	}
-
-	return TRUE;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize the OS atomic_t.
-
-Arguments:
-	pAtomic		- the atomic
-
-Return Value:
-	TRUE		- allocation successfully
-	FALSE		- allocation fail
-
-Note:
-========================================================================
-*/
-BOOLEAN RtmpOsAtomicInit(RTMP_OS_ATOMIC *pAtomic, LIST_HEADER *pAtomicList)
-{
-	if (RTMP_OS_Alloc_RscOnly(pAtomic, sizeof (atomic_t)) == FALSE) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: alloc atomic fail!\n", __FUNCTION__));
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-/*
-========================================================================
-Routine Description:
-	Initialize the OS atomic_t.
-
-Arguments:
-	pAtomic		- the atomic
-
-Return Value:
-	TRUE		- allocation successfully
-	FALSE		- allocation fail
-
-Note:
-========================================================================
-*/
-VOID RtmpOsAtomicDestroy(RTMP_OS_ATOMIC *pAtomic)
-{
-	if (pAtomic->pContent) {
-		os_free_mem(NULL, pAtomic->pContent);
-		pAtomic->pContent = NULL;
-	}
-}
-
-/*
-========================================================================
-Routine Description:
-	Atomic read a variable.
-
-Arguments:
-	pAtomic		- the atomic
-
-Return Value:
-	content
-
-Note:
-========================================================================
-*/
-LONG RtmpOsAtomicRead(RTMP_OS_ATOMIC *pAtomicSrc)
-{
-	if (pAtomicSrc->pContent)
-		return atomic_read((atomic_t *) (pAtomicSrc->pContent));
-	else
-		return 0;
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Atomic dec a variable.
-
-Arguments:
-	pAtomic		- the atomic
-
-Return Value:
-	content
-
-Note:
-========================================================================
-*/
-VOID RtmpOsAtomicDec(RTMP_OS_ATOMIC *pAtomicSrc)
-{
-	if (pAtomicSrc->pContent)
-		atomic_dec((atomic_t *) (pAtomicSrc->pContent));
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Sets a 32-bit variable to the specified value as an atomic operation.
-
-Arguments:
-	pAtomic		- the atomic
-	Value		- the value to be exchanged
-
-Return Value:
-	the initial value of the pAtomicSrc parameter
-
-Note:
-========================================================================
-*/
-VOID RtmpOsAtomicInterlockedExchange(
-	RTMP_OS_ATOMIC *pAtomicSrc,
-	LONG Value)
-{
-	if (pAtomicSrc->pContent)
-		InterlockedExchange((atomic_t *) (pAtomicSrc->pContent), Value);
-}
-
-
-/*
-========================================================================
-Routine Description:
-	Initialize the OS utilities.
-
-Arguments:
-	pOps		- Utility table
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-VOID RtmpOsOpsInit(RTMP_OS_ABL_OPS *pOps)
-{
-	pOps->ra_printk = (RTMP_PRINTK)printk;
-	pOps->ra_snprintf = (RTMP_SNPRINTF)snprintf;
-}
-
-#else /* OS_ABL_FUNC_SUPPORT */
 
 
 void RtmpOSFSInfoChange(RTMP_OS_FS_INFO *pOSFSInfoOrg, BOOLEAN bSet)
@@ -4276,5 +2297,4 @@ VOID RtmpOsTaskWakeUp(RTMP_OS_TASK *pTask)
 #endif
 }
 
-#endif /* OS_ABL_FUNC_SUPPORT */
 
