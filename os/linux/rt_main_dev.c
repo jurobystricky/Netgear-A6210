@@ -29,7 +29,6 @@
 
 #define RTMP_MODULE_OS
 
-/*#include "rt_config.h" */
 #include "rtmp_comm.h"
 #include "rt_os_util.h"
 #include "rt_os_net.h"
@@ -208,11 +207,9 @@ Note:
 int rt28xx_close(VOID *dev)
 {
 	struct net_device * net_dev = (struct net_device *)dev;
-	VOID *pAd = NULL;
+	VOID *pAd = RTMP_OS_NETDEV_GET_PRIV(net_dev);
 
-	GET_PAD_FROM_NET_DEV(pAd, net_dev);
-
-	DBGPRINT(RT_DEBUG_TRACE, ("===> rt28xx_close\n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("===> rt28xx_close %p\n",pAd));
 
 	if (pAd == NULL)
 		return 0;
