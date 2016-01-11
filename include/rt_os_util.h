@@ -228,9 +228,9 @@ INT RtmpOSNotifyRawData(PNET_DEV pNetDev, UCHAR *buf, INT len, ULONG type, USHOR
 
 #endif /* CONFIG_STA_SUPPORT */
 
-void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev);
+//void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev);
 
-INT RtmpOSNetDevDestory(VOID *pReserved, PNET_DEV pNetDev);
+//INT RtmpOSNetDevDestory(VOID *pReserved, PNET_DEV pNetDev);
 void RtmpOSNetDevDetach(PNET_DEV pNetDev);
 int RtmpOSNetDevAttach(UCHAR OpMode, PNET_DEV pNetDev, RTMP_OS_NETDEV_OP_HOOK *pDevOpHook);
 
@@ -271,7 +271,7 @@ VOID RtmpDevPrivFlagsSet(VOID *pDev, USHORT PrivFlags);
 VOID RtmpOsSetNetDevType(VOID *pDev, USHORT Type);
 VOID RtmpOsSetNetDevTypeMonitor(VOID *pDev);
 UCHAR get_sniffer_mode(VOID *pDev);
-VOID set_sniffer_mode(VOID *pDev, UCHAR mode);
+//VOID set_sniffer_mode(VOID *pDev, UCHAR mode);
 
 /* OS Semaphore */
 VOID RtmpOsCmdUp(RTMP_OS_TASK *pCmdQTask);
@@ -806,8 +806,6 @@ extern UCHAR TPID[];
 extern UCHAR IPX[2];
 extern UCHAR APPLE_TALK[2];
 extern UCHAR NUM_BIT8[8];
-extern ULONG RTPktOffsetData, RTPktOffsetLen, RTPktOffsetCB;
-
 extern ULONG OS_NumOfMemAlloc, OS_NumOfMemFree;
 
 extern UINT32 RalinkRate_Legacy[];
