@@ -263,18 +263,25 @@ INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
 		break;
 
 	case CMD_RTPRIV_IOCTL_80211_NETDEV_EVENT:
-		{
 		/*
 		CFG_TODO: For Scan_req per netdevice
 		 struct wireless_dev *pWdev = pAd->pCfg80211_CB->pCfg80211_Wdev;
 		 if (RTMPEqualMemory(pNetDev->dev_addr, pNewNetDev->dev_addr, MAC_ADDR_LEN))
 		*/
-
-		if (pAd->cfg80211_ctrl.FlgCfg80211Scanning == TRUE) {
-			DBGPRINT(RT_DEBUG_ERROR, ("CFG_SCAN: close the scan cmd in device close phase\n"));
-			CFG80211OS_ScanEnd(pAd->pCfg80211_CB, TRUE);
-			pAd->cfg80211_ctrl.FlgCfg80211Scanning = FALSE;
-		}
+		/*
+		 *  pData : netdev
+		 *  Data: state
+		 */
+		if (Data == NETDEV_GOING_DOWN) {
+			DBGPRINT(RT_DEBUG_ERROR,
+					("%s: CMD_RTPRIV_IOCTL_80211_NETDEV_EVENT\n",
+					__FUNCTION__));
+			if (pAd->cfg80211_ctrl.FlgCfg80211Scanning == TRUE) {
+				DBGPRINT(RT_DEBUG_WARN,
+						("CFG_SCAN: close the scan cmd in device close phase\n"));
+				CFG80211OS_ScanEnd(pAd->pCfg80211_CB, TRUE);
+				pAd->cfg80211_ctrl.FlgCfg80211Scanning = FALSE;
+			}
 		}
 		break;
 
@@ -444,7 +451,7 @@ static VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BO
 		pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount = 0;
 	}
 
-	DBGPRINT(RT_DEBUG_INFO, 
+	DBGPRINT(RT_DEBUG_INFO,
 			("[%d] TYPE pAd->Cfg80211RegisterActionFrame=%d[%d]\n",
 			isReg,
 			pCfg80211_ctrl->cfg80211MainDev.Cfg80211RegisterActionFrame,
@@ -463,10 +470,10 @@ static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
 
 	/* Short Preamble */
 	if (pBssInfo->use_short_preamble != -1) {
-		CFG80211DBG(RT_DEBUG_TRACE, 
+		CFG80211DBG(RT_DEBUG_TRACE,
 				("%s: ShortPreamble %d\n",
 				__FUNCTION__, pBssInfo->use_short_preamble));
-		pAd->CommonCfg.TxPreamble = (pBssInfo->use_short_preamble == 0 ? 
+		pAd->CommonCfg.TxPreamble = (pBssInfo->use_short_preamble == 0 ?
 				Rt802_11PreambleLong : Rt802_11PreambleShort);
 		TxPreamble = (pAd->CommonCfg.TxPreamble == Rt802_11PreambleLong ? 0 : 1);
 		MlmeSetTxPreamble(pAd, (USHORT)pAd->CommonCfg.TxPreamble);
@@ -474,7 +481,7 @@ static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
 
 	/* CTS Protection */
 	if (pBssInfo->use_cts_prot != -1) {
-		CFG80211DBG(RT_DEBUG_TRACE, 
+		CFG80211DBG(RT_DEBUG_TRACE,
 				("%s: CTS Protection %d\n",
 				__FUNCTION__, pBssInfo->use_cts_prot));
 	}
@@ -482,7 +489,7 @@ static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
 	/* Short Slot */
 	if (pBssInfo->use_short_slot_time != -1) {
 		CFG80211DBG(RT_DEBUG_TRACE,
-				("%s: Short Slot %d\n", __FUNCTION__, 
+				("%s: Short Slot %d\n", __FUNCTION__,
 				pBssInfo->use_short_slot_time));
 	}
 }
@@ -775,7 +782,7 @@ static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 			NdisZeroMemory(&pPmfCfg->IPN[pKeyInfo->KeyId -4][0], LEN_WPA_TSC);
 			NdisMoveMemory(&pPmfCfg->IGTK[pKeyInfo->KeyId -4][0], pKeyInfo->KeyBuf, pKeyInfo->KeyLen);
 		} else {
-			DBGPRINT(RT_DEBUG_ERROR, 
+			DBGPRINT(RT_DEBUG_ERROR,
 					("ERROR !! pKeyInfo->KeyId=%d \n",
 					pKeyInfo->KeyId));
 		}
@@ -788,7 +795,7 @@ static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 		RT_CMD_STA_IOCTL_SECURITY IoctlSec;
 
 		DBGPRINT(RT_DEBUG_TRACE, ("%s ==> %d, %d, %zx...\n",
-				__FUNCTION__, pKeyInfo->KeyId, 
+				__FUNCTION__, pKeyInfo->KeyId,
 				pKeyInfo->KeyType,  strlen(pKeyInfo->KeyBuf)));
 
 		IoctlSec.KeyIdx = pKeyInfo->KeyId;
@@ -956,7 +963,7 @@ static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 		KeyBuf[pConnInfo->KeyLen] = 0x00;
 
 		CFG80211DBG(RT_DEBUG_ERROR,
-				("80211> pAd->StaCfg.DefaultKeyId = %d\n", 
+				("80211> pAd->StaCfg.DefaultKeyId = %d\n",
 				pAd->StaCfg.wdev.DefaultKeyId));
 
 		Set_Wep_Key_Proc(pAd, (PSTRING)KeyBuf, (INT)pConnInfo->KeyLen, (INT)pConnInfo->KeyIdx);
@@ -1027,10 +1034,12 @@ static VOID CFG80211_UnRegister(VOID *pAdOrg, VOID *pNetDev)
 
 	CFG80211OS_UnRegister(pAd->pCfg80211_CB, pNetDev);
 	RTMP_DRIVER_80211_SCAN_STATUS_LOCK_INIT(pAd, FALSE);
+
 	unregister_netdevice_notifier(&cfg80211_netdev_notifier);
 
 	/* Reset CFG80211 Global Setting Here */
-	DBGPRINT(RT_DEBUG_TRACE, ("==========> TYPE Reset CFG80211 Global Setting Here <==========\n"));
+	DBGPRINT(RT_DEBUG_TRACE, 
+		("==========> TYPE Reset CFG80211 Global Setting Here <==========\n"));
 	pCfg80211_ctrl->cfg80211MainDev.Cfg80211RegisterActionFrame = FALSE,
 	pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount = 0;
 	pCfg80211_ctrl->cfg80211MainDev.Cfg80211RegisterProbeReqFrame = FALSE;
@@ -1285,10 +1294,10 @@ VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
 		}
 
 		if (IdBand == 0) {
-			CFG80211DBG(RT_DEBUG_TRACE, 
+			CFG80211DBG(RT_DEBUG_TRACE,
 					("crda> reset chan/power for 2.4GHz\n"));
 		} else {
-			CFG80211DBG(RT_DEBUG_TRACE, 
+			CFG80211DBG(RT_DEBUG_TRACE,
 					("crda> reset chan/power for 5GHz\n"));
 		}
 
@@ -1530,7 +1539,7 @@ BOOLEAN CFG80211_checkScanTable(VOID *pAdCB)
 		cfg80211_put_bss(bss);
 		return TRUE;
 	} else {
-		DBGPRINT(RT_DEBUG_ERROR, 
+		DBGPRINT(RT_DEBUG_ERROR,
 				("Can't Found %s in Kernel_ScanTable & Try Fake it\n",
 				pApCliEntry->MlmeAux.Ssid));
 	}
