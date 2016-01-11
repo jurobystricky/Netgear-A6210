@@ -217,6 +217,7 @@ int rt28xx_close(VOID *dev)
 	RTMPDrvClose(pAd, net_dev);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<=== rt28xx_close\n"));
+
 	return 0;
 }
 
@@ -384,9 +385,6 @@ PNET_DEV RtmpPhyNetDevInit(VOID *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
 	pNetDevHook->open = MainVirtualIF_open;
 	pNetDevHook->stop = MainVirtualIF_close;
 	pNetDevHook->xmit = rt28xx_send_packets;
-#ifdef IKANOS_VX_1X0
-	pNetDevHook->xmit = IKANOS_DataFramesTx;
-#endif /* IKANOS_VX_1X0 */
 	pNetDevHook->ioctl = rt28xx_ioctl;
 	pNetDevHook->priv_flags = InfId; /*INT_MAIN; */
 	pNetDevHook->get_stats = RT28xx_get_ether_stats;
@@ -702,13 +700,10 @@ BOOLEAN RtmpPhyNetDevExit(VOID *pAd, PNET_DEV net_dev)
 	if (net_dev != NULL) {
 		printk("RtmpOSNetDevDetach(): RtmpOSNetDeviceDetach(), dev->name=%s!\n", 
 				net_dev->name);
-		RtmpOSNetDevProtect(1);
 		RtmpOSNetDevDetach(net_dev);
-		RtmpOSNetDevProtect(0);
 	}
 
 	return TRUE;
-
 }
 
 
