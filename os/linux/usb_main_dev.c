@@ -295,9 +295,9 @@ static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
 {
 	struct net_device *net_dev;
 
-	DBGPRINT(RT_DEBUG_ERROR, 
-			("rtusb_disconnect: unregister usbnet usb-%s-%s\n",
-			dev->bus->bus_name, dev->devpath));
+	DBGPRINT(RT_DEBUG_WARN, 
+			("%s: unregister usbnet usb-%s-%s\n",
+			__FUNCTION__,dev->bus->bus_name, dev->devpath));
 	if (!pAd) {
 		usb_put_dev(dev);
 		printk("rtusb_disconnect: pAd == NULL!\n");
@@ -310,7 +310,6 @@ static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
 	udelay(1);
 
 	RTMP_DRIVER_NET_DEV_GET(pAd, &net_dev);
-
 	RtmpPhyNetDevExit(pAd, net_dev);
 
 	/* FIXME: Shall we need following delay and flush the schedule?? */
@@ -335,22 +334,11 @@ static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
 	usb_put_dev(dev);
 	udelay(1);
 
-	DBGPRINT(RT_DEBUG_ERROR, (" RTUSB disconnect successfully\n"));
+	DBGPRINT(RT_DEBUG_OFF, (" RTUSB disconnect successfully\n"));
 }
 
 
-
-/**************************************************************************/
-/**************************************************************************/
-/*tested for kernel 2.6series */
-/**************************************************************************/
-/**************************************************************************/
-
 #ifdef CONFIG_PM
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,10)
-#define pm_message_t u32
-#endif
-
 static int rtusb_suspend(struct usb_interface *intf, pm_message_t state)
 {
 	struct net_device *net_dev;
@@ -560,7 +548,6 @@ static void rtusb_disconnect(struct usb_interface *intf)
 	VIRTUAL_IF_DOWN(pAd);
 #endif
 	usb_set_intfdata(intf, NULL);
-
 	rt2870_disconnect(dev, pAd);
 
 #ifdef CONFIG_PM
@@ -597,10 +584,31 @@ static struct usb_driver rtusb_driver = {
 #endif /* CONFIG_PM */
 };
 
+#ifdef DBG
+u32 RTDebugLevel = RT_DEBUG_ERROR;
+ULONG RTDebugFunc = 0;
+
+// This directory entry will point to `/sys/kernel/debug/rt2870xx.
+static struct dentry *dbgfs_dir = 0;
+#endif
 
 INT __init rtusb_init(void)
 {
+#ifdef DBG
+	struct dentry *tmp;
+
 	printk("rtusb init %s --->\n", RTMP_DRV_NAME);
+	dbgfs_dir = debugfs_create_dir(RTMP_DRV_NAME, 0);
+	if (!dbgfs_dir) {
+		printk(KERN_ALERT "debugfs_create_dir failed\n");
+	}
+	
+	tmp = debugfs_create_u32("RTDebugLevel", S_IWUSR | S_IRUGO, dbgfs_dir, 
+			&RTDebugLevel);
+	if (!tmp) {
+		printk(KERN_ALERT "debugfs_create_u32 failed\n");
+	}
+#endif
 	return usb_register(&rtusb_driver);
 }
 
@@ -608,6 +616,9 @@ INT __init rtusb_init(void)
 VOID __exit rtusb_exit(void)
 {
 	usb_deregister(&rtusb_driver);
+#ifdef DBG
+	debugfs_remove_recursive(dbgfs_dir);
+#endif
 	printk("<--- rtusb exit\n");
 }
 
