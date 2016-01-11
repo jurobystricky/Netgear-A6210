@@ -1757,8 +1757,8 @@ static VOID ba_enqueue_reordering_packet(
 	}
 	else
 	{
-		DBGPRINT(RT_DEBUG_ERROR,  ("!!! (%d) Can't allocate reordering mpdu blk\n",
-								   pBAEntry->list.qlen));
+		DBGPRINT(RT_DEBUG_ERROR,  ("!!! %s: (%d) Can't allocate reordering mpdu blk\n",
+				__FUNCTION__, pBAEntry->list.qlen));
 		/*
 		 * flush all pending reordering mpdus
 		 * and receving mpdu to upper layer
@@ -1823,8 +1823,8 @@ static VOID ba_enqueue_reordering_packet_hdr_trns(
 	}
 	else
 	{
-		DBGPRINT(RT_DEBUG_ERROR,  ("!!! (%d) Can't allocate reordering mpdu blk\n",
-								   pBAEntry->list.qlen));
+		DBGPRINT(RT_DEBUG_ERROR,  ("%s: !!! (%d) Can't allocate reordering mpdu blk\n",
+				__FUNCTION__, pBAEntry->list.qlen));
 		/*
 		 * flush all pending reordering mpdus
 		 * and receving mpdu to upper layer
