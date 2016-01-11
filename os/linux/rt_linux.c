@@ -1358,8 +1358,9 @@ void RtmpOSNetDevDetach(PNET_DEV pNetDev)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
 	struct net_device_ops *pNetDevOps = (struct net_device_ops *)pNetDev->netdev_ops;
 #endif
+	rtnl_lock();
 	unregister_netdevice(pNetDev);
-
+	rtnl_unlock();
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)
 	vfree(pNetDevOps);
 #endif
@@ -1476,10 +1477,13 @@ int RtmpOSNetDevAttach(UCHAR OpMode, PNET_DEV pNetDev,
 #endif
 #endif
 
-	if (rtnl_locked)
+	if (rtnl_locked) {
+		rtnl_lock();
 		ret = register_netdevice(pNetDev);
-	else
+		rtnl_unlock();
+	} else {
 		ret = register_netdev(pNetDev);
+	}
 
 	netif_stop_queue(pNetDev);
 
