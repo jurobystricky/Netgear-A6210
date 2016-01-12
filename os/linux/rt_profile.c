@@ -180,14 +180,13 @@ NDIS_STATUS	RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 		if (IS_FILE_OPEN_ERR(srcf)) {
 			DBGPRINT(RT_DEBUG_ERROR, ("Open file \"%s\" failed!\n", src));
 		} else {
-#ifndef OS_ABL_SUPPORT
 			// TODO: need to roll back when convert into OSABL code
 			fsize = (ULONG)file_inode(srcf)->i_size;
 			DBGPRINT(RT_DEBUG_INFO, ("buffer size %lu file size %lu\n",
 				buf_size, fsize));
 				if (buf_size < (fsize + 1))
 					buf_size = fsize + 1;
-#endif /* OS_ABL_SUPPORT */
+
 			os_alloc_mem(pAd, (UCHAR **)&buffer, buf_size);
 			if (buffer) {
 				memset(buffer, 0x00, buf_size);
