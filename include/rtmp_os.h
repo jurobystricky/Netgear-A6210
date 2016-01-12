@@ -123,21 +123,10 @@ typedef struct _RTMP_OS_TASK_ {
 //int RtmpOSIRQRequest(PNET_DEV pNetDev);
 
 
-#ifndef OS_ABL_SUPPORT
 #define RTMP_MATOpsInit(__pAd)
 #define RTMP_MATPktRxNeedConvert(__pAd, __pDev)				\
 	MATPktRxNeedConvert(__pAd, __pDev)
 #define RTMP_MATEngineRxHandle(__pAd, __pPkt, __InfIdx)		\
 	MATEngineRxHandle(__pAd, __pPkt, __InfIdx)
-#else
-
-#define RTMP_MATOpsInit(__pAd)								\
-	(__pAd)->MATPktRxNeedConvert = MATPktRxNeedConvert;		\
-	(__pAd)->MATEngineRxHandle = MATEngineRxHandle;
-#define RTMP_MATPktRxNeedConvert(__pAd, __pDev)				\
-	((__pAd)->MATPktRxNeedConvert(__pAd, __pDev))
-#define RTMP_MATEngineRxHandle(__pAd, __pPkt, __InfIdx)		\
-	((__pAd)->MATEngineRxHandle(__pAd, __pPkt, __InfIdx))
-#endif /* OS_ABL_SUPPORT */
 
 #endif /* __RMTP_OS_H__ */

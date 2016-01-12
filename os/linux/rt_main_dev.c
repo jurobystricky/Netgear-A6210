@@ -41,16 +41,6 @@ static int RtmpOSIRQRequest(PNET_DEV pNetDev);
 #endif
 #endif
 
-// TODO: shiang-6590, remove it when MP
-// TODO: End---
-
-#ifdef RTMP_MAC_USB
-#ifdef OS_ABL_SUPPORT
-MODULE_LICENSE("GPL");
-#endif /* OS_ABL_SUPPORT */
-#endif /* RTMP_MAC_USB */
-
-
 /*---------------------------------------------------------------------*/
 /* Private Variables Used                                              */
 /*---------------------------------------------------------------------*/
@@ -68,11 +58,6 @@ module_param(mode, charp, 0);
 #endif
 MODULE_PARM_DESC (mac, "rt_wifi: wireless mac addr");
 MODULE_PARM_DESC (mode, "rt_wifi: wireless operation mode");
-
-#ifdef OS_ABL_SUPPORT
-RTMP_DRV_ABL_OPS RtmpDrvOps, *pRtmpDrvOps = &RtmpDrvOps;
-RTMP_NET_ABL_OPS RtmpDrvNetOps, *pRtmpDrvNetOps = &RtmpDrvNetOps;
-#endif /* OS_ABL_SUPPORT */
 
 
 /*---------------------------------------------------------------------*/
