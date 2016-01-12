@@ -335,8 +335,7 @@ static void rx_done_tasklet(unsigned long data)
 	PRX_CONTEXT pRxContext;
 	PRTMP_ADAPTER pAd;
 	NTSTATUS Status;
-	unsigned int IrqFlags;
-
+	unsigned long IrqFlags;
 	pUrb = (purbb_t)data;
 	pRxContext = (PRX_CONTEXT)RTMP_USB_URB_DATA_GET(pUrb);
 	Status = RTMP_USB_URB_STATUS_GET(pUrb);
