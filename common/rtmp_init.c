@@ -137,7 +137,7 @@ NDIS_STATUS RTMPAllocAdapterBlock(VOID *handle, VOID **ppAdapter)
 		NdisAllocateSpinLock(pAd, &pAd->MgmtRingLock);
 
 #if defined(RT3290) || defined(RLT_MAC)
-		NdisAllocateSpinLock(pAd, &pAd->WlanEnLock);
+//		NdisAllocateSpinLock(pAd, &pAd->WlanEnLock);
 #endif /* defined(RT3290) || defined(RLT_MAC) */
 
 		for (index = 0 ; index < NUM_OF_TX_RING; index++) {
@@ -3390,7 +3390,7 @@ BOOLEAN RtmpRaDevCtrlInit(VOID *pAdSrc, RTMP_INF_TYPE infType)
 #ifdef RTMP_MAC_USB
 	RTMP_SEM_EVENT_INIT(&(pAd->UsbVendorReq_semaphore), &pAd->RscSemMemList);
 #ifdef RLT_MAC
-	RTMP_SEM_EVENT_INIT(&(pAd->WlanEnLock), &pAd->RscSemMemList);
+//	RTMP_SEM_EVENT_INIT(&(pAd->WlanEnLock), &pAd->RscSemMemList);
 #endif
 	RTMP_SEM_EVENT_INIT(&(pAd->reg_atomic), &pAd->RscSemMemList);
 	RTMP_SEM_EVENT_INIT(&(pAd->hw_atomic), &pAd->RscSemMemList);

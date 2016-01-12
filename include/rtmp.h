@@ -3724,7 +3724,7 @@ struct _RTMP_ADAPTER {
 #if defined(RT3290) || defined(RLT_MAC)
 
 #ifdef RTMP_MAC_USB
-	RTMP_OS_SEM WlanEnLock;
+//	RTMP_OS_SEM WlanEnLock;
 #endif
 
 	WLAN_FUN_CTRL_STRUC WlanFunCtrl;

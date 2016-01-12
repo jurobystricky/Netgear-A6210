@@ -498,7 +498,7 @@ VOID RTMPFreeAdapter(VOID *pAdSrc)
 	NdisFreeSpinLock(&pAd->MgmtRingLock);
 
 #if defined(RT3290) || defined(RLT_MAC)
-	NdisFreeSpinLock(&pAd->WlanEnLock);
+//	NdisFreeSpinLock(&pAd->WlanEnLock);
 #endif /* defined(RT3290) || defined(RLT_MAC) */
 
 	for (index = 0 ; index < NUM_OF_TX_RING; index++) {
