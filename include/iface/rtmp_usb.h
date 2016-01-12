@@ -60,7 +60,7 @@ extern UCHAR EpToQueue[6];
 #endif
 
 /* vendor-specific control operations */
-#define CONTROL_TIMEOUT_JIFFIES ( (300 * OS_HZ) / 1000)
+#define USB_REQUEST_TIMEOUT_MS 		300
 /*#define UNLINK_TIMEOUT_MS		3 // os abl move */
 
 #define DEVICE_CLASS_REQUEST_OUT	0x20

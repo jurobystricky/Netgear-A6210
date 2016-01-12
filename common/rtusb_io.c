@@ -1027,7 +1027,7 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(PRTMP_ADAPTER pAd, NDIS_OID Oid,
 
 	Note:
 		This function sends a simple control message to endpoint zero
-		and waits for the message to complete, or CONTROL_TIMEOUT_JIFFIES timeout.
+		and waits for the message to complete, or USB_REQUEST_TIMEOUT_MS timeout.
 		Because it is synchronous transfer, so don't use this function within an atomic context,
 		otherwise system will hang, do be careful.
 
@@ -1075,16 +1075,20 @@ NTSTATUS RTUSB_VendorRequest(PRTMP_ADAPTER pAd, UINT32 TransferFlags, UCHAR Requ
 			return NDIS_STATUS_FAILURE;
 		}
 
-		if ((TransferBufferLength > 0) && ((RequestType == DEVICE_VENDOR_REQUEST_OUT) || (RequestType == DEVICE_CLASS_REQUEST_OUT)))
+		if ((TransferBufferLength > 0) && 
+			((RequestType == DEVICE_VENDOR_REQUEST_OUT) || 
+			(RequestType == DEVICE_CLASS_REQUEST_OUT))) {
 			NdisMoveMemory(pAd->UsbVendorReqBuf, TransferBuffer, TransferBufferLength);
+		}
 
 		do {
 			RTUSB_CONTROL_MSG(pObj->pUsb_Dev, 0, Request, RequestType, Value,
 				Index, pAd->UsbVendorReqBuf, TransferBufferLength,
-				CONTROL_TIMEOUT_JIFFIES, RET);
+				USB_REQUEST_TIMEOUT_MS, RET);
 
 			if (RET < 0) {
-				DBGPRINT(RT_DEBUG_OFF, ("#\n"));
+				DBGPRINT(RT_DEBUG_TRACE, ("%s: Retry count: %d\n",
+						__FUNCTION__, RetryCount));
 				if (RET == RTMP_USB_CONTROL_MSG_ENODEV) {
 					RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 					break;
@@ -1100,8 +1104,11 @@ NTSTATUS RTUSB_VendorRequest(PRTMP_ADAPTER pAd, UINT32 TransferFlags, UCHAR Requ
 		RTMP_SEM_EVENT_UP(&(pAd->UsbVendorReq_semaphore));
 
 		if (RET < 0) {
-			DBGPRINT(RT_DEBUG_ERROR, ("RTUSB_VendorRequest failed(%d),TxFlags=0x%x, ReqType=%s, Req=0x%x, Idx=0x%x,pAd->Flags=0x%lx\n",
-						RET, TransferFlags, (RequestType == DEVICE_VENDOR_REQUEST_OUT ? "OUT" : "IN"), Request, Index, pAd->Flags));
+			DBGPRINT(RT_DEBUG_ERROR, 
+					("RTUSB_VendorRequest failed(%d),TxFlags=0x%x, ReqType=%s, Req=0x%x, Idx=0x%x,pAd->Flags=0x%lx\n",
+					RET, TransferFlags, 
+					(RequestType == DEVICE_VENDOR_REQUEST_OUT ? "OUT" : "IN"), 
+					Request, Index, pAd->Flags));
 			if (Request == 0x2)
 				DBGPRINT(RT_DEBUG_ERROR, ("\tRequest Value=0x%04x!\n", Value));
 
@@ -1109,12 +1116,11 @@ NTSTATUS RTUSB_VendorRequest(PRTMP_ADAPTER pAd, UINT32 TransferFlags, UCHAR Requ
 				hex_dump("Failed TransferBuffer value", TransferBuffer, TransferBufferLength);
 
 			if (RET == RTMP_USB_CONTROL_MSG_ENODEV)
-					RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
+				RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 		}
 	}
 
 	if (RET < 0) {
-		DBGPRINT(RT_DEBUG_ERROR, ("JB: %s failed!\n",__FUNCTION__));
 		return NDIS_STATUS_FAILURE;
 	} else {
 		return NDIS_STATUS_SUCCESS;
