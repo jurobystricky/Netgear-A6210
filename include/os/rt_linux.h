@@ -260,8 +260,6 @@ typedef struct file* RTMP_OS_FD;
 
 typedef struct _OS_FS_INFO_
 {
-// jb was int	fsuid;
-// jb was int	fsgid;
 	kuid_t	fsuid;
 	kgid_t	fsgid;
 	mm_segment_t	fs;
@@ -284,8 +282,8 @@ typedef spinlock_t	OS_NDIS_SPIN_LOCK;
 /*  spin_lock enhanced for Nested spin lock */
 /* */
 #define OS_NdisAllocateSpinLock(__lock)			\
-{                                       		\
-	spin_lock_init((spinlock_t *)(__lock));		\
+{							\
+	spin_lock_init((__lock));			\
 }
 
 #define OS_NdisFreeSpinLock(lock)			\
@@ -294,12 +292,12 @@ typedef spinlock_t	OS_NDIS_SPIN_LOCK;
 
 #define OS_SEM_LOCK(__lock)				\
 {							\
-	spin_lock_bh((spinlock_t *)(__lock));		\
+			spin_lock_bh((__lock));		\
 }
 
 #define OS_SEM_UNLOCK(__lock)				\
 {							\
-	spin_unlock_bh((spinlock_t *)(__lock));		\
+	spin_unlock_bh((__lock));			\
 }
 
 
@@ -308,35 +306,37 @@ typedef spinlock_t	OS_NDIS_SPIN_LOCK;
 
 #define OS_IRQ_LOCK(__lock, __irqflags)			\
 {							\
-	__irqflags = 0;					\
-	spin_lock_irqsave((spinlock_t *)(__lock), __irqflags);	\
+	spin_lock_irqsave(__lock, __irqflags);		\
 }
 
 #define OS_IRQ_UNLOCK(__lock, __irqflag)		\
 {							\
-	spin_unlock_irqrestore((spinlock_t *)(__lock), __irqflag);	\
+	spin_unlock_irqrestore(__lock, __irqflag);	\
 }
 #else
 #define OS_IRQ_LOCK(__lock, __irqflags)			\
 {							\
 	__irqflags = 0;					\
-	spin_lock_bh((spinlock_t *)(__lock));		\
+	spin_lock_bh((__lock));				\
 }
 
 #define OS_IRQ_UNLOCK(__lock, __irqflag)		\
 {							\
-	spin_unlock_bh((spinlock_t *)(__lock));		\
+	spin_unlock_bh((__lock));			\
 }
 #endif // MULTI_CORE_SUPPORT //
+
+
 #define OS_INT_LOCK(__lock, __irqflags)			\
 {							\
-	spin_lock_irqsave((spinlock_t *)__lock, __irqflags);	\
+	spin_lock_irqsave(__lock, __irqflags);		\
 }
 
 #define OS_INT_UNLOCK(__lock, __irqflag)		\
 {							\
-	spin_unlock_irqrestore((spinlock_t *)(__lock), ((unsigned long)__irqflag));	\
+	spin_unlock_irqrestore(__lock, __irqflag);	\
 }
+
 
 #define OS_NdisAcquireSpinLock	OS_SEM_LOCK
 #define OS_NdisReleaseSpinLock	OS_SEM_UNLOCK
@@ -942,7 +942,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #define BULKAGGRE_SIZE 	100 /* 100 */
 #endif /* INF_AMAZON_SE */
 
-#ifndef OS_ABL_SUPPORT
 #define RTUSB_ALLOC_URB(iso)		usb_alloc_urb(iso, GFP_ATOMIC)
 #define RTUSB_SUBMIT_URB(pUrb)		usb_submit_urb(pUrb, GFP_ATOMIC)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
@@ -954,29 +953,11 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #endif /* LINUX_VERSION_CODE */
 
 #define RTUSB_FILL_BULK_URB(_urb, _dev, _pipe, _buffer, _buffer_len, _complete_fn, _context) usb_fill_bulk_urb(_urb, _dev, _pipe, _buffer, _buffer_len, _complete_fn, _context)
-#else
-
-#define RTUSB_ALLOC_URB(iso)		rausb_alloc_urb(iso)
-#define RTUSB_SUBMIT_URB(pUrb)		rausb_submit_urb(pUrb)
-#define RTUSB_URB_ALLOC_BUFFER		rausb_buffer_alloc
-#define RTUSB_URB_FREE_BUFFER		rausb_buffer_free
-#endif /* OS_ABL_SUPPORT */
-
-#ifndef OS_ABL_SUPPORT
 #define RTUSB_FREE_URB(pUrb)	usb_free_urb(pUrb)
-#else
-#define RTUSB_FREE_URB(pUrb)	rausb_free_urb(pUrb)
-#endif /* OS_ABL_SUPPORT */
 
 /* unlink urb */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,7)
-
-#ifndef OS_ABL_SUPPORT
 #define RTUSB_UNLINK_URB(pUrb)		usb_kill_urb(pUrb)
-#else
-#define RTUSB_UNLINK_URB(pUrb)		rausb_kill_urb(pUrb)
-#endif /* OS_ABL_SUPPORT */
-
 #else
 #define RTUSB_UNLINK_URB(pUrb)		usb_unlink_urb(pUrb)
 #endif /* LINUX_VERSION_CODE */
@@ -1103,38 +1084,7 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 #define RTMP_OS_USB_CONTEXT_GET(__pURB)		__pURB->rtusb_urb_context
 #define RTMP_OS_USB_STATUS_GET(__pURB)		__pURB->rtusb_urb_status
 
-#ifndef OS_ABL_SUPPORT
 #define USB_CONTROL_MSG		usb_control_msg
-
-#else
-
-#define USB_CONTROL_MSG		rausb_control_msg
-
-/*extern int rausb_register(struct usb_driver * new_driver); */
-/*extern void rausb_deregister(struct usb_driver * driver); */
-
-extern struct urb *rausb_alloc_urb(int iso_packets);
-extern void rausb_free_urb(VOID *urb);
-extern void rausb_put_dev(VOID *dev);
-extern struct usb_device *rausb_get_dev(VOID *dev);
-extern int rausb_submit_urb(VOID *urb);
-
-#ifndef gfp_t
-#define gfp_t	INT32
-#endif 
-
-extern void *rausb_buffer_alloc(VOID *dev, size_t size, ra_dma_addr_t *dma);
-extern void rausb_buffer_free(VOID *dev, size_t size, void *addr, ra_dma_addr_t dma);
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,7)
-extern void rausb_kill_urb(VOID *urb);
-#endif /* LINUX_VERSION_CODE */
-
-extern int rausb_control_msg(VOID *dev, unsigned int pipe, __u8 request,
-	__u8 requesttype, __u16 value, __u16 index, void *data, __u16 size,
-	int timeout);
-
-#endif /* OS_ABL_SUPPORT */
 
 /*#endif // RTMP_USB_SUPPORT */
 
