@@ -519,8 +519,8 @@ static NDIS_STATUS usb_load_ivb(RTMP_ADAPTER *ad)
 	}
 
 	if (Status) {
-			DBGPRINT(RT_DEBUG_ERROR, ("Upload IVB Fail\n"));
-			return Status;
+		DBGPRINT(RT_DEBUG_ERROR, ("Upload IVB Fail\n"));
+		return Status;
 	}
 
 	return Status;
@@ -1124,13 +1124,13 @@ static inline void andes_inc_error_count(struct MCU_CTRL *ctl, enum cmd_msg_erro
 		switch (type) {
 		case error_tx_kickout_fail:
 			ctl->tx_kickout_fail_count++;
-		break;
+			break;
 		case error_tx_timeout_fail:
 			ctl->tx_timeout_fail_count++;
-		break;
+			break;
 		case error_rx_receive_fail:
 			ctl->rx_receive_fail_count++;
-		break;
+			break;
 		default:
 			DBGPRINT(RT_DEBUG_ERROR, ("%s:unknown cmd_msg_error_type(%d)\n", __FUNCTION__, type));
 		}
@@ -1349,8 +1349,7 @@ void andes_rx_process_cmd_msg(RTMP_ADAPTER *ad, struct cmd_msg *rx_msg)
 #endif
 
 		DlListForEachSafe(msg, msg_tmp, &ctl->ackq, struct cmd_msg, list) {
-			if (msg->seq == rx_info->cmd_seq)
-			{
+			if (msg->seq == rx_info->cmd_seq) {
 				_andes_unlink_cmd_msg(msg, &ctl->ackq);
 #ifdef RTMP_USB_SUPPORT
 				RTMP_SPIN_UNLOCK_IRQ(&ctl->ackq_lock);
@@ -1377,7 +1376,6 @@ void andes_rx_process_cmd_msg(RTMP_ADAPTER *ad, struct cmd_msg *rx_msg)
 #ifdef RTMP_USB_SUPPORT
 				RTMP_SPIN_LOCK_IRQ(&ctl->ackq_lock);
 #endif
-
 				break;
 			}
 		}
@@ -1385,7 +1383,6 @@ void andes_rx_process_cmd_msg(RTMP_ADAPTER *ad, struct cmd_msg *rx_msg)
 #ifdef RTMP_USB_SUPPORT
 		RTMP_SPIN_UNLOCK_IRQ(&ctl->ackq_lock);
 #endif
-
 	}
 }
 
@@ -1592,7 +1589,8 @@ static void usb_kick_out_cmd_msg_complete(PURB urb)
 			RTMP_OS_COMPLETE(&msg->ack_done);
 		}
 
-		DBGPRINT(RT_DEBUG_ERROR, ("kick out cmd msg fail(%d)\n", RTMP_USB_URB_STATUS_GET(urb)));
+		DBGPRINT(RT_DEBUG_ERROR, ("kick out cmd msg fail(%d)\n", 
+				RTMP_USB_URB_STATUS_GET(urb)));
 	}
 
 	andes_bh_schedule(ad);
