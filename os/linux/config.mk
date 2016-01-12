@@ -1256,26 +1256,8 @@ ifeq ($(PLATFORM),IXP)
 WFLAGS += -DRT_BIG_ENDIAN
 endif
 
-ifeq ($(PLATFORM),IKANOS_V160)
-WFLAGS += -DRT_BIG_ENDIAN -DIKANOS_VX_1X0
-endif
-
-ifeq ($(PLATFORM),IKANOS_V180)
-WFLAGS += -DRT_BIG_ENDIAN -DIKANOS_VX_1X0
-endif
-
 ifeq ($(PLATFORM),INF_TWINPASS)
 WFLAGS += -DRT_BIG_ENDIAN -DINF_TWINPASS
-endif
-
-ifeq ($(PLATFORM),INF_DANUBE)
-ifneq (,$(findstring 2.4,$(LINUX_SRC)))
-# Linux 2.4
-WFLAGS += -DINF_DANUBE -DRT_BIG_ENDIAN
-else
-# Linux 2.6
-WFLAGS += -DRT_BIG_ENDIAN
-endif
 endif
 
 ifeq ($(PLATFORM),INF_AR9)
@@ -1371,15 +1353,6 @@ CFLAGS := -D__KERNEL__ -DMODULE -I$(LINUX_SRC)/include -Wall -Wstrict-prototypes
 export CFLAGS
 endif
 
-ifeq ($(PLATFORM),INF_DANUBE)
-	ifneq (,$(findstring 2.4,$(LINUX_SRC)))
-	CFLAGS := $(WFLAGS) -Wundef -fno-strict-aliasing -fno-common -ffreestanding -Os -fomit-frame-pointer -G 0 -mno-abicalls -fno-pic -pipe -msoft-float  -mabi=32 -march=mips32 -Wa,-32 -Wa,-march=mips32 -Wa,-mips32 -Wa,--trap -I$(LINUX_SRC)/include/asm-mips/mach-generic
-	else
-	CFLAGS := $(WFLAGS) -Wundef -fno-strict-aliasing -fno-common -ffreestanding -Os -fomit-frame-pointer -G 0 -mno-abicalls -fno-pic -pipe -msoft-float  -mabi=32 -march=mips32r2 -Wa,-32 -Wa,-march=mips32r2 -Wa,-mips32r2 -Wa,--trap -I$(LINUX_SRC)/include/asm-mips/mach-generic
-	endif
-export CFLAGS
-endif
-
 ifeq ($(PLATFORM),INF_AR9)
 CFLAGS := $(WFLAGS) -Wundef -fno-strict-aliasing -fno-common -fno-pic -ffreestanding -Os -fomit-frame-pointer -G 0 -mno-abicalls -fno-pic -pipe -msoft-float  -mabi=32 -mlong-calls -march=mips32r2 -mtune=34kc -march=mips32r2 -Wa,-32 -Wa,-march=mips32r2 -Wa,-mips32r2 -Wa,--trap -I$(LINUX_SRC)/include/asm-mips/mach-generic
 export CFLAGS
@@ -1406,7 +1379,7 @@ export CFLAGS
 endif
 
 ifeq ($(PLATFORM),PC)
-	EXTRA_CFLAGS := $(WFLAGS) $(DBGFLAGS)
+	EXTRA_CFLAGS := $(WFLAGS) $(DBGFLAGS) -DMULTI_CORE_SUPPORT
 endif
 
 ifeq ($(PLATFORM),INTELP6)
