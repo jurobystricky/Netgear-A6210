@@ -36,8 +36,7 @@
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28))
 #ifdef RT_CFG80211_SUPPORT
 
-extern INT ApCliAllowToSendPacket(
-	RTMP_ADAPTER *pAd, struct wifi_dev *wdev,
+extern INT ApCliAllowToSendPacket(RTMP_ADAPTER *pAd, struct wifi_dev *wdev,
 	PNDIS_PACKET pPacket, UCHAR *pWcid);
 
 BOOLEAN CFG80211DRV_OpsChgVirtualInf(RTMP_ADAPTER *pAd, VOID *pData)
@@ -227,13 +226,12 @@ PCFG80211_VIF_DEV RTMP_CFG80211_FindVifEntry_ByMac(VOID *pAdSrc, PNET_DEV pNewNe
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	PLIST_HEADER  pCacheList = &pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList;
-	PCFG80211_VIF_DEV       	pDevEntry = NULL;
-	PLIST_ENTRY		        pListEntry = NULL;
+	PCFG80211_VIF_DEV pDevEntry = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 
 	pListEntry = pCacheList->pHead;
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
-	while (pDevEntry != NULL)
-	{
+	while (pDevEntry != NULL) {
 		if (RTMPEqualMemory(pDevEntry->net_dev->dev_addr, pNewNetDev->dev_addr, MAC_ADDR_LEN))
 			return pDevEntry;
 
@@ -248,13 +246,12 @@ PNET_DEV RTMP_CFG80211_FindVifEntry_ByType(VOID *pAdSrc, UINT32 devType)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	PLIST_HEADER  pCacheList = &pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList;
-	PCFG80211_VIF_DEV       	pDevEntry = NULL;
-	PLIST_ENTRY		        pListEntry = NULL;
+	PCFG80211_VIF_DEV pDevEntry = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 
 	pListEntry = pCacheList->pHead;
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
-	while (pDevEntry != NULL)
-	{
+	while (pDevEntry != NULL) {
 		if (pDevEntry->devType == devType)
 			return pDevEntry->net_dev;
 
@@ -265,19 +262,16 @@ PNET_DEV RTMP_CFG80211_FindVifEntry_ByType(VOID *pAdSrc, UINT32 devType)
 	return NULL;
 }
 
-PWIRELESS_DEV RTMP_CFG80211_FindVifEntryWdev_ByType(
-	IN      VOID     *pAdSrc,
-		  UINT32    devType)
+PWIRELESS_DEV RTMP_CFG80211_FindVifEntryWdev_ByType(VOID *pAdSrc, UINT32 devType)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	PLIST_HEADER  pCacheList = &pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList;
-	PCFG80211_VIF_DEV       	pDevEntry = NULL;
-	PLIST_ENTRY		        pListEntry = NULL;
+	PCFG80211_VIF_DEV pDevEntry = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 
 	pListEntry = pCacheList->pHead;
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
-	while (pDevEntry != NULL)
-	{
+	while (pDevEntry != NULL) {
 		if (pDevEntry->devType == devType)
 			return pDevEntry->net_dev->ieee80211_ptr;
 
@@ -294,8 +288,7 @@ VOID RTMP_CFG80211_AddVifEntry(VOID *pAdSrc, PNET_DEV pNewNetDev, UINT32 DevType
 	PCFG80211_VIF_DEV pNewVifDev = NULL;
 
 	os_alloc_mem(NULL, (UCHAR **)&pNewVifDev, sizeof(CFG80211_VIF_DEV));
-	if (pNewVifDev)
-	{
+	if (pNewVifDev) {
 		NdisZeroMemory(pNewVifDev, sizeof(CFG80211_VIF_DEV));
 
 		pNewVifDev->pNext = NULL;
@@ -306,9 +299,7 @@ VOID RTMP_CFG80211_AddVifEntry(VOID *pAdSrc, PNET_DEV pNewNetDev, UINT32 DevType
 
 		insertTailList(&pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList, (PLIST_ENTRY)pNewVifDev);
 		DBGPRINT(RT_DEBUG_TRACE, ("Add CFG80211 VIF Device, Type: %d.\n", pNewVifDev->devType));
-	}
-	else
-	{
+	} else {
 		DBGPRINT(RT_DEBUG_ERROR, ("Error in alloc mem in New CFG80211 VIF Function.\n"));
 	}
 }
@@ -316,24 +307,18 @@ VOID RTMP_CFG80211_AddVifEntry(VOID *pAdSrc, PNET_DEV pNewNetDev, UINT32 DevType
 VOID RTMP_CFG80211_RemoveVifEntry(VOID *pAdSrc, PNET_DEV pNewNetDev)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
-	PLIST_ENTRY     pListEntry = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 
 	pListEntry = (PLIST_ENTRY)RTMP_CFG80211_FindVifEntry_ByMac(pAd, pNewNetDev);
-
-	if (pListEntry)
-	{
+	if (pListEntry) {
 		delEntryList(&pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList, pListEntry);
 		os_free_mem(NULL, pListEntry);
-	}
-	else
-	{
+	} else {
 		DBGPRINT(RT_DEBUG_ERROR, ("Error in RTMP_CFG80211_RemoveVifEntry.\n"));
 	}
 }
 
-PNET_DEV RTMP_CFG80211_VirtualIF_Get(
-	IN VOID                 *pAdSrc
-)
+PNET_DEV RTMP_CFG80211_VirtualIF_Get(VOID *pAdSrc)
 {
 	//PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	//return pAd->Cfg80211VifDevSet.Cfg80211VifDev[0].net_dev;
@@ -345,17 +330,15 @@ VOID RTMP_CFG80211_VirtualIF_CancelP2pClient(VOID *pAdSrc)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	PLIST_HEADER  pCacheList = &pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList;
-	PCFG80211_VIF_DEV               pDevEntry = NULL;
-	PLIST_ENTRY                     pListEntry = NULL;
+	PCFG80211_VIF_DEV pDevEntry = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("==> %s\n", __FUNCTION__));
 
 	pListEntry = pCacheList->pHead;
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
-	while (pDevEntry != NULL)
-	{
-		if (pDevEntry->devType == RT_CMD_80211_IFTYPE_P2P_CLIENT)
-		{
+	while (pDevEntry != NULL) {
+		if (pDevEntry->devType == RT_CMD_80211_IFTYPE_P2P_CLIENT) {
 			DBGPRINT(RT_DEBUG_ERROR, ("==> RTMP_CFG80211_VirtualIF_CancelP2pClient HIT.\n"));
 			pDevEntry->devType = RT_CMD_80211_IFTYPE_P2P_GO;
 			break;
@@ -372,16 +355,15 @@ VOID RTMP_CFG80211_VirtualIF_CancelP2pClient(VOID *pAdSrc)
 }
 #endif /* RT_CFG80211_P2P_SUPPORT */
 
-static INT CFG80211_VirtualIF_Open(PNET_DEV dev_p)
-{
+static INT CFG80211_VirtualIF_Open(PNET_DEV dev_p) {
 	VOID *pAdSrc;
-	PRTMP_ADAPTER pAd; 
+	PRTMP_ADAPTER pAd;
 	pAdSrc = RTMP_OS_NETDEV_GET_PRIV(dev_p);
 	ASSERT(pAdSrc);
 	pAd = (PRTMP_ADAPTER)pAdSrc;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: ===> %d,%s\n", __FUNCTION__, dev_p->ifindex,
-				RTMP_OS_NETDEV_GET_DEVNAME(dev_p)));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s: ===> %d,%s\n", __FUNCTION__,
+			dev_p->ifindex, RTMP_OS_NETDEV_GET_DEVNAME(dev_p)));
 
 	//if (VIRTUAL_IF_UP(pAd) != 0)
 	//	return -1;
@@ -459,7 +441,8 @@ static INT CFG80211_PacketSend(PNDIS_PACKET pPktSrc, PNET_DEV pDev, RTMP_NET_PAC
 	case RT_CMD_80211_IFTYPE_P2P_GO:;
 		//minIdx = MIN_NET_DEVICE_FOR_CFG80211_VIF_P2P_GO;
 		if (!OPSTATUS_TEST_FLAG(pAd, fOP_AP_STATUS_MEDIA_STATE_CONNECTED)) {
-			DBGPRINT(RT_DEBUG_TRACE, ("Drop the Packet due P2P GO not in ready state\n"));
+			DBGPRINT(RT_DEBUG_TRACE,
+					("Drop the Packet due P2P GO not in ready state\n"));
 			RELEASE_NDIS_PACKET(pAd, pPktSrc, NDIS_STATUS_FAILURE);
 			return 0;
 		}
@@ -473,7 +456,8 @@ static INT CFG80211_PacketSend(PNDIS_PACKET pPktSrc, PNET_DEV pDev, RTMP_NET_PAC
 
 	case RT_CMD_80211_IFTYPE_STATION:
 	default:
-		DBGPRINT(RT_DEBUG_TRACE, ("Unknown CFG80211 I/F Type(%d)\n", pDev->ieee80211_ptr->iftype));
+		DBGPRINT(RT_DEBUG_TRACE, ("Unknown CFG80211 I/F Type(%d)\n",
+				pDev->ieee80211_ptr->iftype));
 		RELEASE_NDIS_PACKET(pAd, pPktSrc, NDIS_STATUS_FAILURE);
 		return 0;
 	}
@@ -490,7 +474,8 @@ static INT CFG80211_VirtualIF_PacketSend(struct sk_buff *skb, PNET_DEV dev_p)
 {
 	struct wifi_dev *wdev;
 
-	DBGPRINT(RT_DEBUG_INFO, ("%s ---> %d\n", __FUNCTION__, dev_p->ieee80211_ptr->iftype));
+	DBGPRINT(RT_DEBUG_INFO, ("%s ---> %d\n",
+			__FUNCTION__, dev_p->ieee80211_ptr->iftype));
 
 	if (!(RTMP_OS_NETDEV_STATE_RUNNING(dev_p))) {
 		/* the interface is down */
@@ -501,7 +486,7 @@ static INT CFG80211_VirtualIF_PacketSend(struct sk_buff *skb, PNET_DEV dev_p)
 	/* The device not ready to send packt. */
 	wdev = RTMP_OS_NETDEV_GET_WDEV(dev_p);
 	ASSERT(wdev);
-	if (!wdev) 
+	if (!wdev)
 		return -1;
 
 	return CFG80211_PacketSend(skb, dev_p, rt28xx_packet_xmit);
@@ -541,14 +526,15 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 	NdisCopyMemory(preIfName, pDevName, devNameLen-1);
 	pNetDevOps=&netDevHook;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("%s ---> (%s, %s, %d)\n", __FUNCTION__, pDevName, preIfName, preIfIndex));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s ---> (%s, %s, %d)\n",
+			__FUNCTION__, pDevName, preIfName, preIfIndex));
 
 	/* init operation functions and flags */
 	NdisZeroMemory(&netDevHook, sizeof(netDevHook));
-	netDevHook.open = CFG80211_VirtualIF_Open;	     /* device opem hook point */
-	netDevHook.stop = CFG80211_VirtualIF_Close;	     /* device close hook point */
-	netDevHook.xmit = CFG80211_VirtualIF_PacketSend; /* hard transmit hook point */
-	netDevHook.ioctl = CFG80211_VirtualIF_Ioctl;	 /* ioctl hook point */
+	netDevHook.open = CFG80211_VirtualIF_Open;	/* device opem hook point */
+	netDevHook.stop = CFG80211_VirtualIF_Close;	/* device close hook point */
+	netDevHook.xmit = CFG80211_VirtualIF_PacketSend;/* hard transmit hook point */
+	netDevHook.ioctl = CFG80211_VirtualIF_Ioctl;	/* ioctl hook point */
 
 #if WIRELESS_EXT >= 12
 	//netDevHook.iw_handler = (void *)&rt28xx_ap_iw_handler_def;
@@ -560,7 +546,8 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 		DBGPRINT(RT_DEBUG_ERROR, ("Allocate network device fail (CFG80211)...\n"));
 		return;
 	} else {
-		DBGPRINT(RT_DEBUG_TRACE, ("Register CFG80211 I/F (%s)\n", RTMP_OS_NETDEV_GET_DEVNAME(new_dev_p)));
+		DBGPRINT(RT_DEBUG_TRACE, ("Register CFG80211 I/F (%s)\n",
+				RTMP_OS_NETDEV_GET_DEVNAME(new_dev_p)));
 	}
 
 	new_dev_p->destructor =  free_netdev;
@@ -603,7 +590,7 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 		RTMP_OS_NETDEV_SET_PRIV(new_dev_p, pAd);
 		RTMP_OS_NETDEV_SET_WDEV(new_dev_p, wdev);
 		if (rtmp_wdev_idx_reg(pAd, wdev) < 0) {
-			DBGPRINT(RT_DEBUG_ERROR, 
+			DBGPRINT(RT_DEBUG_ERROR,
 					("%s: Assign wdev idx for %s failed, free net device!\n",
 					__FUNCTION__,RTMP_OS_NETDEV_GET_DEVNAME(new_dev_p)));
 			RtmpOSNetDevFree(new_dev_p);
@@ -695,8 +682,8 @@ VOID RTMP_CFG80211_AllVirtualIF_Remove(VOID *pAdSrc)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	PLIST_HEADER  pCacheList = &pAd->cfg80211_ctrl.Cfg80211VifDevSet.vifDevList;
-	PCFG80211_VIF_DEV           pDevEntry = NULL;
-	PLIST_ENTRY             pListEntry = NULL;
+	PCFG80211_VIF_DEV pDevEntry = NULL;
+	PLIST_ENTRY pListEntry = NULL;
 	pListEntry = pCacheList->pHead;
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
 
@@ -725,7 +712,7 @@ static INT CFG80211_DummyP2pIf_Close(PNET_DEV dev_p)
 {
 	struct wireless_dev *wdev = dev_p->ieee80211_ptr;
 	if (!wdev)
-			return -EINVAL;
+		return -EINVAL;
 
 	wdev->wiphy->interface_modes = (wdev->wiphy->interface_modes)
 			& (~(BIT(NL80211_IFTYPE_P2P_CLIENT)| BIT(NL80211_IFTYPE_P2P_GO)));
@@ -805,7 +792,7 @@ VOID RTMP_CFG80211_DummyP2pIf_Init(VOID *pAdSrc)
 
 	/* init operation functions and flags */
 	NdisZeroMemory(&netDevHook, sizeof(netDevHook));
-	netDevHook.open = CFG80211_DummyP2pIf_Open;			/* device opem hook point */
+	netDevHook.open = CFG80211_DummyP2pIf_Open;		/* device opem hook point */
 	netDevHook.stop = CFG80211_DummyP2pIf_Close;		/* device close hook point */
 	netDevHook.xmit = CFG80211_DummyP2pIf_PacketSend;	/* hard transmit hook point */
 	netDevHook.ioctl = CFG80211_DummyP2pIf_Ioctl;		/* ioctl hook point */
