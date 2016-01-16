@@ -199,12 +199,10 @@ NDIS_STATUS os_alloc_mem_suspend(VOID *pReserved, UCHAR **mem, ULONG size)
 }
 
 /* pAd MUST allow to be NULL */
-NDIS_STATUS os_free_mem(VOID *pReserved, PVOID mem)
+void os_free_mem(VOID *pReserved, PVOID mem)
 {
 	ASSERT(mem);
 	kfree(mem);
-
-	return NDIS_STATUS_SUCCESS;
 }
 
 #if defined(RTMP_RBUS_SUPPORT) || defined(RTMP_FLASH_SUPPORT)
