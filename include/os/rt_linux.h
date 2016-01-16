@@ -463,8 +463,6 @@ do { \
 #define KILL_THREAD_PID(_A, _B, _C)	kill_proc((_A), (_B), (_C))
 #endif
 
-//#define ATE_KILL_THREAD_PID(PID)	KILL_THREAD_PID(PID, SIGTERM, 1)
-
 typedef int (*cast_fn)(void *);
 typedef int (*RTMP_OS_TASK_CALLBACK)(ULONG);
 
@@ -653,38 +651,10 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
  * Device DMA Access related definitions and data structures.
  **********************************************************************************/
 
-/*
- * ULONG
- * RTMP_GetPhysicalAddressLow(
- *   IN NDIS_PHYSICAL_ADDRESS  PhysicalAddress);
- */
 #define RTMP_GetPhysicalAddressLow(PhysicalAddress)		(PhysicalAddress)
-
-/*
- * ULONG
- * RTMP_GetPhysicalAddressHigh(
- *   IN NDIS_PHYSICAL_ADDRESS  PhysicalAddress);
- */
 #define RTMP_GetPhysicalAddressHigh(PhysicalAddress)		(0)
-
-/*
- * VOID
- * RTMP_SetPhysicalAddressLow(
- *   IN NDIS_PHYSICAL_ADDRESS  PhysicalAddress,
- *   IN ULONG  Value);
- */
-#define RTMP_SetPhysicalAddressLow(PhysicalAddress, Value)	\
-			PhysicalAddress = Value;
-
-/*
- * VOID
- * RTMP_SetPhysicalAddressHigh(
- *   IN NDIS_PHYSICAL_ADDRESS  PhysicalAddress,
- *   IN ULONG  Value);
- */
+#define RTMP_SetPhysicalAddressLow(PhysicalAddress, Value)	PhysicalAddress = Value;
 #define RTMP_SetPhysicalAddressHigh(PhysicalAddress, Value)
-
-#define NdisMIndicateStatus(_w, _x, _y, _z)
 
 
 /***********************************************************************************
@@ -730,8 +700,6 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 /***********************************************************************************
  * Network Related data structure and marco definitions
  ***********************************************************************************/
-#define PKTSRC_NDIS             0x7f
-#define PKTSRC_DRIVER           0x0f
 
 #define RTMP_OS_NETDEV_STATE_RUNNING(_pNetDev)	((_pNetDev)->flags & IFF_UP)
 
@@ -766,7 +734,6 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 {									\
 		RTMPFreeNdisPacket(_pAd, _pPacket);			\
 }
-
 
 /*
  * packet helper
@@ -936,12 +903,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 
 /*extern void dump_urb(struct urb *purb); */
 
-#define InterlockedIncrement 	 	atomic_inc
-#define NdisInterlockedIncrement 	atomic_inc
-#define InterlockedDecrement		atomic_dec
-#define NdisInterlockedDecrement 	atomic_dec
-#define InterlockedExchange		atomic_set
-
 typedef void USBHST_STATUS;
 typedef INT32 URBCompleteStatus;
 typedef struct pt_regs pregs;
@@ -1013,9 +974,9 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 #define RTUSB_CONTROL_MSG(pUsb_Dev, uEndpointAddress, Request, RequestType, Value,Index, tmpBuf, TransferBufferLength, timeout, ret)	\
 	do {	\
 		if ((RequestType == DEVICE_VENDOR_REQUEST_OUT) || (RequestType == DEVICE_CLASS_REQUEST_OUT))	\
-			ret = USB_CONTROL_MSG(pUsb_Dev, usb_sndctrlpipe(pUsb_Dev, uEndpointAddress), Request, RequestType, Value, Index, tmpBuf, TransferBufferLength, timeout);	\
+			ret = usb_control_msg(pUsb_Dev, usb_sndctrlpipe(pUsb_Dev, uEndpointAddress), Request, RequestType, Value, Index, tmpBuf, TransferBufferLength, timeout);	\
 		else if (RequestType == DEVICE_VENDOR_REQUEST_IN)	\
-			ret = USB_CONTROL_MSG(pUsb_Dev, usb_rcvctrlpipe(pUsb_Dev, uEndpointAddress), Request, RequestType, Value, Index, tmpBuf, TransferBufferLength, timeout);	\
+			ret = usb_control_msg(pUsb_Dev, usb_rcvctrlpipe(pUsb_Dev, uEndpointAddress), Request, RequestType, Value, Index, tmpBuf, TransferBufferLength, timeout);	\
 		else	\
 		{	\
 			DBGPRINT(RT_DEBUG_ERROR, ("vendor request direction is failed\n"));	\
@@ -1023,13 +984,9 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 		}	\
 	} while (0)
 
-#define rtusb_urb_context  context
-#define rtusb_urb_status   status
 
-#define RTMP_OS_USB_CONTEXT_GET(__pURB)		__pURB->rtusb_urb_context
-#define RTMP_OS_USB_STATUS_GET(__pURB)		__pURB->rtusb_urb_status
-
-#define USB_CONTROL_MSG		usb_control_msg
+#define RTMP_OS_USB_CONTEXT_GET(__pURB)		__pURB->context
+#define RTMP_OS_USB_STATUS_GET(__pURB)		__pURB->status
 
 #ifdef RALINK_ATE
 /******************************************************************************
