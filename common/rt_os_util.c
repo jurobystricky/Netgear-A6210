@@ -85,22 +85,6 @@ char *rtstrchr(const char * s, int c)
 	return (char *) s;
 }
 
-VOID RtmpMeshDown(
-	IN VOID *pDrvCtrlBK,
-	IN BOOLEAN WaitFlag,
-	IN BOOLEAN (*RtmpMeshLinkCheck)(IN VOID *pAd))
-{
-}
-
-BOOLEAN RtmpOsCmdDisplayLenCheck(
-	IN UINT32 LenSrc,
-	IN UINT32 Offset)
-{
-	if (LenSrc > (IW_PRIV_SIZE_MASK - Offset))
-		return FALSE;
-
-	return TRUE;
-}
 
 #ifdef WPA_SUPPLICANT_SUPPORT
 VOID WpaSendMicFailureToWpaSupplicant(
