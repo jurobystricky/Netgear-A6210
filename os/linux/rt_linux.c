@@ -1976,30 +1976,6 @@ VOID RtmpOsPktRcvHandle(PNDIS_PACKET pNetPkt)
 }
 
 
-VOID RtmpOsTaskPidInit(RTMP_OS_PID *pPid)
-{
-	*pPid = THREAD_PID_INIT_VALUE;
-}
-
-/*
-========================================================================
-Routine Description:
-	Get the network interface for the packet.
-
-Arguments:
-	pPkt		- the packet
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-PNET_DEV RtmpOsPktNetDevGet(VOID *pPkt)
-{
-	return GET_OS_PKT_NETDEV(pPkt);
-}
-
 
 #ifdef IAPP_SUPPORT
 /* Layer 2 Update frame to switch/bridge */
@@ -2290,13 +2266,5 @@ BOOLEAN RtmpOSTaskWait(VOID *pReserved, RTMP_OS_TASK * pTask, INT32 *pStatus)
 }
 
 
-VOID RtmpOsTaskWakeUp(RTMP_OS_TASK *pTask)
-{
-#ifdef KTHREAD_SUPPORT
-	WAKE_UP(pTask);
-#else
-	RTMP_SEM_EVENT_UP(&pTask->taskSema);
-#endif
-}
 
 
