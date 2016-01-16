@@ -6,10 +6,6 @@
 	Abstract:
 	Any OS related definition/MACRO is defined here.
 
-	Revision History:
-	Who        When          What
-	---------  ----------    ----------------------------------------------
-
 ***************************************************************************/
 
 #ifndef __RT_LINUX_H__
@@ -36,16 +32,18 @@
 #include <linux/if_arp.h>
 #include <linux/ctype.h>
 #include <linux/vmalloc.h>
+
 #ifdef RTMP_USB_SUPPORT
 #include <linux/usb.h>
-#endif /* RTMP_USB_SUPPORT */
+#endif
+
 #include <linux/wireless.h>
 #include <net/iw_handler.h>
 
 #ifdef INF_PPA_SUPPORT
 #include <net/ifx_ppa_api.h>
 #include <net/ifx_ppa_hook.h>
-#endif /* INF_PPA_SUPPORT */
+#endif
 
 /* load firmware */
 #define __KERNEL_SYSCALLS__
@@ -61,7 +59,6 @@
 #ifdef RT_CFG80211_SUPPORT
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28))
 #include <net/mac80211.h>
-//#define EXT_BUILD_CHANNEL_LIST		/* must define with CRDA */
 #else /* LINUX_VERSION_CODE */
 #undef RT_CFG80211_SUPPORT
 #endif /* LINUX_VERSION_CODE */
@@ -71,18 +68,18 @@
 /* must put the definition before include "os/rt_linux_cmm.h" */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
 #define KTHREAD_SUPPORT 1
-#endif /* LINUX_VERSION_CODE */
+#endif
 
 #ifdef KTHREAD_SUPPORT
 #include <linux/err.h>
 #include <linux/kthread.h>
-#endif /* KTHREAD_SUPPORT */
+#endif
 
 #include "os/rt_linux_cmm.h"
 
 #ifdef RT_CFG80211_SUPPORT
 #include "cfg80211.h"
-#endif /* RT_CFG80211_SUPPORT */
+#endif
 
 #include <linux/firmware.h>
 
@@ -90,24 +87,14 @@
 #undef STA_WSC_INCLUDED
 #undef WSC_INCLUDED
 
-#ifdef CONFIG_AP_SUPPORT
-#endif /* CONFIG_AP_SUPPORT */
-
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
-
-
 #ifdef KTHREAD_SUPPORT
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,4)
 #error "This kernel version doesn't support kthread!!"
 #endif
-#endif /* KTHREAD_SUPPORT */
+#endif
 
-/*#ifdef RTMP_USB_SUPPORT // os abl move */
-typedef struct usb_device	*PUSB_DEV;
 typedef struct urb *purbb_t;
-typedef struct usb_ctrlrequest devctrlrequest;
-/*#endif */
+
 
 /***********************************************************************************
  *	Profile related sections
@@ -125,7 +112,7 @@ typedef struct usb_ctrlrequest devctrlrequest;
 #define AP_DRIVER_VERSION		"3.0.0.0"
 #ifdef MULTIPLE_CARD_SUPPORT
 #define CARD_INFO_PATH			"/etc/Wireless/RT2870AP/RT2870APCard.dat"
-#endif /* MULTIPLE_CARD_SUPPORT */
+#endif
 #endif /* RTMP_MAC_USB */
 
 #endif /* CONFIG_AP_SUPPORT */
@@ -137,20 +124,20 @@ typedef struct usb_ctrlrequest devctrlrequest;
 #define STA_DRIVER_VERSION		"3.0.0.1"
 #ifdef MULTIPLE_CARD_SUPPORT
 #define CARD_INFO_PATH			"/etc/Wireless/RT2870STA/RT2870STACard.dat"
-#endif /* MULTIPLE_CARD_SUPPORT */
+#endif
 #endif /* RTMP_MAC_USB */
 
 extern const struct iw_handler_def rt28xx_iw_handler_def;
 
 #ifdef SINGLE_SKU_V2
 #define SINGLE_SKU_TABLE_FILE_NAME	"/etc/Wireless/RT2870STA/SingleSKU.dat"
-#endif /* SINGLE_SKU_V2 */
+#endif
 
 #endif /* CONFIG_STA_SUPPORT */
 
 #ifdef CONFIG_APSTA_MIXED_SUPPORT
-extern	const struct iw_handler_def rt28xx_ap_iw_handler_def;
-#endif /* CONFIG_APSTA_MIXED_SUPPORT */
+extern const struct iw_handler_def rt28xx_ap_iw_handler_def;
+#endif
 
 /***********************************************************************************
  *	Compiler related definitions
@@ -160,21 +147,19 @@ extern	const struct iw_handler_def rt28xx_ap_iw_handler_def;
 #define IN
 #define OUT
 #define INOUT
-#define NDIS_STATUS	 INT
+#define NDIS_STATUS	 int
 
 
 /***********************************************************************************
  *	OS Specific definitions and data structures
  ***********************************************************************************/
 typedef struct net_device_stats	NET_DEV_STATS;
-typedef struct pci_dev 		* PPCI_DEV;
 typedef struct net_device	* PNET_DEV;
 typedef struct wireless_dev	* PWIRELESS_DEV;
 typedef void			* PNDIS_PACKET;
 typedef char			NDIS_PACKET;
 typedef PNDIS_PACKET		* PPNDIS_PACKET;
 typedef	ra_dma_addr_t		NDIS_PHYSICAL_ADDRESS;
-typedef	ra_dma_addr_t		* PNDIS_PHYSICAL_ADDRESS;
 typedef void			* NDIS_HANDLE;
 typedef char 			* PNDIS_BUFFER;
 
@@ -200,16 +185,9 @@ typedef int (*HARD_START_XMIT_FUNC)(struct sk_buff *skb, struct net_device *net_
 
 #define RT_MOD_DEC_USE_COUNT() module_put(THIS_MODULE);
 
-
-#define RTMP_INC_REF(_A)		0
-#define RTMP_DEC_REF(_A)		0
-#define RTMP_GET_REF(_A)		0
-
-
 #if WIRELESS_EXT >= 12
 /* This function will be called when query /proc */
-struct iw_statistics *rt28xx_get_wireless_stats(
-	IN struct net_device *net_dev);
+struct iw_statistics *rt28xx_get_wireless_stats(struct net_device *net_dev);
 #endif
 
 
@@ -220,7 +198,7 @@ struct iw_statistics *rt28xx_get_wireless_stats(
 #define IFNAMSIZ 16
 #endif
 
-#define MAC_ADDR_LEN		6
+#define MAC_ADDR_LEN			6
 
 #define NDIS_STATUS_SUCCESS		0x00
 #define NDIS_STATUS_FAILURE		0x01
@@ -246,11 +224,6 @@ struct iw_statistics *rt28xx_get_wireless_stats(
 #else
 #define MAX_PACKETS_IN_QUEUE		(512)
 #endif /* DOT11_VHT_AC */
-
-
-/***********************************************************************************
- *	OS signaling related constant definitions
- ***********************************************************************************/
 
 
 /***********************************************************************************
@@ -471,19 +444,17 @@ do { \
 #define RTMP_OS_MGMT_TASK_FLAGS	CLONE_VM
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
-#define	THREAD_PID_INIT_VALUE	NULL
+#define	THREAD_PID_INIT_VALUE		NULL
 /* TODO: Use this IOCTL carefully when linux kernel version larger than 2.6.27, because the PID only correct when the user space task do this ioctl itself. */
 /*#define RTMP_GET_OS_PID(_x, _y)    _x = get_task_pid(current, PIDTYPE_PID); */
 #define RT_GET_OS_PID(_x, _y)		do{rcu_read_lock(); _x=(ULONG)current->pids[PIDTYPE_PID].pid; rcu_read_unlock();}while(0)
-#ifdef OS_ABL_FUNC_SUPPORT
-#define RTMP_GET_OS_PID(_a, _b)		RtmpOsGetPid(&_a, _b)
-#else
 #define RTMP_GET_OS_PID(_a, _b)		RT_GET_OS_PID(_a, _b)
-#endif /* OS_ABL_FUNC_SUPPORT */
 #define	GET_PID_NUMBER(_v)		pid_nr((_v))
 #define CHECK_PID_LEGALITY(_pid)	if (pid_nr((_pid)) > 0)
 #define KILL_THREAD_PID(_A, _B, _C)	kill_pid((_A), (_B), (_C))
+
 #else
+
 #define	THREAD_PID_INIT_VALUE	-1
 #define RT_GET_OS_PID(_x, _pid)		_x = _pid
 #define RTMP_GET_OS_PID(_x, _pid)	_x = _pid
@@ -492,10 +463,10 @@ do { \
 #define KILL_THREAD_PID(_A, _B, _C)	kill_proc((_A), (_B), (_C))
 #endif
 
-#define ATE_KILL_THREAD_PID(PID)	KILL_THREAD_PID(PID, SIGTERM, 1)
+//#define ATE_KILL_THREAD_PID(PID)	KILL_THREAD_PID(PID, SIGTERM, 1)
 
 typedef int (*cast_fn)(void *);
-typedef INT (*RTMP_OS_TASK_CALLBACK)(ULONG);
+typedef int (*RTMP_OS_TASK_CALLBACK)(ULONG);
 
 #ifdef WORKQUEUE_BH
 typedef struct work_struct OS_NET_TASK_STRUCT;
@@ -593,7 +564,6 @@ struct os_cookie {
 #endif /* DFS_SOFTWARE_SUPPORT */
 #endif /* DFS_SUPPORT */
 
-
 #ifdef DFS_SUPPORT
 	struct tasklet_struct dfs_task;
 #endif
@@ -613,8 +583,8 @@ struct os_cookie {
 	unsigned long IappPid_nr;
 #endif /* IAPP_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
-	INT ioctl_if_type;
-	INT ioctl_if;
+	int ioctl_if_type;
+	int ioctl_if;
 };
 
 typedef struct os_cookie * POS_COOKIE;
@@ -792,11 +762,9 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 #define BRIDGE_TAG 0x35564252    /* depends on 5VT define in br_input.c */
 #endif
 
-//#define GET_SG_LIST_FROM_PACKET(_p, _sc) rt_get_sg_list_from_packet(_p, _sc)
-
-#define RELEASE_NDIS_PACKET(_pAd, _pPacket, _Status)                    \
-{                                                                       \
-		RTMPFreeNdisPacket(_pAd, _pPacket);                     \
+#define RELEASE_NDIS_PACKET(_pAd, _pPacket, _Status)			\
+{									\
+		RTMPFreeNdisPacket(_pAd, _pPacket);			\
 }
 
 
@@ -817,34 +785,21 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 
 #define GET_OS_PKT_DATATAIL(_pkt) \
 		((unsigned char*)skb_tail_pointer(RTPKT_TO_OSPKT(_pkt)))
-//		(RTPKT_TO_OSPKT(_pkt)->tail)
 
 #define SET_OS_PKT_DATATAIL(_pkt, _start, _len)	\
 		(skb_set_tail_pointer((RTPKT_TO_OSPKT(_pkt)), (_len)))
-//		((RTPKT_TO_OSPKT(_pkt))->tail) = (PUCHAR)((_start) + (_len))
 
 #define GET_OS_PKT_HEAD(_pkt) \
 		(RTPKT_TO_OSPKT(_pkt)->head)
 
 #define GET_OS_PKT_END(_pkt) \
 		((unsigned char*)skb_end_pointer(RTPKT_TO_OSPKT(_pkt)))
-//		(RTPKT_TO_OSPKT(_pkt)->end)
 
 #define GET_OS_PKT_NETDEV(_pkt) (RTPKT_TO_OSPKT(_pkt)->dev)
 #define SET_OS_PKT_NETDEV(_pkt, _pNetDev)	\
 		(RTPKT_TO_OSPKT(_pkt)->dev) = (_pNetDev)
 
 #define GET_OS_PKT_TYPE(_pkt) 	(RTPKT_TO_OSPKT(_pkt))
-
-#define GET_OS_PKT_NEXT(_pkt) 	(RTPKT_TO_OSPKT(_pkt)->next)
-
-
-#define OS_PKT_CLONED(_pkt)	skb_cloned(RTPKT_TO_OSPKT(_pkt))
-#define OS_PKT_COPY(_pkt)	skb_copy(RTPKT_TO_OSPKT(_pkt), GFP_ATOMIC)
-
-#define OS_PKT_TAIL_ADJUST(_pkt, _removedTagLen)			\
-	SET_OS_PKT_DATATAIL(_pkt, GET_OS_PKT_DATATAIL(_pkt), (-_removedTagLen));	\
-	GET_OS_PKT_LEN(_pkt) -= _removedTagLen;
 
 #define OS_PKT_HEAD_BUF_EXTEND(_pkt, _offset)				\
 	skb_push(RTPKT_TO_OSPKT(_pkt), _offset)
@@ -868,20 +823,13 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 	SET_OS_PKT_DATATAIL(__pRxPkt, __pData, __DataSize);		\
 }
 
-#define OS_PKT_CLONE(_pAd, _pkt, _src, _flag)		\
-	_src = skb_clone(RTPKT_TO_OSPKT(_pkt), _flag);
-
 #define get_unaligned32		get_unaligned
 #define get_unalignedlong	get_unaligned
 
-#define OS_NTOHS(_Val) \
-		(ntohs((_Val)))
-#define OS_HTONS(_Val) \
-		(htons((_Val)))
-#define OS_NTOHL(_Val) \
-		(ntohl((_Val)))
-#define OS_HTONL(_Val) \
-		(htonl((_Val)))
+#define OS_NTOHS(_Val) (ntohs((_Val)))
+#define OS_HTONS(_Val) (htons((_Val)))
+#define OS_NTOHL(_Val) (ntohl((_Val)))
+#define OS_HTONL(_Val) (htonl((_Val)))
 
 #define CB_OFF  10
 #define GET_OS_PKT_CB(_p)		(RTPKT_TO_OSPKT(_p)->cb)
@@ -893,34 +841,30 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 
 #ifdef CONFIG_RAETH
 #if !defined(CONFIG_RA_NAT_NONE)
-extern int (*ra_sw_nat_hook_tx)(VOID *skb);
-extern int (*ra_sw_nat_hook_rx)(VOID *skb);
+extern int (*ra_sw_nat_hook_tx)(void *skb);
+extern int (*ra_sw_nat_hook_rx)(void *skb);
 #endif
-#endif /* CONFIG_RAETH */
+#endif
 
 #if defined (CONFIG_WIFI_PKT_FWD)
 extern int (*wf_fwd_rx_hook) (struct sk_buff *skb);
 extern unsigned char (*wf_fwd_entry_insert_hook) (struct net_device *src, struct net_device *dest);
 extern unsigned char (*wf_fwd_entry_delete_hook) (struct net_device *src, struct net_device *dest);
-#endif /* CONFIG_WIFI_PKT_FWD */
+#endif
 
 void RTMP_GetCurrentSystemTime(LARGE_INTEGER *time);
-int rt28xx_packet_xmit(VOID *skb);
+int rt28xx_packet_xmit(void *skb);
 
-INT rt28xx_ioctl(PNET_DEV net_dev, struct ifreq *rq, INT cmd);
+int rt28xx_ioctl(PNET_DEV net_dev, struct ifreq *rq, int cmd);
 int rt28xx_send_packets(struct sk_buff *skb, struct net_device *ndev);
 
 extern int ra_mtd_write(int num, loff_t to, size_t len, const u_char *buf);
 extern int ra_mtd_read(int num, loff_t from, size_t len, u_char *buf);
 
-
 #define GET_PAD_FROM_NET_DEV(_pAd, _net_dev)	\
 	_pAd = RTMP_OS_NETDEV_GET_PRIV(_net_dev);
-#define GET_WDEV_FROM_NET_DEV(_wdev, _net_dev)	\
-	_wdev = RTMP_OS_NETDEV_GET_WDEV(_net_dev);
 
 
-/*#ifdef RTMP_USB_SUPPORT */
 /******************************************************************************
 
   USB related definitions
@@ -939,11 +883,12 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #ifdef INF_AMAZON_SE
 #define BULKAGGRE_SIZE 	30
 #else
-#define BULKAGGRE_SIZE 	100 /* 100 */
-#endif /* INF_AMAZON_SE */
+#define BULKAGGRE_SIZE 	100
+#endif
 
 #define RTUSB_ALLOC_URB(iso)		usb_alloc_urb(iso, GFP_ATOMIC)
 #define RTUSB_SUBMIT_URB(pUrb)		usb_submit_urb(pUrb, GFP_ATOMIC)
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 #define RTUSB_URB_ALLOC_BUFFER(_dev, _size, _dma)	usb_alloc_coherent(_dev, _size, GFP_ATOMIC, _dma)
 #define RTUSB_URB_FREE_BUFFER(_dev, _size, _addr, _dma)	usb_free_coherent(_dev, _size, _addr, _dma)
@@ -1086,8 +1031,6 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 
 #define USB_CONTROL_MSG		usb_control_msg
 
-/*#endif // RTMP_USB_SUPPORT */
-
 #ifdef RALINK_ATE
 /******************************************************************************
 
@@ -1098,13 +1041,16 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 #define ATEDBGPRINT DBGPRINT
 
 #ifdef RTMP_MAC_USB
+
 #ifdef CONFIG_AP_SUPPORT
 #define EEPROM_BIN_FILE_NAME  "/etc/Wireless/RT2870AP/e2p.bin"
-#endif /* CONFIG_AP_SUPPORT */
+#endif
+
 #ifdef CONFIG_STA_SUPPORT
 #undef EEPROM_BIN_FILE_NAME /* Avoid APSTA mode re-define issue */
 #define EEPROM_BIN_FILE_NAME  "/etc/Wireless/RT2870STA/e2p.bin"
-#endif /* CONFIG_STA_SUPPORT */
+#endif
+
 #endif /* RTMP_MAC_USB */
 
 #ifdef RTMP_USB_SUPPORT
@@ -1122,14 +1068,12 @@ USBHST_STATUS ATE_RTUSBBulkOutDataPacketComplete(URBCompleteStatus Status, purbb
 
 #endif /* RALINK_ATE */
 
-#define RTMP_OS_MAX_SCAN_DATA_GET()		IW_SCAN_MAX_DATA
-
 #include "os/rt_os.h"
 
 #ifdef MULTI_INF_SUPPORT
 #ifdef RTMP_USB_SUPPORT
-INT __init rtusb_init(void);
-VOID __exit rtusb_exit(void);
+int   __init rtusb_init(void);
+void  __exit rtusb_exit(void);
 #endif /* RTMP_USB_SUPPORT */
 #endif /* MULTI_INF_SUPPORT */
 
