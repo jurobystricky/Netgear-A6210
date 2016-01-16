@@ -54,7 +54,7 @@ void RTMPFreeNdisPacket(void *pReserved, PNDIS_PACKET pPacket);
 void RTMP_QueryPacketInfo(PNDIS_PACKET pPacket, PACKET_INFO *pPacketInfo,
 	PUCHAR *pSrcBufVA, UINT *pSrcBufLen);
 
-PNDIS_PACKET DuplicatePacket(PNET_DEV pNetDev, PNDIS_PACKET pPacket, 
+PNDIS_PACKET DuplicatePacket(PNET_DEV pNetDev, PNDIS_PACKET pPacket,
 	UCHAR FromWhichBSSID);
 
 PNDIS_PACKET duplicate_pkt(PNET_DEV pNetDev, PUCHAR pHeader802_3, UINT HdrLen,
@@ -145,12 +145,6 @@ PNET_DEV RtmpOSNetDevCreate(INT32 MC_RowID, UINT32 *pIoctlIF, int devType,
 	int devNum, int privMemSize, PSTRING pNamePrefix);
 
 BOOLEAN RtmpOSNetDevIsUp(void *pDev);
-unsigned char *RtmpOsNetDevGetPhyAddr(void *pDev);
-void RtmpOsNetQueueStart(PNET_DEV pDev);
-void RtmpOsNetQueueStop(PNET_DEV pDev);
-void RtmpOsNetQueueWake(PNET_DEV pDev);
-void RtmpOsSetPktNetDev(void *pPkt, void *pDev);
-PNET_DEV RtmpOsPktNetDevGet(void *pPkt);
 char *RtmpOsGetNetDevName(void *pDev);
 UINT32 RtmpOsGetNetIfIndex( void *pDev);
 void RtmpOsSetNetDevPriv(void *pDev, void *pPriv);
@@ -159,40 +153,9 @@ void RtmpOsSetNetDevWdev(void *net_dev, void *wdev);
 void *RtmpOsGetNetDevWdev(void *pDev);
 USHORT RtmpDevPrivFlagsGet(void *pDev);
 void RtmpDevPrivFlagsSet(void *pDev, USHORT PrivFlags);
-void RtmpOsSetNetDevType(void *pDev, USHORT Type);
-void RtmpOsSetNetDevTypeMonitor(void *pDev);
 UCHAR get_sniffer_mode(void *pDev);
-//void set_sniffer_mode(void *pDev, UCHAR mode);
-
-/* OS Semaphore */
-
-BOOLEAN RtmpOsSemaInitLocked(RTMP_OS_SEM *pSemOrg, LIST_HEADER *pSemList);
-BOOLEAN RtmpOsSemaInit(RTMP_OS_SEM *pSemOrg, LIST_HEADER *pSemList);
-BOOLEAN RtmpOsSemaDestory(RTMP_OS_SEM *pSemOrg);
-int RtmpOsSemaWaitInterruptible(RTMP_OS_SEM *pSemOrg);
-void RtmpOsSemaWakeUp(RTMP_OS_SEM *pSemOrg);
 void RtmpOsCmdUp(RTMP_OS_TASK *pCmdQTask);
 void RtmpOsMlmeUp(RTMP_OS_TASK *pMlmeQTask);
-void RtmpOsInitCompletion(RTMP_OS_COMPLETION *pCompletion);
-void RtmpOsExitCompletion(RTMP_OS_COMPLETION *pCompletion);
-BOOLEAN RtmpOsComplete(RTMP_OS_COMPLETION *pCompletion);
-ULONG RtmpOsWaitForCompletionTimeout(RTMP_OS_COMPLETION *pCompletion, ULONG Timeout); 
-
-/* OS Task */
-BOOLEAN RtmpOsTaskletSche(RTMP_NET_TASK_STRUCT *pTasklet);
-
-BOOLEAN RtmpOsTaskletInit(RTMP_NET_TASK_STRUCT *pTasklet, 
-	void (*pFunc)(unsigned long data), ULONG Data, LIST_HEADER *pTaskletList);
-
-BOOLEAN RtmpOsTaskletKill(RTMP_NET_TASK_STRUCT *pTasklet);
-void RtmpOsTaskletDataAssign(RTMP_NET_TASK_STRUCT *pTasklet, ULONG Data);
-
-void RtmpOsTaskWakeUp(RTMP_OS_TASK *pTaskOrg);
-//INT32 RtmpOsTaskIsKilled(RTMP_OS_TASK *pTaskOrg);
-
-BOOLEAN RtmpOsCheckTaskLegality(RTMP_OS_TASK *pTaskOrg);
-BOOLEAN RtmpOSTaskAlloc(RTMP_OS_TASK *pTask, LIST_HEADER *pTaskList);
-void RtmpOSTaskFree(RTMP_OS_TASK *pTask);
 NDIS_STATUS RtmpOSTaskKill(RTMP_OS_TASK *pTaskOrg);
 int RtmpOSTaskNotifyToExit(RTMP_OS_TASK *pTaskOrg);
 void RtmpOSTaskCustomize(RTMP_OS_TASK *pTaskOrg);
@@ -205,56 +168,19 @@ NDIS_STATUS RtmpOSTaskInit(RTMP_OS_TASK *pTaskOrg, PSTRING pTaskName, void *pPri
 
 BOOLEAN RtmpOSTaskWait(void *pReserved, RTMP_OS_TASK *pTaskOrg, INT32 *pStatus);
 
-//void *RtmpOsTaskDataGet(RTMP_OS_TASK *pTaskOrg);
-
-INT32 RtmpThreadPidKill(RTMP_OS_PID PID);
-
 /* OS Cache */
 void RtmpOsDCacheFlush(ULONG AddrStart, ULONG Size);
 
 /* OS Timer */
 void RTMP_SetPeriodicTimer(NDIS_MINIPORT_TIMER *pTimerOrg, unsigned long timeout);
 
-void RTMP_OS_Init_Timer(void *pReserved, NDIS_MINIPORT_TIMER *pTimerOrg, 
+void RTMP_OS_Init_Timer(void *pReserved, NDIS_MINIPORT_TIMER *pTimerOrg,
 	TIMER_FUNCTION function, PVOID data, LIST_HEADER *pTimerList);
 
 void RTMP_OS_Add_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, unsigned long timeout);
 void RTMP_OS_Mod_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, unsigned long timeout);
 void RTMP_OS_Del_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, BOOLEAN *pCancelled);
 void RTMP_OS_Release_Timer(NDIS_MINIPORT_TIMER *pTimerOrg);
-
-BOOLEAN RTMP_OS_Alloc_Rsc(LIST_HEADER *pRscList, void *pRsc, UINT32 RscLen);
-void RTMP_OS_Free_Rscs(LIST_HEADER *pRscList);
-
-/* OS Lock */
-BOOLEAN RtmpOsAllocateLock(NDIS_SPIN_LOCK *pLock, LIST_HEADER *pLockList);
-void RtmpOsFreeSpinLock(NDIS_SPIN_LOCK *pLockOrg);
-void RtmpOsSpinLockBh(NDIS_SPIN_LOCK *pLockOrg);
-void RtmpOsSpinUnLockBh(NDIS_SPIN_LOCK *pLockOrg);
-void RtmpOsIntLock(NDIS_SPIN_LOCK *pLockOrg, ULONG *pIrqFlags);
-void RtmpOsIntUnLock(NDIS_SPIN_LOCK *pLockOrg, ULONG IrqFlags);
-
-/* OS PID */
-void RtmpOsGetPid(ULONG *pDst, ULONG PID);
-void RtmpOsTaskPidInit(RTMP_OS_PID *pPid);
-
-/* OS Wireless */
-ULONG RtmpOsMaxScanDataGet(void);
-
-/* OS Interrutp */
-INT32 RtmpOsIsInInterrupt(void);
-
-/* OS USB */
-void *RtmpOsUsbUrbDataGet(void *pUrb);
-NTSTATUS RtmpOsUsbUrbStatusGet(void *pUrb);
-ULONG RtmpOsUsbUrbLenGet(void *pUrb);
-
-/* OS Atomic */
-BOOLEAN RtmpOsAtomicInit(RTMP_OS_ATOMIC *pAtomic, LIST_HEADER *pAtomicList);
-void RtmpOsAtomicDestroy(RTMP_OS_ATOMIC *pAtomic);
-LONG RtmpOsAtomicRead(RTMP_OS_ATOMIC *pAtomic);
-void RtmpOsAtomicDec(RTMP_OS_ATOMIC *pAtomic);
-void RtmpOsAtomicInterlockedExchange(RTMP_OS_ATOMIC *pAtomicSrc, LONG Value);
 
 /* OS Utility */
 void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
@@ -296,17 +222,6 @@ void RtmpDrvRateGet(void *pReserved, UINT8 MODE, UINT8 ShortGI, UINT8 BW,
 	UINT8 MCS, UINT8 Antenna, ULONG *pRate);
 
 char * rtstrchr(const char * s, int c);
-PSTRING WscGetAuthTypeStr(USHORT authFlag);
-PSTRING WscGetEncryTypeStr(USHORT encryFlag);
-USHORT WscGetAuthTypeFromStr(PSTRING arg);
-USHORT WscGetEncrypTypeFromStr(PSTRING arg);
-
-void RtmpMeshDown(void *pDrvCtrlBK, BOOLEAN WaitFlag,
-	BOOLEAN (*RtmpMeshLinkCheck)( void *pAd));
-
-USHORT RtmpOsNetPrivGet(PNET_DEV pDev);
-
-BOOLEAN RtmpOsCmdDisplayLenCheck(UINT32 LenSrc, UINT32 Offset);
 
 void WpaSendMicFailureToWpaSupplicant(PNET_DEV pNetDev, const PUCHAR src_addr,
 	BOOLEAN bUnicast, int key_id, const PUCHAR tsc);
@@ -326,53 +241,7 @@ int RTMP_Usb_AutoPM_Get_Interface(void *pUsb_Dev, void *intf);
 #endif /* CONFIG_PM */
 #endif /* CONFIG_STA_SUPPORT */
 
-ra_dma_addr_t linux_pci_map_single(void *pPciDev, void *ptr, size_t size, int sd_idx, int direction);
-
-void linux_pci_unmap_single(void *pPciDev, ra_dma_addr_t dma_addr, size_t size, int direction);
-
 /* ============================ rt_usb_util.c =============================== */
-#ifdef RTMP_MAC_USB
-typedef void (*USB_COMPLETE_HANDLER)(void *);
-
-void dump_urb(void *purb);
-int rausb_register(void * new_driver);
-void rausb_deregister(void * driver);
-
-/*struct urb *rausb_alloc_urb(int iso_packets); */
-
-void rausb_free_urb(void *urb);
-void rausb_put_dev(void *dev);
-struct usb_device *rausb_get_dev(void *dev);
-int rausb_submit_urb(void *urb);
-void *rausb_buffer_alloc(void *dev, size_t size, ra_dma_addr_t *dma);
-void rausb_buffer_free(void *dev, size_t size, void *addr, ra_dma_addr_t dma);
-
-int rausb_control_msg(void *dev, unsigned int pipe, __u8 request, __u8 requesttype,
-	__u16 value, __u16 index, void *data, __u16 size, int timeout);
-
-void rausb_fill_bulk_urb(void *urb, void *dev, unsigned int pipe, 
-	void *transfer_buffer, int buffer_length, USB_COMPLETE_HANDLER complete_fn,
-	void *context);
-
-unsigned int rausb_sndctrlpipe(void *dev, ULONG address);
-unsigned int rausb_rcvctrlpipe(void *dev, ULONG address);
-unsigned int rausb_sndbulkpipe(void *dev, ULONG address);
-unsigned int rausb_rcvbulkpipe(void *dev, ULONG address);
-
-void rausb_kill_urb(void *urb);
-
-void RtmpOsUsbInitHTTxDesc(void *pUrbSrc, void *pUsb_Dev, UINT BulkOutEpAddr,
-	PUCHAR pSrc, ULONG BulkOutSize, USB_COMPLETE_HANDLER Func,
-	void *pTxContext, ra_dma_addr_t TransferDma);
-
-void RtmpOsUsbInitRxDesc(void *pUrbSrc, void *pUsb_Dev, UINT BulkInEpAddr,
-	UCHAR *pTransferBuffer, UINT32 BufSize, USB_COMPLETE_HANDLER Func,
-	void *pRxContext, ra_dma_addr_t TransferDma);
-
-void *RtmpOsUsbContextGet(void *pUrb);
-NTSTATUS RtmpOsUsbStatusGet(void *pUrb);
-void RtmpOsUsbDmaMapping(void *pUrb);
-#endif /* RTMP_MAC_USB */
 
 #if defined(RTMP_RBUS_SUPPORT) || defined(RTMP_FLASH_SUPPORT)
 void RtmpFlashRead(UCHAR *p, ULONG a, ULONG b);
@@ -433,14 +302,14 @@ BOOLEAN CFG80211OS_RxMgmt(PNET_DEV pNetDev, INT32 freq, PUCHAR frame, UINT32 len
 
 void CFG80211OS_TxStatus(PNET_DEV pNetDev, INT32 cookie, PUCHAR frame,
 	UINT32 len, BOOLEAN ack);
-void CFG80211OS_NewSta(PNET_DEV pNetDev, const PUCHAR mac_addr, 
+void CFG80211OS_NewSta(PNET_DEV pNetDev, const PUCHAR mac_addr,
 	const PUCHAR assoc_frame,  UINT32 assoc_len);
 void CFG80211OS_DelSta(PNET_DEV pNetDev, const PUCHAR mac_addr);
-void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr, 
+void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr,
 	BOOLEAN unicast, int key_id, const PUCHAR tsc);
-void CFG80211OS_Roamed(PNET_DEV pNetDev, UCHAR *pBSSID, UCHAR *pReqIe, 
+void CFG80211OS_Roamed(PNET_DEV pNetDev, UCHAR *pBSSID, UCHAR *pReqIe,
 	UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen);
-void CFG80211OS_RecvObssBeacon(void *pCB, const PUCHAR pFrame, int frameLen, 
+void CFG80211OS_RecvObssBeacon(void *pCB, const PUCHAR pFrame, int frameLen,
 	int freq);
 #endif /* RT_CFG80211_SUPPORT */
 
@@ -456,15 +325,10 @@ extern UCHAR TPID[];
 extern UCHAR IPX[2];
 extern UCHAR APPLE_TALK[2];
 extern UCHAR NUM_BIT8[8];
-extern ULONG OS_NumOfMemAlloc, OS_NumOfMemFree;
 extern UINT32 RalinkRate_Legacy[];
 extern UINT32 RalinkRate_HT_1NSS[Rate_BW_MAX][Rate_GI_MAX][Rate_MCS];
 extern UINT32 RalinkRate_VHT_1NSS[Rate_BW_MAX][Rate_GI_MAX][Rate_MCS];
 extern UINT8 newRateGetAntenna(UINT8 MCS);
-
-//#ifdef PLATFORM_UBM_IPX8
-//#include "vrut_ubm.h"
-//#endif
 
 INT32  RtPrivIoctlSetVal(void);
 
