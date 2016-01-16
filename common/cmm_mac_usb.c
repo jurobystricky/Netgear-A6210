@@ -702,7 +702,7 @@ NDIS_STATUS	NICInitRecv(
 	DBGPRINT(RT_DEBUG_TRACE, ("--> NICInitRecv\n"));
 	pObj = pObj;
 
-	/*InterlockedExchange(&pAd->PendingRx, 0);*/
+	/*atomic_set(&pAd->PendingRx, 0);*/
 	pAd->PendingRx = 0;
 	pAd->NextRxBulkInReadIndex 	= 0;	/* Next Rx Read index*/
 	pAd->NextRxBulkInIndex		= 0 ; /*RX_RING_SIZE -1;  Rx Bulk pointer*/

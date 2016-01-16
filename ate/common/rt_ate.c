@@ -1154,7 +1154,7 @@ static NDIS_STATUS ATESTART(PRTMP_ADAPTER pAd)
 	ATE_MAC_TX_CTS_DISABLE(pAd, MAC_SYS_CTRL, &MacData);
 
 	/* Clear ATE Bulk in/out counter and continue setup */
-	InterlockedExchange(&pAd->BulkOutRemained, 0);
+	atomic_set(&pAd->BulkOutRemained, 0);
 
 	/* NdisAcquireSpinLock()/NdisReleaseSpinLock() need only one argument in RT28xx */
 	NdisAcquireSpinLock(&pAd->GenericLock);
@@ -1345,7 +1345,7 @@ static NDIS_STATUS ATESTOP(PRTMP_ADAPTER pAd)
 #endif
 
 	/* Clear ATE Bulk in/out counter and continue setup. */
-	InterlockedExchange(&pAd->BulkOutRemained, 0);
+	atomic_set(&pAd->BulkOutRemained, 0);
 	NdisAcquireSpinLock(&pAd->GenericLock);
 	pAd->ContinBulkOut = FALSE;
 	pAd->ContinBulkIn = FALSE;
@@ -1580,7 +1580,7 @@ static NDIS_STATUS TXCONT(PRTMP_ADAPTER pAd)
 	RtmpDmaEnable(pAd, 1);
 
 #ifdef RTMP_MAC_USB
-	InterlockedExchange(&pAd->BulkOutRemained, pATEInfo->TxCount);
+	atomic_set(&pAd->BulkOutRemained, pATEInfo->TxCount);
 #endif /* RTMP_MAC_USB */
 
 #ifdef RTMP_MAC_USB
@@ -1668,7 +1668,7 @@ static NDIS_STATUS TXCONT(PRTMP_ADAPTER pAd)
 		RtmpDmaEnable(pAd, 1);
 
 #ifdef RTMP_MAC_USB
-		InterlockedExchange(&pAd->BulkOutRemained, pATEInfo->TxCount);
+		atomic_set(&pAd->BulkOutRemained, pATEInfo->TxCount);
 #endif /* RTMP_MAC_USB */
 
 #ifdef RTMP_MAC_USB
@@ -1906,9 +1906,9 @@ static NDIS_STATUS TXFRAME(PRTMP_ADAPTER pAd)
 
 	/* Check count is continuous or not yet. */
 	if (pATEInfo->TxCount == 0) {
-		InterlockedExchange(&pAd->BulkOutRemained, 0);
+		atomic_set(&pAd->BulkOutRemained, 0);
 	} else {
-		InterlockedExchange(&pAd->BulkOutRemained, pATEInfo->TxCount);
+		atomic_set(&pAd->BulkOutRemained, pATEInfo->TxCount);
 	}
 
 	DBGPRINT(RT_DEBUG_TRACE, ("bulk out count = %d\n", atomic_read(&pAd->BulkOutRemained)));
