@@ -27,36 +27,36 @@
 
 #include "rt_config.h"
 
-static VOID CFG80211DRV_OpsMgmtFrameProbeRegister(VOID *pAdOrg, VOID *pData,
+static void CFG80211DRV_OpsMgmtFrameProbeRegister(void *pAdOrg, void *pData,
 	BOOLEAN isReg);
-static VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData,
+static void CFG80211DRV_OpsMgmtFrameActionRegister(void *pAdOrg, void *pData,
 	BOOLEAN isReg);
-static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData);
-static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData);
-static BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData);
-static BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType);
-static BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData);
-static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData);
-static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData);
-static VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData);
-static VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData);
-static VOID CFG80211_UnRegister(VOID *pAdOrg, VOID *pNetDev);
-static INT CFG80211_reSetToDefault(VOID *pAdCB);
+static void CFG80211DRV_OpsChangeBssParm(void *pAdOrg, void *pData);
+static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, void *pData);
+static BOOLEAN CFG80211DRV_OpsJoinIbss(void *pAdOrg, void *pData);
+static BOOLEAN CFG80211DRV_OpsLeave(void *pAdOrg, UINT8 IfType);
+static BOOLEAN CFG80211DRV_StaGet(void *pAdOrg, void *pData);
+static BOOLEAN CFG80211DRV_StaKeyAdd(void *pAdOrg, void *pData);
+static BOOLEAN CFG80211DRV_Connect(void *pAdOrg, void *pData);
+static void CFG80211DRV_RegNotify(void *pAdOrg, void *pData);
+static void CFG80211DRV_SurveyGet(void *pAdOrg, void *pData);
+static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev);
+static int CFG80211_reSetToDefault(void *pAdCB);
 
 
 #ifdef CONFIG_STA_SUPPORT
-static INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data);
+static int CFG80211_setStaDefaultKey(void *pAdCB, UINT Data);
 
 #ifdef DOT11W_PMF_SUPPORT
-INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data);
+int CFG80211_setStaMgmtDefaultKey(void *pAdCB, UINT Data);
 #endif /* DOT11W_PMF_SUPPORT */
 
 #endif /*CONFIG_STA_SUPPORT*/
 
 extern struct notifier_block cfg80211_netdev_notifier;
 
-INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
-	INT cmd, USHORT subcmd, VOID *pData, ULONG Data)
+int CFG80211DRV_IoctlHandle(void *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
+	int cmd, USHORT subcmd, void *pData, ULONG Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 
@@ -67,7 +67,7 @@ INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
 		break;
 
 	case CMD_RTPRIV_IOCTL_80211_CB_GET:
-		*(VOID **)pData = (VOID *)(pAd->pCfg80211_CB);
+		*(void **)pData = (void *)(pAd->pCfg80211_CB);
 		break;
 
 	case CMD_RTPRIV_IOCTL_80211_CB_SET:
@@ -207,7 +207,7 @@ INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
 
 	case CMD_RTPRIV_IOCTL_80211_BEACON_DEL:
 		{
-		INT i;
+		int i;
 		for (i = 0; i < WLAN_MAX_NUM_OF_TIM; i++)
 			pAd->ApCfg.MBSSID[MAIN_MBSSID].TimBitmaps[i] = 0;
 
@@ -337,7 +337,7 @@ INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
 	return NDIS_STATUS_SUCCESS;
 }
 
-VOID CFG80211DRV_OpsMgmtFrameProbeRegister(VOID *pAdOrg, VOID *pData, BOOLEAN isReg)
+void CFG80211DRV_OpsMgmtFrameProbeRegister(void *pAdOrg, void *pData, BOOLEAN isReg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) pAdOrg;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -394,7 +394,7 @@ VOID CFG80211DRV_OpsMgmtFrameProbeRegister(VOID *pAdOrg, VOID *pData, BOOLEAN is
 		pCfg80211_ctrl->cfg80211MainDev.Cfg80211ProbeReqCount));
 }
 
-static VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BOOLEAN isReg)
+static void CFG80211DRV_OpsMgmtFrameActionRegister(void *pAdOrg, void *pData, BOOLEAN isReg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) pAdOrg;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -458,7 +458,7 @@ static VOID CFG80211DRV_OpsMgmtFrameActionRegister(VOID *pAdOrg, VOID *pData, BO
 			pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount));
 }
 
-static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
+static void CFG80211DRV_OpsChangeBssParm(void *pAdOrg, void *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_BSS_PARM *pBssInfo;
@@ -494,7 +494,7 @@ static VOID CFG80211DRV_OpsChangeBssParm(VOID *pAdOrg, VOID *pData)
 	}
 }
 
-static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData)
+static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, void *pData)
 {
 	CMD_RTPRIV_IOCTL_80211_CHAN *pChan;
 	UINT8 ChanId, IfType, ChannelType;
@@ -615,7 +615,7 @@ static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, VOID *pData)
 	return TRUE;
 }
 
-static BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_OpsJoinIbss(void *pAdOrg, void *pData)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -629,7 +629,7 @@ static BOOLEAN CFG80211DRV_OpsJoinIbss(VOID *pAdOrg, VOID *pData)
 	return TRUE;
 }
 
-static BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType)
+static BOOLEAN CFG80211DRV_OpsLeave(void *pAdOrg, UINT8 IfType)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -668,7 +668,7 @@ static BOOLEAN CFG80211DRV_OpsLeave(VOID *pAdOrg, UINT8 IfType)
 }
 
 
-static BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_StaGet(void *pAdOrg, void *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_STA *pIbssInfo = (CMD_RTPRIV_IOCTL_80211_STA *)pData;
@@ -762,7 +762,7 @@ static BOOLEAN CFG80211DRV_StaGet(VOID *pAdOrg, VOID *pData)
 	return TRUE;
 }
 
-static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_StaKeyAdd(void *pAdOrg, void *pData)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -840,7 +840,7 @@ static BOOLEAN CFG80211DRV_StaKeyAdd(VOID *pAdOrg, VOID *pData)
 	return TRUE;
 }
 
-static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
+static BOOLEAN CFG80211DRV_Connect(void *pAdOrg, void *pData)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
@@ -966,7 +966,7 @@ static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 				("80211> pAd->StaCfg.DefaultKeyId = %d\n",
 				pAd->StaCfg.wdev.DefaultKeyId));
 
-		Set_Wep_Key_Proc(pAd, (PSTRING)KeyBuf, (INT)pConnInfo->KeyLen, (INT)pConnInfo->KeyIdx);
+		Set_Wep_Key_Proc(pAd, (PSTRING)KeyBuf, (int)pConnInfo->KeyLen, (int)pConnInfo->KeyIdx);
 	}
 
 	/* TODO: We need to provide a command to set BSSID to associate a AP */
@@ -987,7 +987,7 @@ static BOOLEAN CFG80211DRV_Connect(VOID *pAdOrg, VOID *pData)
 }
 
 
-static VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData)
+static void CFG80211DRV_RegNotify(void *pAdOrg, void *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_REG_NOTIFY *pRegInfo;
@@ -1008,7 +1008,7 @@ static VOID CFG80211DRV_RegNotify(VOID *pAdOrg, VOID *pData)
 }
 
 
-static VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData)
+static void CFG80211DRV_SurveyGet(void *pAdOrg, void *pData)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_SURVEY *pSurveyInfo;
@@ -1023,7 +1023,7 @@ static VOID CFG80211DRV_SurveyGet(VOID *pAdOrg, VOID *pData)
 }
 
 
-static VOID CFG80211_UnRegister(VOID *pAdOrg, VOID *pNetDev)
+static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -1100,7 +1100,7 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID CFG80211_BeaconCountryRegionParse(VOID *pAdCB, NDIS_802_11_VARIABLE_IEs *pVIE,
+void CFG80211_BeaconCountryRegionParse(void *pAdCB, NDIS_802_11_VARIABLE_IEs *pVIE,
 	UINT16 LenVIE)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
@@ -1144,7 +1144,7 @@ Note:
 ========================================================================
 */
 #ifdef CONFIG_STA_SUPPORT
-VOID CFG80211_LostApInform(VOID *pAdCB)
+void CFG80211_LostApInform(void *pAdCB)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,11,0)
@@ -1194,11 +1194,11 @@ Note:
 	Must call the function in kernel thread.
 ========================================================================
 */
-VOID CFG80211_RegHint(VOID *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen)
+void CFG80211_RegHint(void *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
-	CFG80211OS_RegHint(CFG80211CB, pCountryIe, CountryIeLen);
+	CFG80211OS_RegHint(pAd->pCfg80211_CB, pCountryIe, CountryIeLen);
 }
 
 
@@ -1219,12 +1219,12 @@ Note:
 	Must call the function in kernel thread.
 ========================================================================
 */
-VOID CFG80211_RegHint11D(VOID *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen)
+void CFG80211_RegHint11D(void *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen)
 {
 	/* no regulatory_hint_11d() in 2.6.32 */
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
-	CFG80211OS_RegHint11D(CFG80211CB, pCountryIe, CountryIeLen);
+	CFG80211OS_RegHint11D(pAd->pCfg80211_CB, pCountryIe, CountryIeLen);
 }
 
 
@@ -1248,10 +1248,10 @@ Note:
 	In rt2x00/, the settings is done in rt2x00lib_config().
 ========================================================================
 */
-VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
+void CFG80211_RegRuleApply(void *pAdCB, void *pWiphy, UCHAR *pAlpha2)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
-	VOID *pBand24G, *pBand5G;
+	void *pBand24G, *pBand5G;
 	UINT32 IdBand, IdChan, IdPwr;
 	UINT32 ChanNum, ChanId, Power, RecId, DfsType;
 	BOOLEAN FlgIsRadar;
@@ -1284,7 +1284,7 @@ VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
 	pBand24G = NULL;
 	pBand5G = NULL;
 
-	if (CFG80211OS_BandInfoGet(CFG80211CB, pWiphy, &pBand24G, &pBand5G) == FALSE)
+	if (CFG80211OS_BandInfoGet(pAd->pCfg80211_CB, pWiphy, &pBand24G, &pBand5G) == FALSE)
 		return;
 
 	for (IdBand = 0; IdBand < 2; IdBand++) {
@@ -1301,10 +1301,10 @@ VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2)
 					("crda> reset chan/power for 5GHz\n"));
 		}
 
-		ChanNum = CFG80211OS_ChanNumGet(CFG80211CB, pWiphy, IdBand);
+		ChanNum = CFG80211OS_ChanNumGet(pAd->pCfg80211_CB, pWiphy, IdBand);
 
 		for (IdChan = 0; IdChan < ChanNum; IdChan++) {
-			if (CFG80211OS_ChanInfoGet(CFG80211CB, pWiphy, IdBand, IdChan,
+			if (CFG80211OS_ChanInfoGet(pAd->pCfg80211_CB, pWiphy, IdBand, IdChan,
 					&ChanId, &Power, &FlgIsRadar) == FALSE) {
 				/* the channel is not allowed in the regulatory domain */
 				/* get next channel information */
@@ -1386,14 +1386,14 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID CFG80211_ConnectResultInform(VOID *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe,
+void CFG80211_ConnectResultInform(void *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe,
 	UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen, UCHAR FlgIsSuccess)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> CFG80211_ConnectResultInform ==>\n"));
 
-	CFG80211OS_ConnectResultInform(CFG80211CB, pBSSID, pReqIe, ReqIeLen, pRspIe,
+	CFG80211OS_ConnectResultInform(pAd->pCfg80211_CB, pBSSID, pReqIe, ReqIeLen, pRspIe,
 			RspIeLen, FlgIsSuccess);
 
 	pAd->cfg80211_ctrl.FlgCfg80211Connecting = FALSE;
@@ -1418,11 +1418,11 @@ Note:
 	need to re-init bands in xx_open().
 ========================================================================
 */
-BOOLEAN CFG80211_SupBandReInit(VOID *pAdCB)
+BOOLEAN CFG80211_SupBandReInit(void *pAdCB)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	CFG80211_BAND BandInfo;
-	CFG80211_CB *pCfg80211_CB = CFG80211CB;
+	CFG80211_CB *pCfg80211_CB = pAd->pCfg80211_CB;
 	struct wiphy *pWiphy = pCfg80211_CB->pCfg80211_Wdev->wiphy;
 
 	memcpy(pWiphy->perm_addr, pAd->PermanentAddress, ETH_ALEN);
@@ -1433,12 +1433,12 @@ BOOLEAN CFG80211_SupBandReInit(VOID *pAdCB)
 	NdisZeroMemory(&BandInfo, sizeof(BandInfo));
 	CFG80211_BANDINFO_FILL(pAd, &BandInfo);
 
-	return CFG80211OS_SupBandReInit(CFG80211CB, &BandInfo);
+	return CFG80211OS_SupBandReInit(pAd->pCfg80211_CB, &BandInfo);
 }
 
 #ifdef CONFIG_STA_SUPPORT
 //CMD_RTPRIV_IOCTL_80211_KEY_DEFAULT_SET:
-static INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data)
+static int CFG80211_setStaDefaultKey(void *pAdCB, UINT Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
@@ -1448,7 +1448,7 @@ static INT CFG80211_setStaDefaultKey(VOID *pAdCB, UINT Data)
 }
 
 #ifdef DOT11W_PMF_SUPPORT
-static INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data)
+static int CFG80211_setStaMgmtDefaultKey(void *pAdCB, UINT Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 
@@ -1459,7 +1459,7 @@ static INT CFG80211_setStaMgmtDefaultKey(VOID *pAdCB, UINT Data)
 #endif /* DOT11W_PMF_SUPPORT */
 
 #endif /*CONFIG_STA_SUPPORT*/
-static INT CFG80211_reSetToDefault(VOID *pAdCB)
+static int CFG80211_reSetToDefault(void *pAdCB)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -1483,8 +1483,8 @@ initList(&pAd->Cfg80211VifDevSet.vifDevList);
 initList(&pAd->cfg80211_ctrl.cfg80211TxPacketList);
 */
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
-static BOOLEAN CFG80211_checkScanResInKernelCache(VOID *pAdCB, UCHAR *pBSSID,
-	UCHAR *pSsid, INT ssidLen)
+static BOOLEAN CFG80211_checkScanResInKernelCache(void *pAdCB, UCHAR *pBSSID,
+	UCHAR *pSsid, int ssidLen)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	CFG80211_CB *pCfg80211_CB  = (CFG80211_CB *)pAd->pCfg80211_CB;
@@ -1501,7 +1501,7 @@ static BOOLEAN CFG80211_checkScanResInKernelCache(VOID *pAdCB, UCHAR *pBSSID,
 	return FALSE;
 }
 
-BOOLEAN CFG80211_checkScanTable(VOID *pAdCB)
+BOOLEAN CFG80211_checkScanTable(void *pAdCB)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	CFG80211_CB *pCfg80211_CB  = (CFG80211_CB *)pAd->pCfg80211_CB;
