@@ -644,7 +644,7 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 
 /*********************************************************************************************************
 	The following code are not revised, temporary put it here.
-  *********************************************************************************************************/
+*********************************************************************************************************/
 
 
 /***********************************************************************************
@@ -655,7 +655,6 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 #define RTMP_GetPhysicalAddressHigh(PhysicalAddress)		(0)
 #define RTMP_SetPhysicalAddressLow(PhysicalAddress, Value)	PhysicalAddress = Value;
 #define RTMP_SetPhysicalAddressHigh(PhysicalAddress, Value)
-
 
 /***********************************************************************************
  * Device Register I/O Access related definitions and data structures.
@@ -703,17 +702,17 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 
 #define RTMP_OS_NETDEV_STATE_RUNNING(_pNetDev)	((_pNetDev)->flags & IFF_UP)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
-#define _RTMP_OS_NETDEV_GET_PRIV(_pNetDev)	(NULL /*(_pNetDev)->ml_priv*/)
-#else
-#define _RTMP_OS_NETDEV_GET_PRIV(_pNetDev)	((_pNetDev)->priv)
-#endif
+//#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
+//#define _RTMP_OS_NETDEV_GET_PRIV(_pNetDev)	(NULL /*(_pNetDev)->ml_priv*/)
+//#else
+//#define _RTMP_OS_NETDEV_GET_PRIV(_pNetDev)	((_pNetDev)->priv)
+//#endif
 
 #define RTMP_OS_NETDEV_GET_DEVNAME(_pNetDev)	((_pNetDev)->name)
 #define RTMP_OS_NETDEV_GET_PHYADDR(_pNetDev)	((_pNetDev)->dev_addr)
 
 /* Get & Set NETDEV interface hardware type */
-#define RTMP_OS_NETDEV_GET_TYPE(_pNetDev)		((_pNetDev)->type)
+//#define RTMP_OS_NETDEV_GET_TYPE(_pNetDev)		((_pNetDev)->type)
 #define RTMP_OS_NETDEV_SET_TYPE(_pNetDev, _type)	((_pNetDev)->type = (_type))
 #define RTMP_OS_NETDEV_SET_TYPE_MONITOR(_pNetDev)	RTMP_OS_NETDEV_SET_TYPE(_pNetDev, ARPHRD_IEEE80211_PRISM)
 
