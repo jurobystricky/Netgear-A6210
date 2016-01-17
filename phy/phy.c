@@ -37,10 +37,10 @@ BOOLEAN phy_probe(RTMP_ADAPTER *pAd)
 
 NDIS_STATUS NICInitBBP(RTMP_ADAPTER *pAd)
 {
-	UINT32 Index = 0, val;
+	int i, val;
 
 	/* Before program BBP, we need to wait BBP/RF get wake up.*/
-	do {
+	for (i = 500; i > 0; i--) {
 		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))
 			return NDIS_STATUS_FAILURE;
 
@@ -50,9 +50,9 @@ NDIS_STATUS NICInitBBP(RTMP_ADAPTER *pAd)
 
 		DBGPRINT(RT_DEBUG_TRACE, ("Check if MAC_STATUS_CFG is busy(=%x)\n", val));
 		RtmpusecDelay(1000);
-	} while (Index++ < 100);
+	} 
 
-	WARN_ON(Index >= 100);
+	WARN_ON(i == 0);
 
 	if (pAd->phy_op && pAd->phy_op->bbp_init)
 		return pAd->phy_op->bbp_init(pAd);
