@@ -354,7 +354,7 @@ VOID CFG80211_ScanEnd(IN VOID *pAdCB, IN BOOLEAN FlgIsAborted)
 #endif /* CFG80211_SCAN_SIGNAL_AVG */
 	}
 
-	CFG80211OS_ScanEnd(CFG80211CB, FlgIsAborted);
+	CFG80211OS_ScanEnd(pAd->pCfg80211_CB, FlgIsAborted);
 	pAd->cfg80211_ctrl.FlgCfg80211Scanning = FALSE;
 #endif /* CONFIG_STA_SUPPORT */
 }
