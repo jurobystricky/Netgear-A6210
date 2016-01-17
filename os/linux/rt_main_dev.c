@@ -524,7 +524,7 @@ struct iw_statistics *rt28xx_get_wireless_stats(struct net_device *net_dev)
 
 	GET_PAD_FROM_NET_DEV(pAd, net_dev);
 
-	DBGPRINT(RT_DEBUG_TRACE, ("rt28xx_get_wireless_stats --->\n"));
+	DBGPRINT(RT_DEBUG_INFO, ("rt28xx_get_wireless_stats --->\n"));
 
 	pDrvIwStats->priv_flags = RT_DEV_PRIV_FLAGS_GET(net_dev);
 	pDrvIwStats->dev_addr = (PUCHAR)net_dev->dev_addr;
@@ -544,7 +544,7 @@ struct iw_statistics *rt28xx_get_wireless_stats(struct net_device *net_dev)
 	pStats->discard.nwid = 0;	/* Rx : Wrong nwid/essid */
 	pStats->miss.beacon = 0;	/* Missed beacons/superframe */
 
-	DBGPRINT(RT_DEBUG_TRACE, ("<--- rt28xx_get_wireless_stats\n"));
+	DBGPRINT(RT_DEBUG_INFO, ("<--- rt28xx_get_wireless_stats\n"));
 	return pStats;
 }
 #endif /* WIRELESS_EXT */
