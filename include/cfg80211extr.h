@@ -25,14 +25,13 @@
 
 #ifdef RT_CFG80211_SUPPORT
 
-#define CFG80211CB			(pAd->pCfg80211_CB)
 #define RT_CFG80211_DEBUG 		/* debug use */
 
 #ifdef RT_CFG80211_DEBUG
 #define CFG80211DBG(__Flg, __pMsg)	DBGPRINT(__Flg, __pMsg)
 #else
 #define CFG80211DBG(__Flg, __pMsg)
-#endif /* RT_CFG80211_DEBUG */
+#endif
 
 //CFG_TODO
 #include "wfa_p2p.h"
@@ -41,42 +40,42 @@
 	CFG80211_Register(__pDev, __pNetDev);
 
 #define RT_CFG80211_BEACON_CR_PARSE(__pAd, __pVIE, __LenVIE)			\
-	CFG80211_BeaconCountryRegionParse((VOID *)__pAd, __pVIE, __LenVIE);
+	CFG80211_BeaconCountryRegionParse((void *)__pAd, __pVIE, __LenVIE);
 
 #define RT_CFG80211_BEACON_TIM_UPDATE(__pAd)					\
-        CFG80211_UpdateBeacon((VOID *)__pAd, NULL, 0, NULL, 0, FALSE);
+        CFG80211_UpdateBeacon((void *)__pAd, NULL, 0, NULL, 0, FALSE);
 
 #define RT_CFG80211_CRDA_REG_HINT(__pAd, __pCountryIe, __CountryIeLen)		\
-	CFG80211_RegHint((VOID *)__pAd, __pCountryIe, __CountryIeLen);
+	CFG80211_RegHint((void *)__pAd, __pCountryIe, __CountryIeLen);
 
 #define RT_CFG80211_CRDA_REG_HINT11D(__pAd, __pCountryIe, __CountryIeLen)	\
-	CFG80211_RegHint11D((VOID *)__pAd, __pCountryIe, __CountryIeLen);
+	CFG80211_RegHint11D((void *)__pAd, __pCountryIe, __CountryIeLen);
 
 #define RT_CFG80211_CRDA_REG_RULE_APPLY(__pAd)					\
-	CFG80211_RegRuleApply((VOID *)__pAd, NULL, __pAd->cfg80211_ctrl.Cfg80211_Alpha2);
+	CFG80211_RegRuleApply((void *)__pAd, NULL, __pAd->cfg80211_ctrl.Cfg80211_Alpha2);
 
 #define RT_CFG80211_CONN_RESULT_INFORM(__pAd, __pBSSID, __pReqIe, 		\
 			__ReqIeLen,	__pRspIe, __RspIeLen, __FlgIsSuccess)	\
-	CFG80211_ConnectResultInform((VOID *)__pAd, __pBSSID,			\
+	CFG80211_ConnectResultInform((void *)__pAd, __pBSSID,			\
 			__pReqIe, __ReqIeLen, __pRspIe, __RspIeLen, __FlgIsSuccess);
 
 #define RT_CFG80211_SCANNING_INFORM(__pAd, __BssIdx, __ChanId, __pFrame,	\
 			__FrameLen, __RSSI)					\
-	CFG80211_Scaning((VOID *)__pAd, __BssIdx, __ChanId, __pFrame,		\
+	CFG80211_Scaning((void *)__pAd, __BssIdx, __ChanId, __pFrame,		\
 						__FrameLen, __RSSI);
 
 #define RT_CFG80211_SCAN_END(__pAd, __FlgIsAborted)				\
-	CFG80211_ScanEnd((VOID *)__pAd, __FlgIsAborted);
+	CFG80211_ScanEnd((void *)__pAd, __FlgIsAborted);
 #ifdef CONFIG_STA_SUPPORT
 #define RT_CFG80211_LOST_AP_INFORM(__pAd) 					\
-	CFG80211_LostApInform((VOID *)__pAd);
+	CFG80211_LostApInform((void *)__pAd);
 #endif /*CONFIG_STA_SUPPORT*/
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
 #define RT_CFG80211_LOST_GO_INFORM(__pAd) 					\
-	CFG80211_LostP2pGoInform((VOID *)__pAd);
+	CFG80211_LostP2pGoInform((void *)__pAd);
 #endif /*RT_CFG80211_P2P_CONCURRENT_DEVICE*/
 #define RT_CFG80211_REINIT(__pAd)						\
-	CFG80211_SupBandReInit((VOID *)__pAd);
+	CFG80211_SupBandReInit((void *)__pAd);
 
 #define RT_CFG80211_RFKILL_STATUS_UPDATE(_pAd, _active) 			\
 	CFG80211_RFKillStatusUpdate(_pAd, _active);
@@ -130,113 +129,113 @@
 
 /* Scan Releated */
 #ifdef CONFIG_STA_SUPPORT
-BOOLEAN CFG80211DRV_OpsScanRunning(VOID *pAdOrg);
+BOOLEAN CFG80211DRV_OpsScanRunning(void *pAdOrg);
 #endif /*CONFIG_STA_SUPPORT*/
 BOOLEAN CFG80211DRV_OpsScanSetSpecifyChannel(
-	VOID *pAdOrg, VOID *pData, UINT8 dataLen);
+	void *pAdOrg, void *pData, UINT8 dataLen);
 
 BOOLEAN CFG80211DRV_OpsScanCheckStatus(
-	VOID *pAdOrg, UINT8 IfType);
+	void *pAdOrg, UINT8 IfType);
 
-BOOLEAN CFG80211DRV_OpsScanExtraIesSet(VOID *pAdOrg);
+BOOLEAN CFG80211DRV_OpsScanExtraIesSet(void *pAdOrg);
 
-VOID CFG80211DRV_OpsScanInLinkDownAction(VOID *pAdOrg);
+void CFG80211DRV_OpsScanInLinkDownAction(void *pAdOrg);
 
-INT CFG80211DRV_OpsScanGetNextChannel(VOID *pAdOrg);
+int CFG80211DRV_OpsScanGetNextChannel(void *pAdOrg);
 
-VOID CFG80211_ScanStatusLockInit(VOID *pAdCB, UINT init);
+void CFG80211_ScanStatusLockInit(void *pAdCB, UINT init);
 
-VOID CFG80211_Scaning(
-	VOID *pAdCB, UINT32 BssIdx, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen, INT32 RSSI);
+void CFG80211_Scaning(
+	void *pAdCB, UINT32 BssIdx, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen, INT32 RSSI);
 
-VOID CFG80211_ScanEnd(VOID *pAdCB, BOOLEAN FlgIsAborted);
+void CFG80211_ScanEnd(void *pAdCB, BOOLEAN FlgIsAborted);
 
 /* Connect Releated */
 
-VOID CFG80211_P2pClientConnectResultInform(VOID *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe, 
+void CFG80211_P2pClientConnectResultInform(void *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe, 
 	UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen, UCHAR FlgIsSuccess);
 
-VOID CFG80211_ConnectResultInform(VOID *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe, 
+void CFG80211_ConnectResultInform(void *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe, 
 	UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen, UCHAR FlgIsSuccess);
 
-VOID CFG80211DRV_PmkidConfig(VOID *pAdOrg, VOID *pData);
+void CFG80211DRV_PmkidConfig(void *pAdOrg, void *pData);
 
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
-VOID CFG80211_LostP2pGoInform(VOID *pAdCB);
+void CFG80211_LostP2pGoInform(void *pAdCB);
 #endif
 
-VOID CFG80211_LostApInform(VOID *pAdCB);
-INT CFG80211_StaPortSecured(VOID *pAdCB, UCHAR *pMac, UINT flag);
+void CFG80211_LostApInform(void *pAdCB);
+int CFG80211_StaPortSecured(void *pAdCB, UCHAR *pMac, UINT flag);
 
 /* AP Related*/
-INT CFG80211_ApStaDel(VOID *pAdCB, UCHAR *pMac);
+int CFG80211_ApStaDel(void *pAdCB, UCHAR *pMac);
 
-VOID CFG80211_UpdateBeacon(VOID *pAdOrg, UCHAR *beacon_head_buf, UINT32 beacon_head_len,
+void CFG80211_UpdateBeacon(void *pAdOrg, UCHAR *beacon_head_buf, UINT32 beacon_head_len,
 	UCHAR *beacon_tail_buf, UINT32 beacon_tail_len, BOOLEAN isAllUpdate);
 
-INT CFG80211_ApStaDelSendEvent(PRTMP_ADAPTER pAd, const PUCHAR mac_addr);
+int CFG80211_ApStaDelSendEvent(PRTMP_ADAPTER pAd, const PUCHAR mac_addr);
 
 /* Key Releated */
-BOOLEAN CFG80211DRV_ApKeyAdd(VOID *pAdOrg, VOID *pData);
-BOOLEAN CFG80211DRV_ApKeyDel(VOID *pAdOrg, VOID *pData);
-VOID CFG80211DRV_RtsThresholdAdd(VOID *pAdOrg, UINT threshold);
-VOID CFG80211DRV_FragThresholdAdd(VOID *pAdOrg, UINT threshold);
-INT CFG80211_setApDefaultKey(VOID *pAdCB, UINT Data);
-INT CFG80211_setPowerMgmt(VOID *pAdCB, UINT Enable);
+BOOLEAN CFG80211DRV_ApKeyAdd(void *pAdOrg, void *pData);
+BOOLEAN CFG80211DRV_ApKeyDel(void *pAdOrg, void *pData);
+void CFG80211DRV_RtsThresholdAdd(void *pAdOrg, UINT threshold);
+void CFG80211DRV_FragThresholdAdd(void *pAdOrg, UINT threshold);
+int CFG80211_setApDefaultKey(void *pAdCB, UINT Data);
+int CFG80211_setPowerMgmt(void *pAdCB, UINT Enable);
 
 /* General Releated */
 
-BOOLEAN CFG80211DRV_OpsChgVirtualInf(RTMP_ADAPTER *pAd, VOID *pData);
+BOOLEAN CFG80211DRV_OpsChgVirtualInf(RTMP_ADAPTER *pAd, void *pData);
 
-INT CFG80211DRV_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq, INT cmd,
-	USHORT subcmd, VOID *pData, ULONG Data);
+int CFG80211DRV_IoctlHandle(void *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq, int cmd,
+	USHORT subcmd, void *pData, ULONG Data);
 
 UCHAR CFG80211_getCenCh(RTMP_ADAPTER *pAd, UCHAR prim_ch);
-VOID CFG80211_RegHint(VOID *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen);
-VOID CFG80211_RegHint11D(VOID *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen);
-VOID CFG80211_RegRuleApply(VOID *pAdCB, VOID *pWiphy, UCHAR *pAlpha2);
-BOOLEAN CFG80211_SupBandReInit(VOID *pAdCB);
+void CFG80211_RegHint(void *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen);
+void CFG80211_RegHint11D(void *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen);
+void CFG80211_RegRuleApply(void *pAdCB, void *pWiphy, UCHAR *pAlpha2);
+BOOLEAN CFG80211_SupBandReInit(void *pAdCB);
 
 #ifdef RFKILL_HW_SUPPORT
-VOID CFG80211_RFKillStatusUpdate(PVOID pAd, BOOLEAN active);
+void CFG80211_RFKillStatusUpdate(PVOID pAd, BOOLEAN active);
 #endif /* RFKILL_HW_SUPPORT */
 
 /* P2P Related */
-VOID CFG80211DRV_SetP2pCliAssocIe(VOID *pAdOrg, VOID *pData, UINT ie_len);
-VOID CFG80211DRV_P2pClientKeyAdd(VOID *pAdOrg, VOID *pData);
-BOOLEAN CFG80211DRV_P2pClientConnect(VOID *pAdOrg, VOID *pData);
-BOOLEAN CFG80211_checkScanTable(VOID *pAdCB);
-VOID CFG80211_P2pClientSendNullFrame(VOID *pAdCB, INT PwrMgmt);
-BOOLEAN CFG80211DRV_OpsRemainOnChannel(VOID *pAdOrg, VOID *pData, UINT32 duration);
-BOOLEAN CFG80211DRV_OpsCancelRemainOnChannel(VOID *pAdOrg, UINT32 cookie);
+void CFG80211DRV_SetP2pCliAssocIe(void *pAdOrg, void *pData, UINT ie_len);
+void CFG80211DRV_P2pClientKeyAdd(void *pAdOrg, void *pData);
+BOOLEAN CFG80211DRV_P2pClientConnect(void *pAdOrg, void *pData);
+BOOLEAN CFG80211_checkScanTable(void *pAdCB);
+void CFG80211_P2pClientSendNullFrame(void *pAdCB, int PwrMgmt);
+BOOLEAN CFG80211DRV_OpsRemainOnChannel(void *pAdOrg, void *pData, UINT32 duration);
+BOOLEAN CFG80211DRV_OpsCancelRemainOnChannel(void *pAdOrg, UINT32 cookie);
 BOOLEAN CFG80211_CheckActionFrameType(RTMP_ADAPTER  *pAd, PUCHAR preStr, 
-		VOID *pData, UINT32 length);
-BOOLEAN CFG80211_SyncPacketWmmIe(RTMP_ADAPTER *pAd, VOID *pData, ULONG dataLen);
+		void *pData, UINT32 length);
+BOOLEAN CFG80211_SyncPacketWmmIe(RTMP_ADAPTER *pAd, void *pData, ULONG dataLen);
 BOOLEAN CFG80211_HandleP2pMgmtFrame(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR OpMode);
-INT CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data);
+int CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, void *pData, ULONG Data);
 
 #ifdef RT_CFG80211_P2P_SUPPORT
-VOID CFG80211_PeerP2pBeacon(PRTMP_ADAPTER pAd,PUCHAR pAddr2, LME_QUEUE_ELEM *Elem,
+void CFG80211_PeerP2pBeacon(PRTMP_ADAPTER pAd,PUCHAR pAddr2, LME_QUEUE_ELEM *Elem,
 	LARGE_INTEGER TimeStamp);
 
 BOOLEAN CFG80211_P2pResetNoATimer(PRTMP_ADAPTER pAd, ULONG DiffTimeInus);
 
 BOOLEAN CFG80211_P2pHandleNoAAttri(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacClient,
 	PUCHAR pData);
-VOID CFG80211_ParseBeaconIE(RTMP_ADAPTER *pAd, MULTISSID_STRUCT *pMbss, 
+void CFG80211_ParseBeaconIE(RTMP_ADAPTER *pAd, MULTISSID_STRUCT *pMbss, 
 	struct wifi_dev *wdev,UCHAR *wpa_ie,UCHAR *rsn_ie);
 
 #endif /* RT_CFG80211_P2P_SUPPORT */
 
 //--------------------------------
-VOID CFG80211_Convert802_3Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR *pHeader802_3);
-VOID CFG80211_Announce802_3Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSSID);
-VOID CFG80211_SendMgmtFrameDone(RTMP_ADAPTER *pAd, USHORT Sequence);
-VOID CFG80211_SwitchTxChannel(RTMP_ADAPTER *pAd, ULONG Data);
-BOOLEAN CFG80211DRV_OpsBeaconSet(VOID *pAdOrg, VOID *pData);
-BOOLEAN CFG80211DRV_OpsBeaconAdd(VOID *pAdOrg, VOID *pData);
-VOID CFG80211DRV_DisableApInterface(PRTMP_ADAPTER pAd);
-BOOLEAN CFG80211DRV_OpsVifAdd(VOID *pAdOrg, VOID *pData);
+void CFG80211_Convert802_3Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR *pHeader802_3);
+void CFG80211_Announce802_3Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSSID);
+void CFG80211_SendMgmtFrameDone(RTMP_ADAPTER *pAd, USHORT Sequence);
+void CFG80211_SwitchTxChannel(RTMP_ADAPTER *pAd, ULONG Data);
+BOOLEAN CFG80211DRV_OpsBeaconSet(void *pAdOrg, void *pData);
+BOOLEAN CFG80211DRV_OpsBeaconAdd(void *pAdOrg, void *pData);
+void CFG80211DRV_DisableApInterface(PRTMP_ADAPTER pAd);
+BOOLEAN CFG80211DRV_OpsVifAdd(void *pAdOrg, void *pData);
 
 #endif /* RT_CFG80211_SUPPORT */
 
