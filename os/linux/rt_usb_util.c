@@ -13,7 +13,6 @@
 #define RTMP_MODULE_OS_UTIL
 
 #include "rtmp_comm.h"
-#include "rtmp_osabl.h"
 #include "rt_os_util.h"
 
 #ifdef RTMP_MAC_USB
