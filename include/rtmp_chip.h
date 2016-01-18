@@ -1443,12 +1443,6 @@ do {	\
 		_pAd->chipOps.MCUCtrlInit(_pAd);	\
 } while (0)
 
-#define MCU_CTRL_EXIT(_pAd)	\
-do {	\
-	if (_pAd->chipOps.MCUCtrlExit != NULL)	\
-		_pAd->chipOps.MCUCtrlExit(_pAd);	\
-} while (0)
-
 #define USB_CFG_READ(_ad, _pvalue)	\
 do {	\
 	if (_ad->chipOps.usb_cfg_read != NULL)	\
