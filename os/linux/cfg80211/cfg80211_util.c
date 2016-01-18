@@ -26,7 +26,6 @@
 #define RTMP_MODULE_OS_UTIL
 
 #include "rtmp_comm.h"
-#include "rtmp_osabl.h"
 #include "rt_os_util.h"
 
 /* all available channels */
@@ -333,7 +332,7 @@ BOOLEAN CFG80211_SupBandInit(
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		/* for kernel 3.14 , both value are changed to IEEE80211_CHAN_NO_IR*/
-		
+
 #define IEEE80211_CHAN_NO_IBSS IEEE80211_CHAN_NO_IR
 #define IEEE80211_CHAN_PASSIVE_SCAN IEEE80211_CHAN_NO_IR
 #endif
