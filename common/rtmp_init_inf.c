@@ -21,82 +21,15 @@
 	Abstract:
 	Miniport generic portion header file
 
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
 */
-#include	"rt_config.h"
 
+#include "rt_config.h"
 
 #ifdef CONFIG_STA_SUPPORT
 #ifdef PROFILE_STORE
-NDIS_STATUS WriteDatThread(RTMP_ADAPTER *pAd);
+static NDIS_STATUS WriteDatThread(RTMP_ADAPTER *pAd);
 #endif /* PROFILE_STORE */
 #endif /* CONFIG_STA_SUPPORT */
-
-#ifdef LINUX
-#ifdef OS_ABL_FUNC_SUPPORT
-/* Utilities provided from NET module */
-RTMP_NET_ABL_OPS RtmpDrvNetOps, *pRtmpDrvNetOps = &RtmpDrvNetOps;
-RTMP_PCI_CONFIG RtmpPciConfig, *pRtmpPciConfig = &RtmpPciConfig;
-RTMP_USB_CONFIG RtmpUsbConfig, *pRtmpUsbConfig = &RtmpUsbConfig;
-
-VOID RtmpDrvOpsInit(
-	OUT VOID *pDrvOpsOrg,
-	INOUT VOID *pDrvNetOpsOrg,
-	IN RTMP_PCI_CONFIG *pPciConfig,
-	IN RTMP_USB_CONFIG *pUsbConfig)
-{
-	RTMP_DRV_ABL_OPS *pDrvOps = (RTMP_DRV_ABL_OPS *)pDrvOpsOrg;
-#ifdef RTMP_USB_SUPPORT
-	RTMP_NET_ABL_OPS *pDrvNetOps = (RTMP_NET_ABL_OPS *)pDrvNetOpsOrg;
-#endif /* RTMP_USB_SUPPORT */
-
-	/* init PCI/USB configuration in different OS */
-	if (pPciConfig != NULL)
-		RtmpPciConfig = *pPciConfig;
-
-	if (pUsbConfig != NULL)
-		RtmpUsbConfig = *pUsbConfig;
-
-	/* init operators provided from us (DRIVER module) */
-	pDrvOps->RTMPAllocAdapterBlock = RTMPAllocAdapterBlock;
-	pDrvOps->RTMPFreeAdapter = RTMPFreeAdapter;
-	pDrvOps->RtmpRaDevCtrlExit = RtmpRaDevCtrlExit;
-	pDrvOps->RtmpRaDevCtrlInit = RtmpRaDevCtrlInit;
-	pDrvOps->RTMPSendPackets = RTMPSendPackets;
-
-	pDrvOps->RTMP_COM_IoctlHandle = RTMP_COM_IoctlHandle;
-#ifdef CONFIG_AP_SUPPORT
-	pDrvOps->RTMP_AP_IoctlHandle = RTMP_AP_IoctlHandle;
-#endif /* CONFIG_AP_SUPPORT */
-#ifdef CONFIG_STA_SUPPORT
-	pDrvOps->RTMP_STA_IoctlHandle = RTMP_STA_IoctlHandle;
-#endif /* CONFIG_STA_SUPPORT */
-
-	pDrvOps->RTMPDrvOpen = RTMPDrvOpen;
-	pDrvOps->RTMPDrvClose = RTMPDrvClose;
-	pDrvOps->RTMPInfClose = RTMPInfClose;
-	pDrvOps->rt28xx_init = rt28xx_init;
-
-	/* init operators provided from us and netif module */
-#ifdef RTMP_USB_SUPPORT
-	*pRtmpDrvNetOps = *pDrvNetOps;
-	pRtmpDrvNetOps->RtmpDrvUsbBulkOutDataPacketComplete = RTUSBBulkOutDataPacketComplete;
-	pRtmpDrvNetOps->RtmpDrvUsbBulkOutMLMEPacketComplete = RTUSBBulkOutMLMEPacketComplete;
-	pRtmpDrvNetOps->RtmpDrvUsbBulkOutNullFrameComplete = RTUSBBulkOutNullFrameComplete;
-/*	pRtmpDrvNetOps->RtmpDrvUsbBulkOutRTSFrameComplete = RTUSBBulkOutRTSFrameComplete;*/
-	pRtmpDrvNetOps->RtmpDrvUsbBulkOutPsPollComplete = RTUSBBulkOutPsPollComplete;
-	pRtmpDrvNetOps->RtmpDrvUsbBulkRxComplete = RTUSBBulkRxComplete;
-	*pDrvNetOps = *pRtmpDrvNetOps;
-#endif /* RTMP_USB_SUPPORT */
-}
-
-RTMP_BUILD_DRV_OPS_FUNCTION_BODY
-
-#endif /* OS_ABL_FUNC_SUPPORT */
-#endif /* LINUX */
-
 
 int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 {
@@ -104,8 +37,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	NDIS_STATUS Status;
 #ifdef RTMP_MAC_USB
 	UINT index = 0;
-#endif /* RTMP_MAC_USB */
-
+#endif
 	if (!pAd)
 		return FALSE;
 
@@ -113,19 +45,19 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 		goto err1;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("MAC[Ver:Rev=0x%08x : 0x%08x]\n",
-				pAd->MACVersion, pAd->ChipID));
+			pAd->MACVersion, pAd->ChipID));
 
 	RT28XXDMADisable(pAd);
 
 	if (mcu_sys_init(pAd) != TRUE)
 		goto err1;
 
-
 	/* reset Adapter flags*/
 	RTMP_CLEAR_FLAGS(pAd);
 
 	if (MAX_LEN_OF_MAC_TABLE > MAX_AVAILABLE_CLIENT_WCID(pAd)) {
-		DBGPRINT(RT_DEBUG_ERROR, ("MAX_LEN_OF_MAC_TABLE can not be larger than MAX_AVAILABLE_CLIENT_WCID!!!!\n"));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("MAX_LEN_OF_MAC_TABLE can not be larger than MAX_AVAILABLE_CLIENT_WCID!!!!\n"));
 		goto err1;
 	}
 
@@ -149,7 +81,8 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	Status = RTMPAllocTxRxRingMemory(pAd);
 #endif /* RESOURCE_PRE_ALLOC */
 	if (Status != NDIS_STATUS_SUCCESS) {
-		DBGPRINT_ERR(("RTMPAllocTxRxMemory failed, Status[=0x%08x]\n", Status));
+		DBGPRINT_ERR(("RTMPAllocTxRxMemory failed, Status[=0x%08x]\n",
+				Status));
 		goto err2;
 	}
 
@@ -190,7 +123,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 
 #ifdef BLOCK_NET_IF
 	initblockQueueTab(pAd);
-#endif /* BLOCK_NET_IF */
+#endif
 
 	Status = MeasureReqTabInit(pAd);
 	if (Status != NDIS_STATUS_SUCCESS) {
@@ -292,14 +225,13 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 #ifdef RTMP_INTERNAL_TX_ALC
 	/* Initialize the desired TSSI table*/
 	RTMP_CHIP_ASIC_TSSI_TABLE_INIT(pAd);
-#endif /* RTMP_INTERNAL_TX_ALC */
-
+#endif
 
 #ifdef RT8592
 	// TODO: shiang-6590, actually, this operation shall be move to bbp_init
 	if (IS_RT8592(pAd))
 		bw_filter_cal(pAd);
-#endif /* RT8592 */
+#endif
 
 #ifdef RTMP_TEMPERATURE_COMPENSATION
 	/* Temperature compensation, initialize the lookup table */
@@ -319,14 +251,18 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	/* Set PHY to appropriate mode and will update the ChannelListNum in this function */
 	RTMPSetPhyMode(pAd, pAd->CommonCfg.PhyMode);
 	if (pAd->ChannelListNum == 0) {
-		DBGPRINT(RT_DEBUG_ERROR, ("Wrong configuration. No valid channel found. Check \"ContryCode\" and \"ChannelGeography\" setting.\n"));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("Wrong configuration. No valid channel found. Check \"ContryCode\" and \"ChannelGeography\" setting.\n"));
 		goto err6;
 	}
 
 #ifdef DOT11_N_SUPPORT
-	DBGPRINT(RT_DEBUG_OFF, ("MCS Set = %02x %02x %02x %02x %02x\n", pAd->CommonCfg.HtCapability.MCSSet[0],
-		   pAd->CommonCfg.HtCapability.MCSSet[1], pAd->CommonCfg.HtCapability.MCSSet[2],
-		   pAd->CommonCfg.HtCapability.MCSSet[3], pAd->CommonCfg.HtCapability.MCSSet[4]));
+	DBGPRINT(RT_DEBUG_OFF, ("MCS Set = %02x %02x %02x %02x %02x\n",
+			pAd->CommonCfg.HtCapability.MCSSet[0],
+			pAd->CommonCfg.HtCapability.MCSSet[1],
+			pAd->CommonCfg.HtCapability.MCSSet[2],
+			pAd->CommonCfg.HtCapability.MCSSet[3],
+			pAd->CommonCfg.HtCapability.MCSSet[4]));
 #endif /* DOT11_N_SUPPORT */
 
 #ifdef WIN_NDIS
@@ -385,7 +321,6 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 					DBGPRINT(RT_DEBUG_TRACE, ("RTUSBBulkReceive!\n" ));
 				}
 #endif /* RTMP_MAC_USB */
-
 				/* Now Enable RxTx*/
 				RTMPEnableRxTx(pAd);
 #ifdef MT762x
@@ -406,7 +341,6 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 #ifdef DOT11_N_SUPPORT
 			/* If WMODE_CAP_N(phymode) and BW=40 check extension channel, after select channel  */
 			N_ChannelCheck(pAd);
-
 #ifdef DOT11N_DRAFT3
 				/*
 		 			We only do this Overlapping BSS Scan when system up, for the
@@ -414,9 +348,10 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 				report to adjust ourself.
 			*/
 			if (pAd->CommonCfg.bForty_Mhz_Intolerant == TRUE) {
-				DBGPRINT(RT_DEBUG_TRACE, ("Disable 20/40 BSSCoex Channel Scan(BssCoex=%d, 40MHzIntolerant=%d)\n",
-											pAd->CommonCfg.bBssCoexEnable,
-											pAd->CommonCfg.bForty_Mhz_Intolerant));
+				DBGPRINT(RT_DEBUG_TRACE,
+						("Disable 20/40 BSSCoex Channel Scan(BssCoex=%d, 40MHzIntolerant=%d)\n",
+						pAd->CommonCfg.bBssCoexEnable,
+						pAd->CommonCfg.bForty_Mhz_Intolerant));
 			} else if(pAd->CommonCfg.bBssCoexEnable == TRUE) {
 				DBGPRINT(RT_DEBUG_TRACE, ("Enable 20/40 BSSCoex Channel Scan(BssCoex=%d)\n",
 							pAd->CommonCfg.bBssCoexEnable));
@@ -429,9 +364,9 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 #endif /* DOT11_N_SUPPORT */
 
 			APStartUp(pAd);
-			DBGPRINT(RT_DEBUG_OFF, ("Main bssid = %02x:%02x:%02x:%02x:%02x:%02x\n",
-						PRINT_MAC(pAd->ApCfg.MBSSID[BSS0].wdev.bssid)));
-
+			DBGPRINT(RT_DEBUG_OFF,
+					("Main bssid = %02x:%02x:%02x:%02x:%02x:%02x\n",
+					PRINT_MAC(pAd->ApCfg.MBSSID[BSS0].wdev.bssid)));
 #ifdef MT76x2
 			if (IS_MT76x2(pAd)) {
 				mt76x2_reinit_agc_gain(pAd, pAd->hw_cfg.cent_ch);
@@ -458,19 +393,19 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	/* Set up the Mac address*/
 #ifdef CONFIG_AP_SUPPORT
 	RtmpOSNetDevAddrSet(pAd->OpMode, pAd->net_dev, &pAd->CurrentAddress[0], NULL);
-#endif /* CONFIG_AP_SUPPORT */
+#endif
 #ifdef CONFIG_STA_SUPPORT
 	NdisMoveMemory(&pAd->StaCfg.wdev.if_addr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
-	RtmpOSNetDevAddrSet(pAd->OpMode, pAd->net_dev, &pAd->CurrentAddress[0], (PUCHAR)(pAd->StaCfg.dev_name));
+	RtmpOSNetDevAddrSet(pAd->OpMode, pAd->net_dev, &pAd->CurrentAddress[0],
+			(PUCHAR)(pAd->StaCfg.dev_name));
 	NdisMoveMemory(&pAd->StaCfg.wdev.if_addr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
 #endif /* CONFIG_STA_SUPPORT */
 
 #ifdef UAPSD_SUPPORT
-		UAPSD_Init(pAd);
-#endif /* UAPSD_SUPPORT */
+	UAPSD_Init(pAd);
+#endif
 
 	/* assign function pointers*/
-
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 	}
@@ -482,7 +417,8 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 #ifdef WPA_SUPPLICANT_SUPPORT
 #ifndef NATIVE_WPA_SUPPLICANT_SUPPORT
 		/* send wireless event to wpa_supplicant for infroming interface up.*/
-		RtmpOSWrielessEventSend(pAd->net_dev, RT_WLAN_EVENT_CUSTOM, RT_INTERFACE_UP, NULL, NULL, 0);
+		RtmpOSWrielessEventSend(pAd->net_dev, RT_WLAN_EVENT_CUSTOM,
+				RT_INTERFACE_UP, NULL, NULL, 0);
 #endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
 #endif /* WPA_SUPPLICANT_SUPPORT */
 
@@ -512,7 +448,6 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R182, (pAd->CommonCfg.ITxBfTimeout>>8) & 0xFF);
 	}
 #endif
-
 	if (pAd->CommonCfg.ETxBfTimeout) {
 		RTMP_IO_WRITE32(pAd, TX_TXBF_CFG_3, pAd->CommonCfg.ETxBfTimeout);
 	}
@@ -536,7 +471,7 @@ err3:
 	RtmpMgmtTaskExit(pAd);
 #ifdef RTMP_TIMER_TASK_SUPPORT
 	NdisFreeSpinLock(&pAd->TimerQLock);
-#endif /* RTMP_TIMER_TASK_SUPPORT */
+#endif
 err2:
 #ifdef RESOURCE_PRE_ALLOC
 	RTMPResetTxRxRingMemory(pAd);
@@ -545,27 +480,24 @@ err2:
 #endif /* RESOURCE_PRE_ALLOC */
 
 err1:
-	MCU_CTRL_EXIT(pAd);
+	if (pAd->chipOps.MCUCtrlExit != NULL)
+		pAd->chipOps.MCUCtrlExit(pAd);
 
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
-	/* Free BssTab & ChannelInfo tabbles.*/
-	AutoChBssTableDestroy(pAd);
-	ChannelInfoDestroy(pAd);
+		/* Free BssTab & ChannelInfo tabbles.*/
+		AutoChBssTableDestroy(pAd);
+		ChannelInfoDestroy(pAd);
 	}
 #endif /* CONFIG_AP_SUPPORT */
 
 #ifdef DOT11_N_SUPPORT
-	if(pAd->mpdu_blk_pool.mem)
+	if (pAd->mpdu_blk_pool.mem) {
+		WARN_ON(1); //just to catch red handed
 		os_free_mem(pAd, pAd->mpdu_blk_pool.mem); /* free BA pool*/
+		pAd->mpdu_blk_pool.mem = NULL;
+	}
 #endif /* DOT11_N_SUPPORT */
-
-#ifdef INF_AMAZON_SE
-err0:
-#endif /* INF_AMAZON_SE */
-#ifdef ST
-err0:
-#endif /* ST */
 
 	DBGPRINT(RT_DEBUG_ERROR, ("!!! rt28xx init fail !!!\n"));
 	return FALSE;
@@ -581,7 +513,6 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 #ifdef RTMP_MAC
 	// TODO: shiang-usw, check this for RMTP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP) {
-
 		/* Now Enable RxTx*/
 		RTMPEnableRxTx(pAd);
 	}
@@ -589,15 +520,11 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 
 	RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_START_UP);
 
-
-
-
 #ifdef CONFIG_STA_SUPPORT
 #ifdef PCIE_PS_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		RTMPInitPCIeLinkCtrlValue(pAd);
 #endif /* PCIE_PS_SUPPORT */
-
 #endif /* CONFIG_STA_SUPPORT */
 
 #ifdef CONFIG_AP_SUPPORT
@@ -605,7 +532,6 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 	BG_FTPH_Init();
 #endif /* BG_FT_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
-
 
 //+++Add by shiang for debug
 	DBGPRINT(RT_DEBUG_OFF, ("%s(1):Check if PDMA is idle!\n", __FUNCTION__));
@@ -627,17 +553,15 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 
 #ifdef CONFIG_STA_SUPPORT
 #ifdef DOT11W_PMF_SUPPORT
-	if (pAd->OpMode == OPMODE_STA)
-	{
+	if (pAd->OpMode == OPMODE_STA) {
 		pAd->StaCfg.PmfCfg.MFPC = FALSE;
 		pAd->StaCfg.PmfCfg.MFPR = FALSE;
 		pAd->StaCfg.PmfCfg.PMFSHA256 = FALSE;
-		if ((pAd->StaCfg.wdev.AuthMode == Ndis802_11AuthModeWPA2 || pAd->StaCfg.wdev.AuthMode == Ndis802_11AuthModeWPA2PSK)
-			&& (pAd->StaCfg.wdev.WepStatus == Ndis802_11AESEnable))
-		{
+		if ((pAd->StaCfg.wdev.AuthMode == Ndis802_11AuthModeWPA2 ||
+			pAd->StaCfg.wdev.AuthMode == Ndis802_11AuthModeWPA2PSK)
+			&& (pAd->StaCfg.wdev.WepStatus == Ndis802_11AESEnable)) {
 			pAd->StaCfg.PmfCfg.PMFSHA256 = pAd->StaCfg.PmfCfg.Desired_PMFSHA256;
-			if (pAd->StaCfg.PmfCfg.Desired_MFPC)
-			{
+			if (pAd->StaCfg.PmfCfg.Desired_MFPC) {
 				pAd->StaCfg.PmfCfg.MFPC = TRUE;
 				pAd->StaCfg.PmfCfg.MFPR = pAd->StaCfg.PmfCfg.Desired_MFPR;
 
@@ -645,23 +569,25 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 					pAd->StaCfg.PmfCfg.PMFSHA256 = TRUE;
 			}
 		} else if (pAd->StaCfg.PmfCfg.Desired_MFPC) {
-			DBGPRINT(RT_DEBUG_ERROR, ("[PMF]%s:: Security is not WPA2/WPA2PSK AES\n", __FUNCTION__));
+			DBGPRINT(RT_DEBUG_ERROR,
+					("[PMF]%s:: Security is not WPA2/WPA2PSK AES\n",
+					__FUNCTION__));
 		}
 
-		DBGPRINT(RT_DEBUG_ERROR, ("[PMF]%s:: MFPC=%d, MFPR=%d, SHA256=%d\n",
-					__FUNCTION__, pAd->StaCfg.PmfCfg.MFPC, pAd->StaCfg.PmfCfg.MFPR,
-					pAd->StaCfg.PmfCfg.PMFSHA256));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("[PMF]%s:: MFPC=%d, MFPR=%d, SHA256=%d\n",
+				__FUNCTION__, pAd->StaCfg.PmfCfg.MFPC,
+				pAd->StaCfg.PmfCfg.MFPR,
+				pAd->StaCfg.PmfCfg.PMFSHA256));
 	}
 #endif /* DOT11W_PMF_SUPPORT */
 #endif /* CONFIG_STA_SUPPORT */
 
-
 #ifdef CONFIG_AP_SUPPORT
 #ifdef MULTI_CLIENT_SUPPORT
 	pAd->CommonCfg.txRetryCfg = 0;
-
 	{
-		UINT32	TxRtyCfg;
+		UINT32 TxRtyCfg;
 
 		RTMP_IO_READ32(pAd, TX_RTY_CFG, &TxRtyCfg);
 		pAd->CommonCfg.txRetryCfg = TxRtyCfg;
@@ -678,18 +604,17 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef RT_CFG80211_SUPPORT
 #ifdef CONFIG_AP_SUPPORT
-		if (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP && RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_START_UP))
-		{
-			CFG80211DRV_DisableApInterface(pAd);
-			pAd->cfg80211_ctrl.isCfgInApMode = RT_CMD_80211_IFTYPE_STATION;
-		}
+	if (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP &&
+		RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_START_UP)) {
+		CFG80211DRV_DisableApInterface(pAd);
+		pAd->cfg80211_ctrl.isCfgInApMode = RT_CMD_80211_IFTYPE_STATION;
+	}
 #endif /* CONFIG_AP_SUPPORT */
 #endif/*RT_CFG80211_SUPPORT*/
 
 	RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_MCU_SEND_IN_BAND_CMD);
 #ifdef BB_SOC
-	 if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF))
-	 {
+	 if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF)) {
 	 	DBGPRINT(RT_DEBUG_TRACE, ("Radio_ON first....\n"));
 			MlmeRadioOn(pAd);
 	 }
@@ -713,25 +638,21 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 #endif /* BG_FT_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
 
-
 #ifdef CONFIG_STA_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
 #ifdef PCIE_PS_SUPPORT
 		RTMPPCIeLinkCtrlValueRestore(pAd, RESTORE_CLOSE);
 #endif /* PCIE_PS_SUPPORT */
 
 		/* If driver doesn't wake up firmware here,*/
 		/* NICLoadFirmware will hang forever when interface is up again.*/
-		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE))
-		{
+		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE)) {
 			AsicForceWakeup(pAd, TRUE);
 		}
 
 #ifdef RTMP_MAC_USB
 		RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_REMOVE_IN_PROGRESS);
 #endif /* RTMP_MAC_USB */
-
 	}
 #endif /* CONFIG_STA_SUPPORT */
 
@@ -752,26 +673,22 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 #endif /* EXT_BUILD_CHANNEL_LIST */
 	pAd->CommonCfg.bCountryFlag = FALSE;
 
-	for (i = 0 ; i < NUM_OF_TX_RING; i++)
-	{
-		while (pAd->DeQueueRunning[i] == TRUE)
-		{
+	for (i = 0 ; i < NUM_OF_TX_RING; i++) {
+		while (pAd->DeQueueRunning[i] == TRUE) {
 			DBGPRINT(RT_DEBUG_TRACE, ("Waiting for TxQueue[%d] done..........\n", i));
 			RtmpusecDelay(1000);
 		}
 	}
 
 #ifdef CONFIG_AP_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 		BOOLEAN Cancelled = FALSE;
 #ifdef RTMP_MAC_USB
 		RTMPCancelTimer(&pAd->CommonCfg.BeaconUpdateTimer, &Cancelled);
 #endif
 
 #ifdef DOT11N_DRAFT3
-		if (pAd->CommonCfg.Bss2040CoexistFlag & BSS_2040_COEXIST_TIMER_FIRED)
-		{
+		if (pAd->CommonCfg.Bss2040CoexistFlag & BSS_2040_COEXIST_TIMER_FIRED) {
 			RTMPCancelTimer(&pAd->CommonCfg.Bss2040CoexistTimer, &Cancelled);
 			pAd->CommonCfg.Bss2040CoexistFlag  = 0;
 		}
@@ -789,8 +706,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 	RtmpNetTaskExit(pAd);
 
 #ifdef CONFIG_STA_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
 		MacTableReset(pAd);
 #if ((defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT)) && defined(WOW_IFDOWN_SUPPORT)
 		if (pAd->WOW_Cfg.bEnable == TRUE)
@@ -802,9 +718,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 #endif /* CONFIG_STA_SUPPORT */
 
 #ifdef CONFIG_AP_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-	{
-
+	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 		/* Shutdown Access Point function, release all related resources */
 		APShutdown(pAd);
 
@@ -822,8 +736,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 	RtmpMgmtTaskExit(pAd);
 
 #ifdef CONFIG_AP_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 		/* must after RtmpMgmtTaskExit(); Or pAd->pChannelInfo will be NULL */
 		/* Free BssTab & ChannelInfo tabbles.*/
 		AutoChBssTableDestroy(pAd);
@@ -832,8 +745,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 #endif /* CONFIG_AP_SUPPORT */
 
 	/* Free IRQ*/
-	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE))
-	{
+	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) {
 		RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE);
 	}
 
@@ -841,10 +753,8 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 	{
 		CH_POWER *ch, *ch_temp;
 		DlListForEachSafe(ch, ch_temp, &pAd->SingleSkuPwrList, CH_POWER, List)
-		{
-			DlListDel(&ch->List);
-			os_free_mem(NULL, ch);
-		}
+		DlListDel(&ch->List);
+		os_free_mem(NULL, ch);
 	}
 #endif /* SINGLE_SKU_V2 */
 
@@ -860,12 +770,12 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef WLAN_SKB_RECYCLE
 	skb_queue_purge(&pAd->rx0_recycle);
-#endif /* WLAN_SKB_RECYCLE */
+#endif
 
 #ifdef DOT11_N_SUPPORT
 	/* Free BA reorder resource*/
 	ba_reordering_resource_release(pAd);
-#endif /* DOT11_N_SUPPORT */
+#endif
 	UserCfgExit(pAd); /* must after ba_reordering_resource_release */
 
 	RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_START_UP);
@@ -898,8 +808,7 @@ VOID RTMPInfClose(VOID *pAdSrc)
 #ifdef CONFIG_AP_SUPPORT
 	pAd->ApCfg.MBSSID[MAIN_MBSSID].bBcnSntReq = FALSE;
 
-	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 		/* kick out all STAs behind the bss.*/
 		MbssKickOutStas(pAd, MAIN_MBSSID, REASON_DISASSOC_INACTIVE);
 	}
@@ -908,11 +817,8 @@ VOID RTMPInfClose(VOID *pAdSrc)
 	APUpdateAllBeaconFrame(pAd);
 #endif /* CONFIG_AP_SUPPORT */
 
-
-
 #ifdef CONFIG_STA_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
 #ifdef PROFILE_STORE
 		WriteDatThread(pAd);
 		RtmpusecDelay(1000);
@@ -923,29 +829,27 @@ VOID RTMPInfClose(VOID *pAdSrc)
 	/* In WOW state, can't issue disassociation reqeust */
 			pAd->WOW_Cfg.bEnable == FALSE &&
 #endif /* ((defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT)) && defined(WOW_IFDOWN_SUPPORT) */
-			(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)))
-		{
-			MLME_DISASSOC_REQ_STRUCT	DisReq;
+			(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
+			MLME_DISASSOC_REQ_STRUCT DisReq;
 			MLME_QUEUE_ELEM *MsgElem;
 
 			os_alloc_mem(NULL, (UCHAR **)&MsgElem, sizeof(MLME_QUEUE_ELEM));
-			if (MsgElem)
-			{
-			COPY_MAC_ADDR(DisReq.Addr, pAd->CommonCfg.Bssid);
-			DisReq.Reason =  REASON_DEAUTH_STA_LEAVING;
+			if (MsgElem) {
+				COPY_MAC_ADDR(DisReq.Addr, pAd->CommonCfg.Bssid);
+				DisReq.Reason =  REASON_DEAUTH_STA_LEAVING;
 
-			MsgElem->Machine = ASSOC_STATE_MACHINE;
-			MsgElem->MsgType = MT2_MLME_DISASSOC_REQ;
-			MsgElem->MsgLen = sizeof(MLME_DISASSOC_REQ_STRUCT);
-			NdisMoveMemory(MsgElem->Msg, &DisReq, sizeof(MLME_DISASSOC_REQ_STRUCT));
+				MsgElem->Machine = ASSOC_STATE_MACHINE;
+				MsgElem->MsgType = MT2_MLME_DISASSOC_REQ;
+				MsgElem->MsgLen = sizeof(MLME_DISASSOC_REQ_STRUCT);
+				NdisMoveMemory(MsgElem->Msg, &DisReq, sizeof(MLME_DISASSOC_REQ_STRUCT));
 
-			/* Prevent to connect AP again in STAMlmePeriodicExec*/
-			pAd->MlmeAux.AutoReconnectSsidLen= 32;
-			NdisZeroMemory(pAd->MlmeAux.AutoReconnectSsid, pAd->MlmeAux.AutoReconnectSsidLen);
+				/* Prevent to connect AP again in STAMlmePeriodicExec*/
+				pAd->MlmeAux.AutoReconnectSsidLen= 32;
+				NdisZeroMemory(pAd->MlmeAux.AutoReconnectSsid, pAd->MlmeAux.AutoReconnectSsidLen);
 
-			pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_DISASSOC;
-			MlmeDisassocReqAction(pAd, MsgElem);
-			os_free_mem(NULL, MsgElem);
+				pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_DISASSOC;
+				MlmeDisassocReqAction(pAd, MsgElem);
+				os_free_mem(NULL, MsgElem);
 			}
 
 			RtmpusecDelay(1000);
@@ -957,27 +861,21 @@ VOID RTMPInfClose(VOID *pAdSrc)
 		RtmpOSWrielessEventSend(pAd->net_dev, RT_WLAN_EVENT_CUSTOM, RT_INTERFACE_DOWN, NULL, NULL, 0);
 #endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
 
-		if (pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe)
-		{
+		if (pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe) {
 			os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
 			pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe = NULL;
 			pAd->StaCfg.wpa_supplicant_info.WpsProbeReqIeLen = 0;
 		}
 
-		if (pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe)
-		{
+		if (pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe) {
 			os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe);
 			pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe = NULL;
 			pAd->StaCfg.wpa_supplicant_info.WpaAssocIeLen = 0;
 		}
 #endif /* WPA_SUPPLICANT_SUPPORT */
-
-
 	}
 #endif /* CONFIG_STA_SUPPORT */
 }
-
-
 
 
 PNET_DEV RtmpPhyNetDevMainCreate(VOID *pAdSrc)
@@ -989,112 +887,98 @@ PNET_DEV RtmpPhyNetDevMainCreate(VOID *pAdSrc)
 
 #ifdef MULTIPLE_CARD_SUPPORT
 	MC_RowID = pAd->MC_RowID;
-#endif /* MULTIPLE_CARD_SUPPORT */
+#endif
 #ifdef HOSTAPD_SUPPORT
 	IoctlIF = pAd->IoctlIF;
-#endif /* HOSTAPD_SUPPORT */
+#endif
 
 	dev_name = get_dev_name_prefix(pAd, INT_MAIN);
 	pDevNew = RtmpOSNetDevCreate((INT32)MC_RowID, (UINT32 *)&IoctlIF,
-					INT_MAIN, 0, sizeof(struct mt_dev_priv), dev_name);
+			INT_MAIN, 0, sizeof(struct mt_dev_priv), dev_name);
 
 #ifdef HOSTAPD_SUPPORT
 	pAd->IoctlIF = IoctlIF;
-#endif /* HOSTAPD_SUPPORT */
+#endif
 
 	return pDevNew;
 }
-
 
 #ifdef CONFIG_STA_SUPPORT
 #ifdef PROFILE_STORE
 static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 {
-	char	*cfgData = 0, *offset = 0;
+	char *cfgData = 0, *offset = 0;
 	PSTRING fileName = NULL, pTempStr = NULL;
 	RTMP_OS_FD file_r, file_w;
 	RTMP_OS_FS_INFO osFSInfo;
 	LONG rv, fileLen = 0;
 
-
 	DBGPRINT(RT_DEBUG_TRACE, ("-----> WriteConfToDatFile\n"));
 
-		fileName = STA_PROFILE_PATH;
-
+	fileName = STA_PROFILE_PATH;
 	RtmpOSFSInfoChange(&osFSInfo, TRUE);
 
 	file_r = RtmpOSFileOpen(fileName, O_RDONLY, 0);
-	if (IS_FILE_OPEN_ERR(file_r))
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("-->1) %s: Error opening file %s\n", __FUNCTION__, fileName));
+	if (IS_FILE_OPEN_ERR(file_r)) {
+		DBGPRINT(RT_DEBUG_TRACE, ("-->1) %s: Error opening file %s\n",
+				__FUNCTION__, fileName));
 		return;
-	}
-	else
-	{
+	} else {
 		char tempStr[64] = {0};
-		while((rv = RtmpOSFileRead(file_r, tempStr, 64)) > 0)
-		{
+		while((rv = RtmpOSFileRead(file_r, tempStr, 64)) > 0) {
 			fileLen += rv;
 		}
 		os_alloc_mem(NULL, (UCHAR **)&cfgData, fileLen);
-		if (cfgData == NULL)
-		{
+		if (cfgData == NULL) {
 			RtmpOSFileClose(file_r);
-			DBGPRINT(RT_DEBUG_TRACE, ("CfgData mem alloc fail. (fileLen = %ld)\n", fileLen));
+			DBGPRINT(RT_DEBUG_TRACE,
+					("CfgData mem alloc fail. (fileLen = %ld)\n",
+					fileLen));
 			goto out;
 		}
 		NdisZeroMemory(cfgData, fileLen);
 		RtmpOSFileSeek(file_r, 0);
 		rv = RtmpOSFileRead(file_r, (PSTRING)cfgData, fileLen);
 		RtmpOSFileClose(file_r);
-		if (rv != fileLen)
-		{
-			DBGPRINT(RT_DEBUG_TRACE, ("CfgData mem alloc fail, fileLen = %ld\n", fileLen));
+		if (rv != fileLen) {
+			DBGPRINT(RT_DEBUG_TRACE,
+					("CfgData mem alloc fail, fileLen = %ld\n",
+					fileLen));
 			goto ReadErr;
 		}
 	}
 
 	file_w = RtmpOSFileOpen(fileName, O_WRONLY|O_TRUNC, 0);
-	if (IS_FILE_OPEN_ERR(file_w))
-	{
+	if (IS_FILE_OPEN_ERR(file_w)) {
 		goto WriteFileOpenErr;
-	}
-	else
-	{
+	} else {
 		offset = (PCHAR) rtstrstr((PSTRING) cfgData, "Default\n");
 		offset += strlen("Default\n");
 		RtmpOSFileWrite(file_w, (PSTRING)cfgData, (int)(offset-cfgData));
 		os_alloc_mem(NULL, (UCHAR **)&pTempStr, 512);
-		if (!pTempStr)
-		{
+		if (!pTempStr) {
 			DBGPRINT(RT_DEBUG_TRACE, ("pTempStr mem alloc fail. (512)\n"));
 			RtmpOSFileClose(file_w);
 			goto WriteErr;
 		}
 
-		for (;;)
-		{
+		for (;;) {
 			int i = 0;
 			PSTRING ptr;
 
 			NdisZeroMemory(pTempStr, 512);
 			ptr = (PSTRING) offset;
-			while(*ptr && *ptr != '\n')
-			{
+			while(*ptr && *ptr != '\n') {
 				pTempStr[i++] = *ptr++;
 			}
 			pTempStr[i] = 0x00;
-			if ((size_t)(offset - cfgData) < fileLen)
-			{
+			if ((size_t)(offset - cfgData) < fileLen) {
 				offset += strlen(pTempStr) + 1;
-				if (strncmp(pTempStr, "SSID=", strlen("SSID=")) == 0)
-				{
+				if (strncmp(pTempStr, "SSID=", strlen("SSID=")) == 0) {
 					NdisZeroMemory(pTempStr, 512);
 					NdisMoveMemory(pTempStr, "SSID=", strlen("SSID="));
 					NdisMoveMemory(pTempStr + 5, pAd->CommonCfg.Ssid, pAd->CommonCfg.SsidLen);
-				}
-				else if (strncmp(pTempStr, "AuthMode=", strlen("AuthMode=")) == 0)
-				{
+				} else if (strncmp(pTempStr, "AuthMode=", strlen("AuthMode=")) == 0) {
 					NdisZeroMemory(pTempStr, 512);
 					if (pAd->StaCfg.AuthMode == Ndis802_11AuthModeOpen)
 						sprintf(pTempStr, "AuthMode=OPEN");
@@ -1112,9 +996,7 @@ static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 						sprintf(pTempStr, "AuthMode=WPA2");
 					else if (pAd->StaCfg.AuthMode == Ndis802_11AuthModeWPANone)
 						sprintf(pTempStr, "AuthMode=WPANONE");
-				}
-				else if (strncmp(pTempStr, "EncrypType=", strlen("EncrypType=")) == 0)
-				{
+				} else if (strncmp(pTempStr, "EncrypType=", strlen("EncrypType=")) == 0) {
 					NdisZeroMemory(pTempStr, 512);
 					if (pAd->StaCfg.WepStatus == Ndis802_11WEPDisabled)
 						sprintf(pTempStr, "EncrypType=NONE");
@@ -1127,9 +1009,7 @@ static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 				}
 				RtmpOSFileWrite(file_w, pTempStr, strlen(pTempStr));
 				RtmpOSFileWrite(file_w, "\n", 1);
-			}
-			else
-			{
+			} else {
 				break;
 			}
 		}
@@ -1146,31 +1026,23 @@ WriteFileOpenErr:
 out:
 	RtmpOSFSInfoChange(&osFSInfo, FALSE);
 
-
 	DBGPRINT(RT_DEBUG_TRACE, ("<----- WriteConfToDatFile\n"));
-	return;
 }
 
-
-INT write_dat_file_thread (
-	IN ULONG Context)
+//JB: FIX THIS (check return value)
+static INT write_dat_file_thread(ULONG Context)
 {
 	RTMP_OS_TASK *pTask;
 	RTMP_ADAPTER *pAd;
-	//int 	Status = 0;
 
 	pTask = (RTMP_OS_TASK *)Context;
-
-	if (pTask == NULL)
-	{
+	if (pTask == NULL) {
 		DBGPRINT(RT_DEBUG_TRACE, ("%s: pTask is NULL\n", __FUNCTION__));
 		return 0;
 	}
 
 	pAd = (PRTMP_ADAPTER)RTMP_OS_TASK_DATA_GET(pTask);
-
-	if (pAd == NULL)
-	{
+	if (pAd == NULL) {
 		DBGPRINT(RT_DEBUG_TRACE, ("%s: pAd is NULL\n", __FUNCTION__));
 		return 0;
 	}
@@ -1179,14 +1051,12 @@ INT write_dat_file_thread (
 
 	/* Update ssid, auth mode and encr type to DAT file */
 	WriteConfToDatFile(pAd);
-
-		RtmpOSTaskNotifyToExit(pTask);
+	RtmpOSTaskNotifyToExit(pTask);
 
 	return 0;
 }
 
-NDIS_STATUS WriteDatThread(
-	IN  RTMP_ADAPTER *pAd)
+static NDIS_STATUS WriteDatThread(RTMP_ADAPTER *pAd)
 {
 	NDIS_STATUS status = NDIS_STATUS_FAILURE;
 	RTMP_OS_TASK *pTask;
