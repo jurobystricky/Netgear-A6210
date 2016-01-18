@@ -146,8 +146,9 @@ static u16 andes_usb_get_crc(RTMP_ADAPTER *ad)
 
 static VOID usb_upload_rom_patch_complete(purbb_t urb, pregs *pt_regs)
 {
-	RTMP_OS_COMPLETION *load_rom_patch_done = (RTMP_OS_COMPLETION *)RTMP_OS_USB_CONTEXT_GET(urb);
-	RTMP_OS_COMPLETE(load_rom_patch_done);
+	struct completion *load_rom_patch_done = 
+			(struct completion *)RTMP_OS_USB_CONTEXT_GET(urb);
+	complete(load_rom_patch_done);
 }
 
 int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
@@ -165,7 +166,7 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 	RTMP_CHIP_CAP *cap = &ad->chipCap;
 	USB_DMA_CFG_STRUC cfg;
 	u32 patch_len = 0;
-	RTMP_OS_COMPLETION load_rom_patch_done;
+	struct completion load_rom_patch_done;
 
 	if (cap->rom_code_protect) {
 load_patch_protect:
@@ -299,7 +300,7 @@ load_patch_protect:
 
 	DBGPRINT(RT_DEBUG_TRACE, ("loading rom patch"));
 
-	RTMP_OS_INIT_COMPLETION(&load_rom_patch_done);
+	init_completion(&load_rom_patch_done);
 	cur_len = 0x00;
 	patch_len = cap->rom_patch_len - PATCH_INFO_SIZE;
 
@@ -388,10 +389,13 @@ load_patch_protect:
 				("%s: submit urb, sent_len = %d, patch_ilm = %d, cur_len = %d\n",
 				__FUNCTION__, sent_len, patch_len, cur_len));
 
-			if (!RTMP_OS_WAIT_FOR_COMPLETION_TIMEOUT(&load_rom_patch_done, RTMPMsecsToJiffies(1000))) {
+			if (!wait_for_completion_timeout(&load_rom_patch_done, 
+				msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
 				RTUSB_UNLINK_URB(urb);
 				ret = NDIS_STATUS_FAILURE;
-				DBGPRINT(RT_DEBUG_ERROR, ("upload fw timeout\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: upload fw timeout\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -406,7 +410,6 @@ load_patch_protect:
 		}
 	}
 
-	RTMP_OS_EXIT_COMPLETION(&load_rom_patch_done);
 	total_checksum = checksume16(cap->rom_patch + PATCH_INFO_SIZE, patch_len);
 
 	RtmpOsMsDelay(5);
@@ -423,7 +426,6 @@ load_patch_protect:
 	}
 
 	ret = andes_usb_enable_patch(ad);
-
 	if (ret) {
 		ret = NDIS_STATUS_FAILURE;
 		goto error2;
@@ -498,9 +500,10 @@ int andes_usb_erase_rom_patch(RTMP_ADAPTER *ad)
 
 static VOID usb_uploadfw_complete(purbb_t urb, pregs *pt_regs)
 {
-	RTMP_OS_COMPLETION *load_fw_done = (RTMP_OS_COMPLETION *)RTMP_OS_USB_CONTEXT_GET(urb);
+	struct completion *load_fw_done = 
+			(struct completion *)RTMP_OS_USB_CONTEXT_GET(urb);
 
-	RTMP_OS_COMPLETE(load_fw_done);
+	complete(load_fw_done);
 }
 
 static NDIS_STATUS usb_load_ivb(RTMP_ADAPTER *ad)
@@ -542,7 +545,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 	USB_DMA_CFG_STRUC cfg;
 	u32 ilm_len = 0, dlm_len = 0;
 	u16 fw_ver, build_ver;
-	RTMP_OS_COMPLETION load_fw_done;
+	struct completion load_fw_done;
 
 	if (cap->ram_code_protect) {
 loadfw_protect:
@@ -673,7 +676,7 @@ loadfw_protect:
 
 	DBGPRINT(RT_DEBUG_OFF, ("loading fw"));
 
-	RTMP_OS_INIT_COMPLETION(&load_fw_done);
+	init_completion(&load_fw_done);
 
 	if (cap->load_iv)
 		cur_len = 0x40;
@@ -770,13 +773,13 @@ loadfw_protect:
 					("%s: submit urb, sent_len = %d, ilm_ilm = %d, cur_len = %d\n",
 					__FUNCTION__, sent_len, ilm_len, cur_len));
 
-			if (!RTMP_OS_WAIT_FOR_COMPLETION_TIMEOUT(&load_fw_done, RTMPMsecsToJiffies(UPLOAD_FW_TIMEOUT))) {
+			if (!wait_for_completion_timeout(&load_fw_done, msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
 				RTUSB_UNLINK_URB(urb);
 				ret = NDIS_STATUS_FAILURE;
 				DBGPRINT(RT_DEBUG_ERROR,
-						("upload fw timeout(%dms)\n",
-						 UPLOAD_FW_TIMEOUT));
-				DBGPRINT(RT_DEBUG_ERROR,
+						("%s: upload fw timeout(%dms)\n",
+						__FUNCTION__, UPLOAD_FW_TIMEOUT_MS));
+				DBGPRINT(RT_DEBUG_INFO,
 						("%s: submit urb, sent_len = %d, ilm_ilm = %d, cur_len = %d\n",
 						__FUNCTION__, sent_len, ilm_len, cur_len));
 
@@ -794,10 +797,8 @@ loadfw_protect:
 		}
 	}
 
-	RTMP_OS_EXIT_COMPLETION(&load_fw_done);
-
 	/* Re-Initialize completion */
-	RTMP_OS_INIT_COMPLETION(&load_fw_done);
+	init_completion(&load_fw_done);
 
 	cur_len = 0x00;
 
@@ -901,12 +902,12 @@ loadfw_protect:
 					("%s: submit urb, sent_len = %d, dlm_len = %d, cur_len = %d\n",
 					__FUNCTION__, sent_len, dlm_len, cur_len));
 
-			if (!RTMP_OS_WAIT_FOR_COMPLETION_TIMEOUT(&load_fw_done, RTMPMsecsToJiffies(UPLOAD_FW_TIMEOUT))) {
+			if (!wait_for_completion_timeout(&load_fw_done, msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
 				RTUSB_UNLINK_URB(urb);
 				ret = NDIS_STATUS_FAILURE;
 				DBGPRINT(RT_DEBUG_ERROR,
-						("upload fw timeout(%dms)\n",
-						UPLOAD_FW_TIMEOUT));
+						("%s: upload fw timeout(%dms)\n",
+						__FUNCTION__,UPLOAD_FW_TIMEOUT_MS));
 				DBGPRINT(RT_DEBUG_INFO,
 						("%s: submit urb, sent_len = %d, dlm_len = %d, cur_len = %d\n",
 						__FUNCTION__, sent_len, dlm_len, cur_len));
@@ -923,8 +924,6 @@ loadfw_protect:
 			break;
 		}
 	}
-
-	RTMP_OS_EXIT_COMPLETION(&load_fw_done);
 
 	/* Upload new 64 bytes interrupt vector or reset andes */
 	DBGPRINT(RT_DEBUG_OFF, ("\n"));
@@ -1055,7 +1054,7 @@ static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait, 
 	if (need_wait) {
 
 #ifdef RTMP_USB_SUPPORT
-		RTMP_OS_INIT_COMPLETION(&msg->ack_done);
+		init_completion(&msg->ack_done);
 #endif
 	}
 
@@ -1069,7 +1068,7 @@ static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait, 
 	if (need_retransmit)
 		msg->retransmit_times = CMD_MSG_RETRANSMIT_TIMES;
 #else
-		msg->retransmit_times = 0;
+	msg->retransmit_times = 0;
 #endif
 
 #ifdef RTMP_USB_SUPPORT
@@ -1095,13 +1094,6 @@ static void andes_free_cmd_msg(struct cmd_msg *msg)
 	PNDIS_PACKET net_pkt = msg->net_pkt;
 	RTMP_ADAPTER *ad = (RTMP_ADAPTER *)(msg->priv);
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
-
-	if (msg->need_wait) {
-
-#ifdef RTMP_USB_SUPPORT
-		RTMP_OS_EXIT_COMPLETION(&msg->ack_done);
-#endif
-	}
 
 #ifdef RTMP_USB_SUPPORT
 	RTUSB_FREE_URB(msg->urb);
@@ -1366,9 +1358,8 @@ void andes_rx_process_cmd_msg(RTMP_ADAPTER *ad, struct cmd_msg *rx_msg)
 				}
 
 				if (msg->need_wait) {
-
 #ifdef RTMP_USB_SUPPORT
-					RTMP_OS_COMPLETE(&msg->ack_done);
+					complete(&msg->ack_done);
 #endif
 				} else {
 					andes_free_cmd_msg(msg);
@@ -1586,7 +1577,7 @@ static void usb_kick_out_cmd_msg_complete(PURB urb)
 			andes_unlink_cmd_msg(msg, &ctl->ackq);
 			msg->state = tx_kickout_fail;
 			andes_inc_error_count(ctl, error_tx_kickout_fail);
-			RTMP_OS_COMPLETE(&msg->ack_done);
+			complete(&msg->ack_done);
 		}
 
 		DBGPRINT(RT_DEBUG_ERROR, ("kick out cmd msg fail(%d)\n", 
@@ -1631,7 +1622,7 @@ static int usb_kick_out_cmd_msg(PRTMP_ADAPTER ad, struct cmd_msg *msg)
 			andes_unlink_cmd_msg(msg, &ctl->ackq);
 			msg->state = tx_kickout_fail;
 			andes_inc_error_count(ctl, error_tx_kickout_fail);
-			RTMP_OS_COMPLETE(&msg->ack_done);
+			complete(&msg->ack_done);
 		}
 
 		DBGPRINT(RT_DEBUG_ERROR, ("%s:submit urb fail(%d)\n", __FUNCTION__, ret));
@@ -1847,11 +1838,11 @@ static int andes_wait_for_complete_timeout(struct cmd_msg *msg, long timeout)
 	int ret = 0;
 #ifdef RTMP_USB_SUPPORT
 	long expire;
-	expire = timeout ? RTMPMsecsToJiffies(timeout) : RTMPMsecsToJiffies(CMD_MSG_TIMEOUT);
+	expire = timeout ? msecs_to_jiffies(timeout) : msecs_to_jiffies(CMD_MSG_TIMEOUT);
 #endif
 
 #ifdef RTMP_USB_SUPPORT
-	ret = RTMP_OS_WAIT_FOR_COMPLETION_TIMEOUT(&msg->ack_done, expire);
+	ret = wait_for_completion_timeout(&msg->ack_done, expire);
 #endif
 
 	return ret;
@@ -1862,7 +1853,6 @@ int andes_send_cmd_msg(PRTMP_ADAPTER ad, struct cmd_msg *msg)
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 	int ret = 0;
 	BOOLEAN need_wait = msg->need_wait;
-
 
 #ifdef RTMP_USB_SUPPORT
 	RTMP_SEM_EVENT_WAIT(&(ad->mcu_atomic), ret);
@@ -1924,8 +1914,7 @@ retransmit:
 		if (OS_TEST_BIT(MCU_INIT, &ctl->flags)) {
 			if (msg->need_retransmit && (msg->retransmit_times > 0)) {
 #ifdef RTMP_USB_SUPPORT
-				RTMP_OS_EXIT_COMPLETION(&msg->ack_done);
-				RTMP_OS_INIT_COMPLETION(&msg->ack_done);
+				init_completion(&msg->ack_done);
 #endif
 				state = tx_retransmit;
 				andes_queue_head_cmd_msg(&ctl->txq, msg, state);
