@@ -32,7 +32,6 @@
 #define RTMP_MODULE_OS_UTIL
 
 #include "rtmp_comm.h"
-#include "rtmp_osabl.h"
 #include "rt_os_util.h"
 #include "dot11i_wpa.h"
 #include <linux/rtnetlink.h>
@@ -172,11 +171,6 @@ void RTMP_GetCurrentSystemTick(ULONG *pNow)
 	*pNow = jiffies;
 }
 
-ULONG RTMPMsecsToJiffies(UINT32 m)
-{
-
-	return msecs_to_jiffies(m);
-}
 
 /* pAd MUST allow to be NULL */
 
