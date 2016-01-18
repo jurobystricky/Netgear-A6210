@@ -54,7 +54,9 @@ VOID RT65xxUsbAsicRadioOff(RTMP_ADAPTER *pAd, UCHAR Stage)
 	if (Stage == MLME_RADIO_OFF)
 		PWR_SAVING_OP(pAd, RADIO_OFF, 1, 0, 0, 0, 0);
 
-	MCU_CTRL_EXIT(pAd);
+	if (pAd->chipOps.MCUCtrlExit != NULL)
+		pAd->chipOps.MCUCtrlExit(pAd);
+
 	RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF);
 	RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF);
 
