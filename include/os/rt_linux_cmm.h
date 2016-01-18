@@ -74,8 +74,8 @@ typedef struct _OS_RSTRUC  {
  ******************************************************************************/
 
 /* rt_linux.h */
-#define NDIS_MINIPORT_TIMER			OS_NDIS_MINIPORT_TIMER
-#define RTMP_OS_TIMER				OS_TIMER
+#define NDIS_MINIPORT_TIMER		OS_NDIS_MINIPORT_TIMER
+#define RTMP_OS_TIMER			OS_TIMER
 
 #define RTMP_OS_FREE_TIMER(__pAd)
 #define RTMP_OS_FREE_LOCK(__pAd)
@@ -89,11 +89,11 @@ typedef struct _OS_RSTRUC  {
  *	OS file operation related data structure definitions
  ******************************************************************************/
 /* if you add any new type, please also modify RtmpOSFileOpen() */
-#define RTMP_FILE_RDONLY			0x0F01
-#define RTMP_FILE_WRONLY			0x0F02
-#define RTMP_FILE_CREAT				0x0F03
-#define RTMP_FILE_TRUNC				0x0F04
-#define RTMP_OS_FS_INFO				OS_FS_INFO
+#define RTMP_FILE_RDONLY		0x0F01
+#define RTMP_FILE_WRONLY		0x0F02
+#define RTMP_FILE_CREAT			0x0F03
+#define RTMP_FILE_TRUNC			0x0F04
+#define RTMP_OS_FS_INFO			OS_FS_INFO
 
 
 /*****************************************************************************
@@ -138,21 +138,8 @@ typedef struct _OS_RSTRUC  {
  *	OS task related data structure and definitions
  ******************************************************************************/
 
-#define RTMP_NET_TASK_STRUCT		OS_NET_TASK_STRUCT
-#define PRTMP_NET_TASK_STRUCT		POS_NET_TASK_STRUCT
-
-typedef struct completion RTMP_OS_COMPLETION;
-
-#define RTMP_OS_INIT_COMPLETION(__pCompletion)	\
-		init_completion(__pCompletion)
-
-#define RTMP_OS_EXIT_COMPLETION(__pCompletion)
-
-#define RTMP_OS_COMPLETE(__pCompletion)	\
-		complete(__pCompletion)
-
-#define RTMP_OS_WAIT_FOR_COMPLETION_TIMEOUT(__pCompletion, __Timeout)	\
-		wait_for_completion_timeout(__pCompletion, __Timeout)
+#define RTMP_NET_TASK_STRUCT	OS_NET_TASK_STRUCT
+#define PRTMP_NET_TASK_STRUCT	POS_NET_TASK_STRUCT
 
 #ifdef WORKQUEUE_BH
 #define RTMP_OS_TASKLET_SCHE(__pTasklet)				\
