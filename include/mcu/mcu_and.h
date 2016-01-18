@@ -18,11 +18,6 @@
 	Module Name:
 	mcu_and.h
 
-	Abstract:
-
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
 */
 
 #ifndef __MCU_AND_H__
@@ -39,33 +34,30 @@ struct _BANK_RF_REG_PAIR;
 struct _R_M_W_REG;
 struct _RF_R_M_W_REG;
 
-#define CPU_CTL					0x0704
-#define CLOCK_CTL				0x0708
-#define RESET_CTL				0x070C
-#define INT_LEVEL				0x0718
-#define COM_REG0				0x0730
-#define COM_REG1				0x0734
-#define COM_REG2				0x0738
-#define COM_REG3				0x073C
-#define PCIE_REMAP_BASE1		0x0740
-#define PCIE_REMAP_BASE2		0x0744
-#define PCIE_REMAP_BASE3		0x0748
-#define PCIE_REMAP_BASE4		0x074C
-#define LED_CTRL				0x0770
-#define LED_TX_BLINK_0			0x0774
-#define LED_TX_BLINK_1			0x0778
-#define LED0_S0				0x077C
-#define LED0_S1				0x0780
-#define SEMAPHORE_00			0x07B0
-#define SEMAPHORE_01			0x07B4
-#define SEMAPHORE_02			0x07B8
-#define SEMAPHORE_03			0x07BC
+#define CPU_CTL			0x0704
+#define CLOCK_CTL		0x0708
+#define RESET_CTL		0x070C
+#define INT_LEVEL		0x0718
+#define COM_REG0		0x0730
+#define COM_REG1		0x0734
+#define COM_REG2		0x0738
+#define COM_REG3		0x073C
+#define PCIE_REMAP_BASE1	0x0740
+#define PCIE_REMAP_BASE2	0x0744
+#define PCIE_REMAP_BASE3	0x0748
+#define PCIE_REMAP_BASE4	0x074C
+#define LED_CTRL		0x0770
+#define LED_TX_BLINK_0		0x0774
+#define LED_TX_BLINK_1		0x0778
+#define LED0_S0			0x077C
+#define LED0_S1			0x0780
+#define SEMAPHORE_00		0x07B0
+#define SEMAPHORE_01		0x07B4
+#define SEMAPHORE_02		0x07B8
+#define SEMAPHORE_03		0x07BC
 
 #define MCU_WAIT_ACK_CMD_THRESHOLD 0x0f
-#define MCU_RX_CMD_THRESHOLD 0x0f
-
-
-
+#define MCU_RX_CMD_THRESHOLD 	0x0f
 
 #ifdef RT_BIG_ENDIAN
 typedef struct GNU_PACKED _TXINFO_NMAC_CMD_PKT{
@@ -146,7 +138,6 @@ struct MCU_CTRL {
 	struct _RTMP_ADAPTER *ad;
 };
 
-
 struct cmd_msg;
 typedef void (*MSG_RSP_HANDLER)(struct cmd_msg *msg, char *payload, u16 payload_len);
 typedef void (*MSG_EVENT_HANDLER)(struct _RTMP_ADAPTER *ad, char *payload, u16 payload_len);
@@ -155,17 +146,17 @@ struct cmd_msg_cb {
 	struct cmd_msg *msg;
 };
 
-#define USB_END_PADDING 4
-#define UPLOAD_PATCH_UNIT 2048
-#define PATCH_INFO_SIZE 30
-#define FW_INFO_SIZE 32
-#define IV_SIZE 0x40
-#define GET_SEMAPHORE_RETRY_MAX 600
-#define UPLOAD_FW_UNIT 14592
-#define UPLOAD_FW_TIMEOUT 1000
+#define USB_END_PADDING			4
+#define UPLOAD_PATCH_UNIT		2048
+#define PATCH_INFO_SIZE			30
+#define FW_INFO_SIZE			32
+#define IV_SIZE				0x40
+#define GET_SEMAPHORE_RETRY_MAX		600
+#define UPLOAD_FW_UNIT			14592
+#define UPLOAD_FW_TIMEOUT_MS		2000
 #define CMD_MSG_CB(pkt) ((struct cmd_msg_cb *)(GET_OS_PKT_CB(pkt)))
-#define CMD_MSG_RETRANSMIT_TIMES 3
-#define CMD_MSG_TIMEOUT 500
+#define CMD_MSG_RETRANSMIT_TIMES	3
+#define CMD_MSG_TIMEOUT 		500
 
 struct cmd_msg {
 	DL_LIST list;
@@ -178,7 +169,7 @@ struct cmd_msg {
 	BOOLEAN need_retransmit;
 
 #ifdef RTMP_USB_SUPPORT
-	RTMP_OS_COMPLETION ack_done; 
+	struct completion ack_done; 
 #endif
 	char *rsp_payload;
 	MSG_RSP_HANDLER rsp_handler;
@@ -194,6 +185,8 @@ struct cmd_msg {
 /*
  * Calibration ID
  */
+#define MAX_CALIBRATION_WAIT_TIME	100
+
 enum CALIBRATION_ID {
 	R_CALIBRATION = 1,
 	RXDCOC_CALIBRATION = 2,
@@ -405,9 +398,8 @@ int andes_rf_random_write(struct _RTMP_ADAPTER *ad, struct _BANK_RF_REG_PAIR *re
 int andes_sc_random_write(struct _RTMP_ADAPTER *ad, CR_REG *table, u32 nums, u32 flags);
 int andes_sc_rf_random_write(struct _RTMP_ADAPTER *ad, BANK_RF_CR_REG *table, u32 nums, u32 flags);
 int andes_fun_set(struct _RTMP_ADAPTER *ad, u32 fun_id, u32 param);
-int andes_pwr_saving(struct _RTMP_ADAPTER *ad, u32 op, u32 level, 
-					 u32 listen_interval, u32 pre_tbtt_lead_time,
-					 u8 tim_byte_offset, u8 tim_byte_pattern);
+int andes_pwr_saving(struct _RTMP_ADAPTER *ad, u32 op, u32 level, u32 listen_interval, 
+	u32 pre_tbtt_lead_time, u8 tim_byte_offset, u8 tim_byte_pattern);
 int andes_calibration(struct _RTMP_ADAPTER *ad, u32 cal_id, ANDES_CALIBRATION_PARAM *param);
 BOOLEAN is_inband_cmd_processing(struct _RTMP_ADAPTER *ad);
 void andes_cmd_msg_bh(unsigned long param);
@@ -418,8 +410,6 @@ int andes_load_cr(struct _RTMP_ADAPTER *ad, u32 cr_type, UINT8 temp_level, UINT8
 int andes_switch_channel(struct _RTMP_ADAPTER *ad, u8 channel, BOOLEAN scan, unsigned int bw, unsigned int tx_rx_setting, u8 bbp_ch_idx);
 int andes_init_gain(struct _RTMP_ADAPTER *ad, UINT8 channel, BOOLEAN force_mode, unsigned int gain_from_e2p);
 int andes_dynamic_vga(struct _RTMP_ADAPTER *ad, UINT8 channel, BOOLEAN mode, BOOLEAN ext, int rssi, unsigned int false_cca);
-
-#define MAX_CALIBRATION_WAIT_TIME	100
 
 #endif /* __MCU_AND_H__ */
 
