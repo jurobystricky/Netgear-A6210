@@ -15,11 +15,8 @@
 #define RTMP_MODULE_OS
 #define RTMP_MODULE_OS_UTIL
 
-/*#include "rt_config.h"
-*/
 #include "rtmp_comm.h"
 #include "rt_os_util.h"
-#include "rtmp_osabl.h"
 
 VOID RtmpDrvRateGet(
 	IN VOID		*pReserved,
@@ -205,12 +202,6 @@ ULONG RtmpWaitForCompletionTimeout(VOID *Completion, ULONG Expire)
 VOID RtmpComplete(VOID *Completion)
 {
 	complete((struct completion *)Completion);
-}
-
-
-ULONG RtmpMsecsToJiffies(UINT32 msecs)
-{
-	return msecs_to_jiffies(msecs);
 }
 
 #endif /* RTMP_USB_SUPPORT */
