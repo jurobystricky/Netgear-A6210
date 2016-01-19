@@ -43,7 +43,7 @@ UCHAR WMM_UP2AC_MAP[8] = {
 	QID_AC_BE, QID_AC_BK, QID_AC_BK, QID_AC_BE, QID_AC_VI, 
 	QID_AC_VI, QID_AC_VO, QID_AC_VO};
 
-
+#ifdef DBG
 VOID dump_rxinfo(RTMP_ADAPTER *pAd, RXINFO_STRUC *pRxInfo)
 {
 	hex_dump("RxInfo Raw Data", (UCHAR *)pRxInfo, sizeof(RXINFO_STRUC));
@@ -80,8 +80,9 @@ VOID dump_rxinfo(RTMP_ADAPTER *pAd, RXINFO_STRUC *pRxInfo)
 
 #ifdef RTMP_MAC
 	DBGPRINT(RT_DEBUG_OFF, ("\t"));
-#endif /* RTMP_MAC */
+#endif 
 }
+#endif
 
 #if 0 //JB removed
 static VOID dump_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo)
@@ -186,7 +187,6 @@ static VOID dump_txblk(TX_BLK *pTxBlk)
 static VOID dump_rxblk(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk)
 {
 	DBGPRINT(RT_DEBUG_TRACE,("Dump RX_BLK Structure:\n"));
-
 	DBGPRINT(RT_DEBUG_TRACE,("\tHW rx info:\n"));
 	hex_dump("RawData", &pRxBlk->hw_rx_info[0], RXD_SIZE);
 
@@ -194,10 +194,12 @@ static VOID dump_rxblk(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk)
 	DBGPRINT(RT_DEBUG_TRACE,("\t\tpRxInfo=0x%p\n", pRxBlk->pRxInfo));
 	dump_rxinfo(pAd, pRxBlk->pRxInfo);
 #ifdef RLT_MAC
+#ifdef DBG
 	if (pAd->chipCap.hif_type == HIF_RLT) {
 		DBGPRINT(RT_DEBUG_TRACE,("\t\tpRxFceInfo=0x%p\n", pRxBlk->pRxFceInfo));
 		dumpRxFCEInfo(pAd, pRxBlk->pRxFceInfo);
 	}
+#endif
 #endif /* RLT_MAC */
 	DBGPRINT(RT_DEBUG_TRACE,("\t\tpRxWI=0x%p\n", pRxBlk->pRxWI));
 	dump_rxwi(pAd, pRxBlk->pRxWI);
@@ -2665,8 +2667,7 @@ if (0) {
 #endif /* CONFIG_STA_SUPPORT */
 #endif /* RT_CFG80211_SUPPORT */
 
-	if (pRxBlk->DataSize > MAX_RX_PKT_LEN)
-	{
+	if (pRxBlk->DataSize > MAX_RX_PKT_LEN) {
 		RELEASE_NDIS_PACKET(pAd, pRxPacket, NDIS_STATUS_FAILURE);
 		return;
 	}
@@ -2675,30 +2676,28 @@ if (0) {
 
 #ifdef RTMP_MAC_USB
 #ifdef DOT11_N_SUPPORT
-	if (pAd->CommonCfg.bDisableReordering == 0)
-	{
-		PBA_REC_ENTRY		pBAEntry;
-		ULONG				Now32;
-		UCHAR				Wcid = pRxBlk->wcid;
-		UCHAR				TID = pRxBlk->TID;
-		USHORT				Idx;
+	if (pAd->CommonCfg.bDisableReordering == 0) {
+		PBA_REC_ENTRY pBAEntry;
+		ULONG Now32;
+		UCHAR Wcid = pRxBlk->wcid;
+		UCHAR TID = pRxBlk->TID;
+		USHORT Idx;
 
-#define REORDERING_PACKET_TIMEOUT		((100 * OS_HZ)/1000)	/* system ticks -- 100 ms*/
+#define REORDERING_PACKET_TIMEOUT	((100 * OS_HZ)/1000)	/* system ticks -- 100 ms*/
 
-		if (Wcid < MAX_LEN_OF_MAC_TABLE)
-		{
+		if (Wcid < MAX_LEN_OF_MAC_TABLE) {
 			Idx = pAd->MacTab.Content[Wcid].BARecWcidArray[TID];
-			if (Idx != 0)
-			{
+			if (Idx != 0) {
 				pBAEntry = &pAd->BATable.BARecEntry[Idx];
 				/* update last rx time*/
 				NdisGetSystemUpTime(&Now32);
 				if ((pBAEntry->list.qlen > 0) &&
-					 RTMP_TIME_AFTER((unsigned long)Now32, (unsigned long)(pBAEntry->LastIndSeqAtTimer+(REORDERING_PACKET_TIMEOUT)))
-	   				)
-				{
-					DBGPRINT(RT_DEBUG_OFF, ("Indicate_Legacy_Packet():flush reordering_timeout_mpdus! RxWI->Flags=%d, pRxWI.TID=%d, RxD->AMPDU=%d!\n",
-												pRxBlk->Flags, pRxBlk->TID, pRxBlk->pRxInfo->AMPDU));
+					RTMP_TIME_AFTER((unsigned long)Now32, 
+					(unsigned long)(pBAEntry->LastIndSeqAtTimer+(REORDERING_PACKET_TIMEOUT)))) {
+					DBGPRINT(RT_DEBUG_OFF, 
+							("%s::flush reordering_timeout_mpdus! RxWI->Flags=%d, pRxWI.TID=%d, RxD->AMPDU=%d!\n",
+							__FUNCTION__,pRxBlk->Flags,
+							pRxBlk->TID, pRxBlk->pRxInfo->AMPDU));
 					hex_dump("Dump the legacy Packet:", GET_OS_PKT_DATAPTR(pRxBlk->pRxPacket), 64);
 					ba_flush_reordering_timeout_mpdus(pAd, pBAEntry, Now32);
 				}
@@ -2723,22 +2722,20 @@ if (0) {
 	hex_dump("header802_3", &Header802_3[0], LENGTH_802_3);
 }
 //---Add by shiang for debug
-	RT_80211_TO_8023_PACKET(pAd, VLAN_VID, VLAN_Priority,
-							pRxBlk, Header802_3, FromWhichBSSID, TPID);
+	RT_80211_TO_8023_PACKET(pAd, VLAN_VID, VLAN_Priority, pRxBlk, 
+			Header802_3, FromWhichBSSID, TPID);
 //+++Add by shiang for debug
 if (0) {
 	hex_dump("After80211_2_8023", GET_OS_PKT_DATAPTR(pRxBlk->pRxPacket), GET_OS_PKT_LEN(pRxBlk->pRxPacket));
 }
 //---Add by shiang for debug
 
-
 	/* pass this 802.3 packet to upper layer or forward this packet to WM directly*/
 #ifdef RT_CFG80211_SUPPORT
 	CFG80211_Announce802_3Packet(pAd, pRxBlk, FromWhichBSSID);
 #else
 #ifdef CONFIG_AP_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-	{
+	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 		AP_ANNOUNCE_OR_FORWARD_802_3_PACKET(pAd, pRxPacket, FromWhichBSSID);
 	}
 #endif /* CONFIG_AP_SUPPORT */
@@ -2753,10 +2750,8 @@ if (0) {
 
 #ifdef HDR_TRANS_SUPPORT
 /* Normal legacy Rx packet indication*/
-VOID Indicate_Legacy_Packet_Hdr_Trns(
-	IN RTMP_ADAPTER *pAd,
-	IN RX_BLK *pRxBlk,
-	IN UCHAR FromWhichBSSID)
+VOID Indicate_Legacy_Packet_Hdr_Trns(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
+	UCHAR FromWhichBSSID)
 {
 	PNDIS_PACKET pRxPacket = pRxBlk->pRxPacket;
 	UCHAR Header802_3[LENGTH_802_3];
@@ -2778,8 +2773,7 @@ if (0) {
 			b. modify pRxBlk->DataSize
 	*/
 
-	if (pRxBlk->TransDataSize > 1514 )
-	{
+	if (pRxBlk->TransDataSize > 1514) {
 
 		/* release packet*/
 		RELEASE_NDIS_PACKET(pAd, pRxPacket, NDIS_STATUS_FAILURE);
@@ -2790,32 +2784,29 @@ if (0) {
 
 #ifdef RTMP_MAC_USB
 #ifdef DOT11_N_SUPPORT
-	if (pAd->CommonCfg.bDisableReordering == 0)
-	{
-		PBA_REC_ENTRY		pBAEntry;
-		ULONG				Now32;
-		UCHAR				Wcid = pRxBlk->wcid;
-		UCHAR				TID = pRxBlk->TID;
-		USHORT				Idx;
+	if (pAd->CommonCfg.bDisableReordering == 0) {
+		PBA_REC_ENTRY pBAEntry;
+		ULONG Now32;
+		UCHAR Wcid = pRxBlk->wcid;
+		UCHAR TID = pRxBlk->TID;
+		USHORT Idx;
 
-#define REORDERING_PACKET_TIMEOUT		((100 * OS_HZ)/1000)	/* system ticks -- 100 ms*/
+#define REORDERING_PACKET_TIMEOUT ((100 * OS_HZ)/1000)	/* system ticks -- 100 ms*/
 
-		if (Wcid < MAX_LEN_OF_MAC_TABLE)
-		{
+		if (Wcid < MAX_LEN_OF_MAC_TABLE) {
 			Idx = pAd->MacTab.Content[Wcid].BARecWcidArray[TID];
-			if (Idx != 0)
-			{
+			if (Idx != 0) {
 				pBAEntry = &pAd->BATable.BARecEntry[Idx];
 				/* update last rx time*/
 				NdisGetSystemUpTime(&Now32);
 				if ((pBAEntry->list.qlen > 0) &&
-					 RTMP_TIME_AFTER((unsigned long)Now32, (unsigned long)(pBAEntry->LastIndSeqAtTimer+(REORDERING_PACKET_TIMEOUT)))
-	   				)
-				{
-					DBGPRINT(RT_DEBUG_OFF, ("Indicate_Legacy_Packet():flush reordering_timeout_mpdus! RxWI->Flags=%d, pRxWI.TID=%d, RxD->AMPDU=%d!\n",
-												pRxBlk->Flags, pRxBlk->TID, pRxBlk->pRxInfo->AMPDU));
-					hex_dump("Dump the legacy Packet:", GET_OS_PKT_DATAPTR(pRxBlk->pRxPacket), 64);
-					ba_flush_reordering_timeout_mpdus(pAd, pBAEntry, Now32);
+					RTMP_TIME_AFTER((unsigned long)Now32, 
+					(unsigned long)(pBAEntry->LastIndSeqAtTimer+(REORDERING_PACKET_TIMEOUT)))) {
+					DBGPRINT(RT_DEBUG_OFF, 
+							("%s:flush reordering_timeout_mpdus! RxWI->Flags=%d, pRxWI.TID=%d, RxD->AMPDU=%d!\n",
+							__FUNCTION__, pRxBlk->Flags, pRxBlk->TID, pRxBlk->pRxInfo->AMPDU));
+							hex_dump("Dump the legacy Packet:", GET_OS_PKT_DATAPTR(pRxBlk->pRxPacket), 64);
+							ba_flush_reordering_timeout_mpdus(pAd, pBAEntry, Now32);
 				}
 			}
 		}
@@ -2839,24 +2830,20 @@ if (0) {
 }
 //---Add by shiang for debug
 
+	pOSPkt = RTPKT_TO_OSPKT(pRxPacket);
 
-	{
-		pOSPkt = RTPKT_TO_OSPKT(pRxPacket);
-
-		/*get_netdev_from_bssid(pAd, FromWhichBSSID); */
-		pOSPkt->dev = get_netdev_from_bssid(pAd, FromWhichBSSID);
-		pOSPkt->data = pRxBlk->pTransData;
-		pOSPkt->len = pRxBlk->TransDataSize;
-		pOSPkt->tail = pOSPkt->data + pOSPkt->len;
-		//printk("\x1b[31m%s: rx trans ...%d\x1b[m\n", __FUNCTION__, __LINE__);
-	}
+	/*get_netdev_from_bssid(pAd, FromWhichBSSID); */
+	pOSPkt->dev = get_netdev_from_bssid(pAd, FromWhichBSSID);
+	pOSPkt->data = pRxBlk->pTransData;
+	pOSPkt->len = pRxBlk->TransDataSize;
+	pOSPkt->tail = pOSPkt->data + pOSPkt->len;
+	//printk("\x1b[31m%s: rx trans ...%d\x1b[m\n", __FUNCTION__, __LINE__);
 
 //+++Add by shiang for debug
 if (0) {
 	hex_dump("After80211_2_8023", GET_OS_PKT_DATAPTR(pRxBlk->pRxPacket), GET_OS_PKT_LEN(pRxBlk->pRxPacket));
 }
 //---Add by shiang for debug
-
 
 	/* pass this 802.3 packet to upper layer or forward this packet to WM directly*/
 
@@ -2868,7 +2855,6 @@ if (0) {
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		ANNOUNCE_OR_FORWARD_802_3_PACKET(pAd, pRxPacket, FromWhichBSSID);
 #endif /* CONFIG_STA_SUPPORT */
-
 }
 #endif /* HDR_TRANS_SUPPORT */
 
@@ -3933,8 +3919,8 @@ BOOLEAN rtmp_rx_done_handle(RTMP_ADAPTER *pAd)
 		if (pAd->chipCap.hif_type == HIF_RLT)
 		{
 			RXFCE_INFO *pFceInfo = rxblk.pRxFceInfo;
-			if ((pFceInfo->info_type != 0) || (pFceInfo->pkt_80211 != 1))
-			{
+			if ((pFceInfo->info_type != 0) || (pFceInfo->pkt_80211 != 1)) {
+#ifdef DBG
 				DBGPRINT(RT_DEBUG_OFF, ("==>%s(): GetFrameFromOtherPorts!\n", __FUNCTION__));
 				hex_dump("hw_rx_info", &rxblk.hw_rx_info[0], sizeof(rxblk.hw_rx_info));
 				DBGPRINT(RT_DEBUG_TRACE, ("Dump the RxD, RxFCEInfo and RxInfo:\n"));
@@ -3943,6 +3929,7 @@ BOOLEAN rtmp_rx_done_handle(RTMP_ADAPTER *pAd)
 				dump_rxinfo(pAd, pRxInfo);
 				hex_dump("RxFrame", (UCHAR *)pData, (pFceInfo->pkt_len));
 				DBGPRINT(RT_DEBUG_OFF, ("<==\n"));
+#endif
 				RELEASE_NDIS_PACKET(pAd, pRxPacket, NDIS_STATUS_SUCCESS);
 				continue;
 			}
@@ -3951,8 +3938,8 @@ BOOLEAN rtmp_rx_done_handle(RTMP_ADAPTER *pAd)
 #endif /* HDR_TRANS_SUPPORT */
 
 #ifdef RT_BIG_ENDIAN
-		RTMPFrameEndianChange(pAd, (PUCHAR)pHeader, DIR_READ, TRUE);
-		RTMPWIEndianChange(pAd , (PUCHAR)pRxWI, TYPE_RXWI);
+	RTMPFrameEndianChange(pAd, (PUCHAR)pHeader, DIR_READ, TRUE);
+	RTMPWIEndianChange(pAd , (PUCHAR)pRxWI, TYPE_RXWI);
 #endif
 
 //+++Add by shiang for debug
