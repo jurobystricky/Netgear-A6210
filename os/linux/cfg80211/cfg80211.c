@@ -2254,9 +2254,11 @@ static int CFG80211_OpsTestModeCmd(struct wiphy *pWiphy, void *Data, int len)
 static int CFG80211_start_p2p_device(struct wiphy *pWiphy, struct wireless_dev *wdev)
 {
 	void *pAd;
+#ifdef DBG
 	struct net_device *dev = wdev->netdev;
 	CFG80211DBG(RT_DEBUG_OFF, ("80211> %s, %s [%d]==>\n",
 			__FUNCTION__, dev->name, dev->ieee80211_ptr->iftype));
+#endif
 	MAC80211_PAD_GET(pAd, pWiphy);
 	return 0;
 }
@@ -2264,9 +2266,11 @@ static int CFG80211_start_p2p_device(struct wiphy *pWiphy, struct wireless_dev *
 static void CFG80211_stop_p2p_device(struct wiphy *pWiphy, struct wireless_dev *wdev)
 {
 	void *pAd;
+#ifdef DBG
 	struct net_device *dev = wdev->netdev;
 	CFG80211DBG(RT_DEBUG_OFF, ("80211> %s, %s [%d]==>\n",
 			__FUNCTION__, dev->name, dev->ieee80211_ptr->iftype));
+#endif
 	MAC80211_PAD_GET_X(pAd, pWiphy);
 }
 #endif /* LINUX_VERSION_CODE: 3.6.0 */
