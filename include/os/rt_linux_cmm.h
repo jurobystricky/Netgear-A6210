@@ -28,7 +28,6 @@
 #ifndef __RT_LINUX_CMM_H__
 #define __RT_LINUX_CMM_H__
 
-
 typedef struct _OS_RSTRUC  {
 	UCHAR *pContent; /* pointer to real structure content */
 } OS_RSTRUC;
@@ -172,18 +171,11 @@ typedef struct _OS_RSTRUC  {
 
 #define ra_dma_addr_t			dma_addr_t
 
-
 /***********************************************************************************
  *	Others
  ***********************************************************************************/
 #define APCLI_IF_UP_CHECK(pAd, ifidx) (RtmpOSNetDevIsUp((pAd)->ApCfg.ApCliTab[(ifidx)].wdev.if_dev) == TRUE)
 
-#define RTMP_OS_NETDEV_SET_PRIV		RtmpOsSetNetDevPriv
-#define RTMP_OS_NETDEV_GET_PRIV		RtmpOsGetNetDevPriv
-#define RTMP_OS_NETDEV_SET_WDEV		RtmpOsSetNetDevWdev
-#define RTMP_OS_NETDEV_GET_WDEV		RtmpOsGetNetDevWdev
-#define RT_DEV_PRIV_FLAGS_GET		RtmpDevPrivFlagsGet
-#define RT_DEV_PRIV_FLAGS_SET		RtmpDevPrivFlagsSet
 
 #endif /* __RT_LINUX_CMM_H__ */
 
