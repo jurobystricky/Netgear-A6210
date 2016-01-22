@@ -34,6 +34,10 @@
 #include "rt_os_util.h"
 #include "rt_os_net.h"
 
+#ifdef CONFIG_WEXT_PRIV
+#undef CONFIG_WEXT_PRIV
+#endif
+
 #define NR_WEP_KEYS 		4
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
@@ -58,10 +62,11 @@ typedef struct GNU_PACKED _RT_VERSION_INFO{
 	UINT DriverBuildDay;
 } RT_VERSION_INFO, *PRT_VERSION_INFO;
 
-struct iw_priv_args privtab[] = {
-	{ RTPRIV_IOCTL_SET, 
+#ifdef CONFIG_WEXT_PRIV
+static struct iw_priv_args privtab[] = {
+	{ RTPRIV_IOCTL_SET,
 	  IW_PRIV_TYPE_CHAR | 1024, 0, "set"},
-	{ RTPRIV_IOCTL_SHOW, 
+	{ RTPRIV_IOCTL_SHOW,
 	  IW_PRIV_TYPE_CHAR | 1024, IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_MASK, ""},
 /* --- sub-ioctls definitions --- */
 	{ SHOW_CONN_STATUS,
@@ -112,6 +117,7 @@ struct iw_priv_args privtab[] = {
 	{ RTPRIV_IOCTL_GSITESURVEY,
 	  0, IW_PRIV_TYPE_CHAR | 1024, "get_site_survey"},
 };
+#endif // CONFIG_WEXT_PRIV
 
 /*
 This is required for LinEX2004/kernel2.6.7 to provide iwlist scanning function
@@ -123,19 +129,30 @@ int rt_ioctl_giwname(struct net_device *dev, struct iw_request_info *info,
 	return 0;
 }
 
+static void * check_if_down(struct net_device *dev)
+{
+	void *pAd = RtmpOsGetNetDevPriv(dev);
+	if (pAd != NULL) {
+		/*check if the interface is down */
+		if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
+			DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+			return NULL;
+		}
+	}
+
+	return pAd;
+}
+
 int rt_ioctl_siwfreq(struct net_device *dev, struct iw_request_info *info,
 	struct iw_freq *freq, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	RT_CMD_STA_IOCTL_FREQ IoctlFreq, *pIoctlFreq = &IoctlFreq;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (freq->e > 1)
 		return -EINVAL;
@@ -144,7 +161,7 @@ int rt_ioctl_siwfreq(struct net_device *dev, struct iw_request_info *info,
 	pIoctlFreq->e = freq->e;
 
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWFREQ, 0,
-		pIoctlFreq, 0, RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS) {
+		pIoctlFreq, 0, RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS) {
 		return -EINVAL;
 	}
 
@@ -155,11 +172,10 @@ int rt_ioctl_siwfreq(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwfreq(struct net_device *dev, struct iw_request_info *info,
 	struct iw_freq *freq, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	ULONG m = 2412000;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -173,7 +189,7 @@ int rt_ioctl_giwfreq(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWFREQ, 0,
-			&m, RT_DEV_PRIV_FLAGS_GET(dev), RT_DEV_PRIV_FLAGS_GET(dev));
+			&m, RtmpDevPrivFlagsGet(dev), RtmpDevPrivFlagsGet(dev));
 
 	freq->m = m * 100;
 	freq->e = 1;
@@ -186,15 +202,13 @@ int rt_ioctl_giwfreq(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwmode(struct net_device *dev, struct iw_request_info *info,
 	__u32 *mode, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	LONG Mode;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	/*check if the interface is down */
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (*mode == IW_MODE_ADHOC) {
 		Mode = RTMP_CMD_STA_MODE_ADHOC;
@@ -210,7 +224,7 @@ int rt_ioctl_siwmode(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWMODE, 0,
-			NULL, Mode, RT_DEV_PRIV_FLAGS_GET(dev));
+			NULL, Mode, RtmpDevPrivFlagsGet(dev));
 	return 0;
 }
 
@@ -218,21 +232,16 @@ int rt_ioctl_siwmode(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwmode(struct net_device *dev, struct iw_request_info *info,
 	__u32 *mode, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	ULONG Mode;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	/*check if the interface is down */
+	pAd = check_if_down(dev);
 	if (pAd == NULL)
 		return -ENETDOWN;
 
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
-		return -ENETDOWN;
-	}
-
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWMODE, 0,
-			&Mode, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			&Mode, 0, RtmpDevPrivFlagsGet(dev));
 
 	if (Mode == RTMP_CMD_STA_MODE_ADHOC) {
 		*mode = IW_MODE_ADHOC;
@@ -260,22 +269,18 @@ int rt_ioctl_giwmode(struct net_device *dev, struct iw_request_info *info,
 static int rt_ioctl_siwsens(struct net_device *dev, struct iw_request_info *info,
 	char *name, char *extra)
 {
-	void *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
+	void *pAd;
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-			DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
-			return -ENETDOWN;
-	}
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
+		return -ENETDOWN;
 
 	return 0;
 }
 
-static int rt_ioctl_giwsens(struct net_device *dev,
-		   struct iw_request_info *info,
-		   char *name, char *extra)
+static int rt_ioctl_giwsens(struct net_device *dev, struct iw_request_info *info,
+	char *name, char *extra)
 {
 	return 0;
 }
@@ -292,8 +297,7 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 	UCHAR *pChannel;
 	UINT32 *pFreq;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -302,7 +306,6 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 
 #ifndef NATIVE_WPA_SUPPLICANT_SUPPORT
 #ifndef RT_CFG80211_SUPPORT
-/*	if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) */
 	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
 		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
 		return -ENETDOWN;
@@ -317,7 +320,7 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 	range->txpower_capa = IW_TXPOW_DBM;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWMODE, 0,
-			&Mode, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			&Mode, 0, RtmpDevPrivFlagsGet(dev));
 
 /*	if (INFRA_ON(pAd)||ADHOC_ON(pAd)) */
 	if ((Mode == RTMP_CMD_STA_MODE_INFRA) || (Mode == RTMP_CMD_STA_MODE_ADHOC)) {
@@ -341,7 +344,7 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 
 /*	range->num_channels =  pAd->ChannelListNum; */
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_CHAN_LIST_NUM_GET, 0,
-						&ChannelListNum, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+						&ChannelListNum, 0, RtmpDevPrivFlagsGet(dev));
 	range->num_channels = ChannelListNum;
 
 	os_alloc_mem(NULL, (UCHAR **)&pChannel, sizeof(UCHAR)*ChannelListNum);
@@ -354,9 +357,9 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_CHAN_LIST_GET, 0,
-						pChannel, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+						pChannel, 0, RtmpDevPrivFlagsGet(dev));
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_FREQ_LIST_GET, 0,
-						pFreq, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+						pFreq, 0, RtmpDevPrivFlagsGet(dev));
 	val = 0;
 	for (i = 1; i <= range->num_channels; i++) {
 /*		u32 m = 2412000; */
@@ -414,19 +417,16 @@ static int rt_ioctl_giwpriv(struct net_device *dev, struct iw_request_info *info
 int rt_ioctl_siwap(struct net_device *dev, struct iw_request_info *info,
 	struct sockaddr *ap_addr, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	UCHAR Bssid[6];
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-	   	DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
-	   	return -ENETDOWN;
-	}
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
+		return -ENETDOWN;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWAP, 0,
-			(void *)(ap_addr->sa_data), 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			(void *)(ap_addr->sa_data), 0, RtmpDevPrivFlagsGet(dev));
 
 	memcpy(Bssid, ap_addr->sa_data, MAC_ADDR_LEN);
 
@@ -440,10 +440,7 @@ int rt_ioctl_siwap(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwap(struct net_device *dev, struct iw_request_info *info,
 	struct sockaddr *ap_addr, char *extra)
 {
-	void *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	void *pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -451,7 +448,6 @@ int rt_ioctl_giwap(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	/*check if the interface is down */
-/*    if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) */
 	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
 		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
 		return -ENETDOWN;
@@ -459,7 +455,7 @@ int rt_ioctl_giwap(struct net_device *dev, struct iw_request_info *info,
 
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWAP, 0,
 			(void *)(ap_addr->sa_data), 0,
-			RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS) {
+			RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS) {
 		DBGPRINT(RT_DEBUG_TRACE, ("IOCTL::SIOCGIWAP(=EMPTY)\n"));
 		return -ENOTCONN;
 	}
@@ -507,16 +503,14 @@ static void set_quality(void *pAd, struct iw_quality *iq,
 static int rt_ioctl_iwaplist(struct net_device *dev, struct iw_request_info *info,
 	struct iw_point *data, char *extra)
 {
- 	void *pAd = NULL;
-
-/*	struct sockaddr addr[IW_MAX_AP]; */
+ 	void *pAd;
 	struct sockaddr *addr = NULL;
 	struct iw_quality qual[IW_MAX_AP];
 	int i;
 	RT_CMD_STA_IOCTL_BSS_LIST BssList, *pBssList = &BssList;
 	RT_CMD_STA_IOCTL_BSS *pList;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
+	pAd = RtmpOsGetNetDevPriv(dev);
 
 	/*check if the interface is down */
 	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
@@ -529,20 +523,22 @@ static int rt_ioctl_iwaplist(struct net_device *dev, struct iw_request_info *inf
 	/* allocate memory */
 	os_alloc_mem(NULL, (UCHAR **)&(pBssList->pList), sizeof(RT_CMD_STA_IOCTL_BSS_LIST) * IW_MAX_AP);
 	if (pBssList->pList == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
+				__FUNCTION__));
 		return 0;
 	}
 
 	os_alloc_mem(NULL, (UCHAR **)&addr, sizeof(struct sockaddr) * IW_MAX_AP);
 	if (addr == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
+				__FUNCTION__));
 		os_free_mem(NULL, pBssList);
 		return 0;
 	}
 
 	pBssList->MaxNum = IW_MAX_AP;
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_BSS_LIST_GET, 0,
-						pBssList, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pBssList, 0, RtmpDevPrivFlagsGet(dev));
 
 	for (i = 0; i <IW_MAX_AP ; i++) {
 		if (i >=  pBssList->BssNum) /*pAd->ScanTab.BssNr) */
@@ -563,9 +559,8 @@ static int rt_ioctl_iwaplist(struct net_device *dev, struct iw_request_info *inf
 }
 
 #if defined(SIOCGIWSCAN) || defined(RT_CFG80211_SUPPORT)
-int rt_ioctl_siwscan(struct net_device *dev,
-			struct iw_request_info *info,
-			union iwreq_data *wreq, char *extra)
+int rt_ioctl_siwscan(struct net_device *dev, struct iw_request_info *info,
+	union iwreq_data *wreq, char *extra)
 {
 	void *pAd = NULL;
 	int Status = NDIS_STATUS_SUCCESS;
@@ -574,15 +569,11 @@ int rt_ioctl_siwscan(struct net_device *dev,
 	struct iw_scan_req *req = (struct iw_scan_req *)extra;
 #endif /* WPA_SUPPLICANT_SUPPORT */
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-/*	if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) */
-/* because android will set scan and get scan when interface down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	/* because android will set scan and get scan when interface down */
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	memset(pIoctlScan, 0, sizeof(RT_CMD_STA_IOCTL_SCAN));
 #ifdef WPA_SUPPLICANT_SUPPORT
@@ -595,18 +586,17 @@ int rt_ioctl_siwscan(struct net_device *dev,
 #endif
 #endif /* WPA_SUPPLICANT_SUPPORT */
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWSCAN, 0,
-			pIoctlScan, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlScan, 0, RtmpDevPrivFlagsGet(dev));
 
 	RT_CMD_STATUS_TRANSLATE(pIoctlScan->Status);
 	Status = pIoctlScan->Status;
 	return Status;
 }
 
-int rt_ioctl_giwscan(struct net_device *dev,
-			struct iw_request_info *info,
-			struct iw_point *data, char *extra)
+int rt_ioctl_giwscan(struct net_device *dev, struct iw_request_info *info,
+	struct iw_point *data, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	int i = 0, status = 0;
 	PSTRING current_ev = extra, previous_ev = extra;
 	PSTRING end_buf;
@@ -614,25 +604,21 @@ int rt_ioctl_giwscan(struct net_device *dev,
 	STRING custom[MAX_CUSTOM_LEN] = {0};
 #ifndef IWEVGENIE
 	unsigned char idx;
-#endif /* IWEVGENIE */
+#endif
 	struct iw_event iwe;
 	RT_CMD_STA_IOCTL_SCAN_TABLE IoctlScan, *pIoctlScan = &IoctlScan;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-/*    if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) */
-/* because android will set scan and get scan when interface down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-	   	DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	/* because android will set scan and get scan when interface down */
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
-	pIoctlScan->priv_flags = RT_DEV_PRIV_FLAGS_GET(dev);
+	pIoctlScan->priv_flags = RtmpDevPrivFlagsGet(dev);
 	pIoctlScan->pBssTable = NULL;
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWSCAN, 0,
-				pIoctlScan, 0,
-				RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS) {
+			pIoctlScan, 0,
+			RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS) {
 		status = -EINVAL;
 		goto go_out;
 	}
@@ -802,7 +788,7 @@ int rt_ioctl_giwscan(struct net_device *dev,
 		ULONG m = 0;
 /*		MAP_CHANNEL_ID_TO_KHZ(ch, m); */
 		RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_CHID_2_FREQ, 0,
-						(void *)&m, ch, RT_DEV_PRIV_FLAGS_GET(dev));
+						(void *)&m, ch, RtmpDevPrivFlagsGet(dev));
 		iwe.u.freq.m = m * 100;
 		iwe.u.freq.e = 1;
 		iwe.u.freq.i = 0;
@@ -1024,7 +1010,7 @@ int rt_ioctl_giwscan(struct net_device *dev,
 /*	DBGPRINT(RT_DEBUG_ERROR ,("===>rt_ioctl_giwscan. %d(%d) BSS returned, data->length = %d\n",i , pAd->ScanTab.BssNr, data->length)); */
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SCAN_END, 0,
-						NULL, data->length, RT_DEV_PRIV_FLAGS_GET(dev));
+						NULL, data->length, RtmpDevPrivFlagsGet(dev));
 
 go_out:
 	if (pIoctlScan->pBssTable != NULL)
@@ -1037,15 +1023,13 @@ go_out:
 int rt_ioctl_siwessid(struct net_device *dev, struct iw_request_info *info,
 	struct iw_point *data, char *essid)
 {
-	void *pAd = NULL;
+	void *pAd;
 	RT_CMD_STA_IOCTL_SSID IoctlEssid, *pIoctlEssid = &IoctlEssid;
-	GET_PAD_FROM_NET_DEV(pAd, dev);
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-	   	DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
-	   	return -ENETDOWN;
-	}
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
+		return -ENETDOWN;
 
 	if (data->flags) {
 		/* Includes null character. */
@@ -1058,20 +1042,19 @@ int rt_ioctl_siwessid(struct net_device *dev, struct iw_request_info *info,
 	pIoctlEssid->pSsid = (CHAR *)essid;
 	pIoctlEssid->Status = 0;
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWESSID, 0,
-			pIoctlEssid, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlEssid, 0, RtmpDevPrivFlagsGet(dev));
 
 	RT_CMD_STATUS_TRANSLATE(pIoctlEssid->Status);
 	return pIoctlEssid->Status;
 }
 
-int rt_ioctl_giwessid(struct net_device *dev,
-			 struct iw_request_info *info,
-			 struct iw_point *data, char *essid)
+int rt_ioctl_giwessid(struct net_device *dev, struct iw_request_info *info,
+	struct iw_point *data, char *essid)
 {
-	void *pAd = NULL;
+	void *pAd;
 	RT_CMD_STA_IOCTL_SSID IoctlEssid, *pIoctlEssid = &IoctlEssid;
-	GET_PAD_FROM_NET_DEV(pAd, dev);
 
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1088,7 +1071,7 @@ int rt_ioctl_giwessid(struct net_device *dev,
 	pIoctlEssid->pSsid = (CHAR *)essid;
 	pIoctlEssid->Status = 0;
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWESSID, 0,
-						pIoctlEssid, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlEssid, 0, RtmpDevPrivFlagsGet(dev));
 	data->length = pIoctlEssid->SsidLen;
 
 	RT_CMD_STATUS_TRANSLATE(pIoctlEssid->Status);
@@ -1098,21 +1081,18 @@ int rt_ioctl_giwessid(struct net_device *dev,
 int rt_ioctl_siwnickn(struct net_device *dev, struct iw_request_info *info,
 	struct iw_point *data, char *nickname)
 {
-	void *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
+	void *pAd;
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE ,("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (data->length > IW_ESSID_MAX_SIZE)
 		return -EINVAL;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWNICKN, 0,
-			nickname, data->length, RT_DEV_PRIV_FLAGS_GET(dev));
+			nickname, data->length, RtmpDevPrivFlagsGet(dev));
 	return 0;
 }
 
@@ -1122,8 +1102,7 @@ int rt_ioctl_giwnickn(struct net_device *dev, struct iw_request_info *info,
 	void *pAd = NULL;
 	RT_CMD_STA_IOCTL_NICK_NAME NickName, *pNickName = &NickName;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1141,7 +1120,7 @@ int rt_ioctl_giwnickn(struct net_device *dev, struct iw_request_info *info,
 	pNickName->pName = (CHAR *)nickname;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWNICKN, 0,
-			pNickName, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pNickName, 0, RtmpDevPrivFlagsGet(dev));
 
 	data->length = pNickName->NameLen;
 	return 0;
@@ -1150,16 +1129,13 @@ int rt_ioctl_giwnickn(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwrts(struct net_device *dev, struct iw_request_info *info,
 	struct iw_param *rts, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	u16 val;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (rts->disabled)
 		val = MAX_RTS_THRESHOLD;
@@ -1174,7 +1150,7 @@ int rt_ioctl_siwrts(struct net_device *dev, struct iw_request_info *info,
 /*		pAd->CommonCfg.RtsThreshold = val; */
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWRTS, 0,
-			NULL, val, RT_DEV_PRIV_FLAGS_GET(dev));
+			NULL, val, RtmpDevPrivFlagsGet(dev));
 	return 0;
 }
 
@@ -1184,8 +1160,7 @@ int rt_ioctl_giwrts(struct net_device *dev, struct iw_request_info *info,
 	void *pAd = NULL;
 	USHORT RtsThreshold;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1199,7 +1174,7 @@ int rt_ioctl_giwrts(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWRTS, 0,
-			&RtsThreshold, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			&RtsThreshold, 0, RtmpDevPrivFlagsGet(dev));
 	rts->value = RtsThreshold;
 	rts->disabled = (rts->value == MAX_RTS_THRESHOLD);
 	rts->fixed = 1;
@@ -1210,16 +1185,13 @@ int rt_ioctl_giwrts(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwfrag(struct net_device *dev, struct iw_request_info *info,
 	struct iw_param *frag, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	u16 val;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (frag->disabled)
 		val = MAX_FRAG_THRESHOLD;
@@ -1232,7 +1204,7 @@ int rt_ioctl_siwfrag(struct net_device *dev, struct iw_request_info *info,
 
 /*	pAd->CommonCfg.FragmentThreshold = val; */
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWFRAG, 0,
-			NULL, val, RT_DEV_PRIV_FLAGS_GET(dev));
+			NULL, val, RtmpDevPrivFlagsGet(dev));
 	return 0;
 }
 
@@ -1242,8 +1214,7 @@ int rt_ioctl_giwfrag(struct net_device *dev, struct iw_request_info *info,
 	void *pAd = NULL;
 	USHORT FragmentThreshold;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1257,7 +1228,7 @@ int rt_ioctl_giwfrag(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWFRAG, 0,
-			&FragmentThreshold, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			&FragmentThreshold, 0, RtmpDevPrivFlagsGet(dev));
 	frag->value = FragmentThreshold;
 	frag->disabled = (frag->value == MAX_FRAG_THRESHOLD);
 	frag->fixed = 1;
@@ -1270,16 +1241,13 @@ int rt_ioctl_giwfrag(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwencode(struct net_device *dev, struct iw_request_info *info,
 	struct iw_point *erq, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	RT_CMD_STA_IOCTL_SECURITY IoctlSec, *pIoctlSec = &IoctlSec;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	pIoctlSec->pData = (CHAR *)extra;
 	pIoctlSec->length = erq->length;
@@ -1300,7 +1268,7 @@ int rt_ioctl_siwencode(struct net_device *dev, struct iw_request_info *info,
 	pIoctlSec->Status = 0;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWENCODE, 0,
-			pIoctlSec, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlSec, 0, RtmpDevPrivFlagsGet(dev));
 	RT_CMD_STATUS_TRANSLATE(pIoctlSec->Status);
 	return pIoctlSec->Status;
 }
@@ -1311,8 +1279,7 @@ int rt_ioctl_giwencode(struct net_device *dev, struct iw_request_info *info,
 	void *pAd = NULL;
 	RT_CMD_STA_IOCTL_SECURITY IoctlSec, *pIoctlSec = &IoctlSec;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1330,7 +1297,7 @@ int rt_ioctl_giwencode(struct net_device *dev, struct iw_request_info *info,
 	pIoctlSec->length = erq->length;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWENCODE, 0,
-			pIoctlSec, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlSec, 0, RtmpDevPrivFlagsGet(dev));
 
 	erq->length = pIoctlSec->length;
 	erq->flags = pIoctlSec->KeyIdx;
@@ -1358,8 +1325,7 @@ int rt_ioctl_setparam(struct net_device *dev, struct iw_request_info *info,
 	int Status = 0;
 	RT_CMD_PARAM_SET CmdParam;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1391,26 +1357,23 @@ SET_PROC:
 	CmdParam.pThisChar = this_char;
 	CmdParam.pValue = value;
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_PARAM_SET, 0,
-			&CmdParam, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			&CmdParam, 0, RtmpDevPrivFlagsGet(dev));
 /*	Status = RTMPSTAPrivIoctlSet(pAd, this_char, value); */
 
 	return Status;
 }
 
-
+#ifdef CONFIG_WEXT_PRIV
 static int rt_private_get_statistics(struct net_device *dev,
 	struct iw_request_info *info, struct iw_point *wrq, char *extra)
 {
 	int Status = 0;
-	void *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
+	void *pAd;
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-	   	DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (extra == NULL) {
 		wrq->length = 0;
@@ -1420,7 +1383,7 @@ static int rt_private_get_statistics(struct net_device *dev,
 	memset(extra, 0x00, IW_PRIV_SIZE_MASK);
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_IW_GET_STATISTICS, 0,
-			extra, IW_PRIV_SIZE_MASK, RT_DEV_PRIV_FLAGS_GET(dev));
+			extra, IW_PRIV_SIZE_MASK, RtmpDevPrivFlagsGet(dev));
 
 	wrq->length = strlen(extra) + 1; /* 1: size of '\0' */
 	DBGPRINT(RT_DEBUG_TRACE,
@@ -1429,7 +1392,6 @@ static int rt_private_get_statistics(struct net_device *dev,
 
 	return Status;
 }
-
 
 static int rt_private_show(struct net_device *dev, struct iw_request_info *info,
 	struct iw_point *wrq, PSTRING extra)
@@ -1440,8 +1402,7 @@ static int rt_private_show(struct net_device *dev, struct iw_request_info *info,
 	u32 subcmd = wrq->flags;
 	RT_CMD_STA_IOCTL_SHOW IoctlShow, *pIoctlShow = &IoctlShow;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
+	pAd = RtmpOsGetNetDevPriv(dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -1458,31 +1419,29 @@ static int rt_private_show(struct net_device *dev, struct iw_request_info *info,
 	wrqin.u.data.length = wrq->length;
 	pIoctlShow->pData = (CHAR *)extra;
 	pIoctlShow->MaxSize = IW_PRIV_SIZE_MASK;
-	pIoctlShow->InfType = RT_DEV_PRIV_FLAGS_GET(dev);
+	pIoctlShow->InfType = RtmpDevPrivFlagsGet(dev);
 	RTMP_STA_IoctlHandle(pAd, &wrqin, CMD_RTPRIV_IOCTL_SHOW, subcmd,
-			pIoctlShow, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlShow, 0, RtmpDevPrivFlagsGet(dev));
 
 	wrq->length = wrqin.u.data.length;
 	return Status;
 }
+#endif // CONFIG_WEXT_PRIV
 
 #ifdef SIOCSIWMLME
 int rt_ioctl_siwmlme(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iw_mlme *pMlme = (struct iw_mlme *)wrqu->data.pointer;
 	ULONG Subcmd = 0;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("====> %s\n", __FUNCTION__));
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (pMlme == NULL)
 		return -EINVAL;
@@ -1504,7 +1463,7 @@ int rt_ioctl_siwmlme(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWMLME, Subcmd,
-			NULL, pMlme->reason_code, RT_DEV_PRIV_FLAGS_GET(dev));
+			NULL, pMlme->reason_code, RtmpDevPrivFlagsGet(dev));
 	return 0;
 }
 #endif /* SIOCSIWMLME */
@@ -1513,17 +1472,14 @@ int rt_ioctl_siwmlme(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwauth(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iw_param *param = &wrqu->param;
 	RT_CMD_STA_IOCTL_SECURITY_ADV IoctlWpa, *pIoctlWpa = &IoctlWpa;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	pIoctlWpa->flags = 0;
 	pIoctlWpa->value = param->value; /* default */
@@ -1617,7 +1573,7 @@ int rt_ioctl_siwauth(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWAUTH, 0,
-			pIoctlWpa, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlWpa, 0, RtmpDevPrivFlagsGet(dev));
 
 	return 0;
 }
@@ -1625,17 +1581,14 @@ int rt_ioctl_siwauth(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwauth(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iw_param *param = &wrqu->param;
 	RT_CMD_STA_IOCTL_SECURITY_ADV IoctlWpa, *pIoctlWpa = &IoctlWpa;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-  		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	pIoctlWpa->flags = 0;
 	pIoctlWpa->value = 0;
@@ -1658,7 +1611,7 @@ int rt_ioctl_giwauth(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWAUTH, 0,
-			pIoctlWpa, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlWpa, 0, RtmpDevPrivFlagsGet(dev));
 
 	switch (param->flags & IW_AUTH_INDEX) {
 	case IW_AUTH_DROP_UNENCRYPTED:
@@ -1684,19 +1637,16 @@ int rt_ioctl_giwauth(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwencodeext(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iw_point *encoding = &wrqu->encoding;
 	struct iw_encode_ext *ext = (struct iw_encode_ext *)extra;
 	int alg = ext->alg;
 	RT_CMD_STA_IOCTL_SECURITY IoctlSec, *pIoctlSec = &IoctlSec;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	pIoctlSec->pData = (CHAR *)ext->key;
 	pIoctlSec->length = ext->key_len;
@@ -1710,7 +1660,9 @@ int rt_ioctl_siwencodeext(struct net_device *dev, struct iw_request_info *info,
 	} else if (alg == IW_ENCODE_ALG_CCMP) {
 		pIoctlSec->Alg = RT_CMD_STA_IOCTL_SECURITY_ALG_CCMP;
 	} else {
-		DBGPRINT(RT_DEBUG_WARN, ("Warning: Security type is not supported. (alg = %d) \n", alg));
+		DBGPRINT(RT_DEBUG_WARN,
+				("Warning: Security type is not supported. (alg = %d) \n",
+				alg));
 		pIoctlSec->Alg = alg;
 		return -EOPNOTSUPP;
 	}
@@ -1725,7 +1677,7 @@ int rt_ioctl_siwencodeext(struct net_device *dev, struct iw_request_info *info,
 		pIoctlSec->flags = 0;
 
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWENCODEEXT, 0,
-			pIoctlSec, 0, RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS)
+			pIoctlSec, 0, RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS)
 		return -EINVAL;
 
 	return 0;
@@ -1734,21 +1686,18 @@ int rt_ioctl_siwencodeext(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwencodeext(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iw_point *encoding = &wrqu->encoding;
 	struct iw_encode_ext *ext = (struct iw_encode_ext *)extra;
 	int max_key_len;
 	RT_CMD_STA_IOCTL_SECURITY IoctlSec, *pIoctlSec = &IoctlSec;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	DBGPRINT(RT_DEBUG_TRACE ,("===> rt_ioctl_giwencodeext\n"));
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	max_key_len = encoding->length - sizeof(*ext);
 	if (max_key_len < 0)
@@ -1759,7 +1708,7 @@ int rt_ioctl_giwencodeext(struct net_device *dev, struct iw_request_info *info,
 	pIoctlSec->MaxKeyLen = max_key_len;
 
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWENCODEEXT, 0,
-		pIoctlSec, 0, RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS) {
+		pIoctlSec, 0, RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS) {
 		ext->key_len = 0;
 		RT_CMD_STATUS_TRANSLATE(pIoctlSec->Status);
 		return pIoctlSec->Status;
@@ -1792,19 +1741,17 @@ int rt_ioctl_giwencodeext(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwgenie(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
+	void *pAd;
 
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
+
 #ifdef WPA_SUPPLICANT_SUPPORT
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWGENIE, 0,
 			extra, wrqu->data.length,
-			RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS)
+			RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS)
 		return -EINVAL;
 	else
 		return 0;
@@ -1817,22 +1764,19 @@ int rt_ioctl_siwgenie(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwgenie(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void   *pAd = NULL;
+	void *pAd;
 	RT_CMD_STA_IOCTL_RSN_IE IoctlRsnIe, *pIoctlRsnIe = &IoctlRsnIe;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	pIoctlRsnIe->length = wrqu->data.length;
 	pIoctlRsnIe->pRsnIe = (UCHAR *)extra;
 
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWGENIE, 0,
-		pIoctlRsnIe, 0, RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS) {
+		pIoctlRsnIe, 0, RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS) {
 		return -E2BIG;
 	}
 
@@ -1843,23 +1787,19 @@ int rt_ioctl_giwgenie(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_siwpmksa(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iw_pmksa *pPmksa = (struct iw_pmksa *)wrqu->data.pointer;
 	RT_CMD_STA_IOCTL_PMA_SA IoctlPmaSa, *pIoctlPmaSa = &IoctlPmaSa;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	if (pPmksa == NULL)
 		return -EINVAL;
 
 	DBGPRINT(RT_DEBUG_TRACE ,("===> rt_ioctl_siwpmksa\n"));
-
 
 	if (pPmksa->cmd == IW_PMKSA_FLUSH)
 		pIoctlPmaSa->Cmd = RT_CMD_STA_IOCTL_PMA_SA_FLUSH;
@@ -1873,28 +1813,27 @@ int rt_ioctl_siwpmksa(struct net_device *dev, struct iw_request_info *info,
 	pIoctlPmaSa->pPmkid = pPmksa->pmkid;
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWPMKSA, 0,
-			pIoctlPmaSa, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			pIoctlPmaSa, 0, RtmpDevPrivFlagsGet(dev));
 
 	return 0;
 }
 #endif /* #if WIRELESS_EXT > 17 */
 
 #ifdef DBG
+#ifdef CONFIG_WEXT_PRIV
 static int rt_private_ioctl_bbp(struct net_device *dev, struct iw_request_info *info,
 	struct iw_point *wrq, char *extra)
 {
 	RTMP_IOCTL_INPUT_STRUCT wrqin;
 	int Status = 0;
-	void *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, dev);
+	void *pAd = RtmpOsGetNetDevPriv(dev);
 
 	memset(extra, 0x00, IW_PRIV_SIZE_MASK);
 	wrqin.u.data.pointer = wrq->pointer;
 	wrqin.u.data.length = wrq->length;
 
 	RTMP_STA_IoctlHandle(pAd, &wrqin, CMD_RTPRIV_IOCTL_BBP, 0,
-			extra, IW_PRIV_SIZE_MASK, RT_DEV_PRIV_FLAGS_GET(dev));
+			extra, IW_PRIV_SIZE_MASK, RtmpDevPrivFlagsGet(dev));
 
 	wrq->length = wrqin.u.data.length;
 
@@ -1902,24 +1841,23 @@ static int rt_private_ioctl_bbp(struct net_device *dev, struct iw_request_info *
 
 	return Status;
 }
+#endif
 #endif /* DBG */
 
 int rt_ioctl_siwrate(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
-	UINT32  rate = wrqu->bitrate.value, fixed = wrqu->bitrate.fixed;
+	void *pAd;
+	UINT32 rate = wrqu->bitrate.value, fixed = wrqu->bitrate.fixed;
 	RT_CMD_RATE_SET CmdRate;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-  		DBGPRINT(RT_DEBUG_TRACE, ("rt_ioctl_siwrate::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
-	DBGPRINT(RT_DEBUG_TRACE, ("rt_ioctl_siwrate::(rate = %d, fixed = %d)\n", rate, fixed));
+	DBGPRINT(RT_DEBUG_TRACE, ("rt_ioctl_siwrate::(rate = %d, fixed = %d)\n",
+			rate, fixed));
 	/* rate = -1 => auto rate
 	   rate = X, fixed = 1 => (fixed rate X)
 	*/
@@ -1928,7 +1866,7 @@ int rt_ioctl_siwrate(struct net_device *dev, struct iw_request_info *info,
 	CmdRate.Fixed = fixed;
 
 	if (RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWRATE, 0,
-		&CmdRate, 0, RT_DEV_PRIV_FLAGS_GET(dev)) != NDIS_STATUS_SUCCESS) {
+		&CmdRate, 0, RtmpDevPrivFlagsGet(dev)) != NDIS_STATUS_SUCCESS) {
 		return -EOPNOTSUPP;
 	}
 
@@ -1938,19 +1876,16 @@ int rt_ioctl_siwrate(struct net_device *dev, struct iw_request_info *info,
 int rt_ioctl_giwrate(struct net_device *dev, struct iw_request_info *info,
 	union iwreq_data *wrqu, char *extra)
 {
-	void *pAd = NULL;
+	void *pAd;
 	ULONG Rate;
 
-	GET_PAD_FROM_NET_DEV(pAd, dev);
-
 	/*check if the interface is down */
-	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
-  		DBGPRINT(RT_DEBUG_TRACE, ("INFO::Network is down!\n"));
+	pAd = check_if_down(dev);
+	if (pAd == NULL)
 		return -ENETDOWN;
-	}
 
 	RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWRATE, 0,
-			&Rate, 0, RT_DEV_PRIV_FLAGS_GET(dev));
+			&Rate, 0, RtmpDevPrivFlagsGet(dev));
 	wrqu->bitrate.value = Rate;
 	wrqu->bitrate.disabled = 0;
 
@@ -2027,6 +1962,7 @@ static const iw_handler rt_handler[] =
 #endif
 };
 
+#ifdef CONFIG_WEXT_PRIV
 static const iw_handler rt_priv_handlers[] = {
 	(iw_handler) NULL, /* + 0x00 */
 	(iw_handler) NULL, /* + 0x01 */
@@ -2062,6 +1998,7 @@ static const iw_handler rt_priv_handlers[] = {
 	(iw_handler) NULL, /* + 0x17 */
 	(iw_handler) NULL, /* + 0x18 */
 };
+#endif
 
 const struct iw_handler_def rt28xx_iw_handler_def =
 {
@@ -2081,15 +2018,14 @@ const struct iw_handler_def rt28xx_iw_handler_def =
 
 int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 {
-	void *pAd = NULL;
+	void *pAd;
 	struct iwreq *wrqin = (struct iwreq *) rq;
 	RTMP_IOCTL_INPUT_STRUCT rt_wrq, *wrq = &rt_wrq;
 	int Status = NDIS_STATUS_SUCCESS;
 	USHORT subcmd;
 	UINT32 org_len;
 
-	GET_PAD_FROM_NET_DEV(pAd, net_dev);
-
+	pAd = RtmpOsGetNetDevPriv(net_dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -2101,7 +2037,6 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 	org_len = wrq->u.data.length;
 
 	/*check if the interface is down */
-/*    if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) */
 	if (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
 		if (wrqin->u.data.pointer == NULL) {
 			return Status;
@@ -2125,14 +2060,11 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		DBGPRINT(RT_DEBUG_TRACE, ("IOCTL::SIOCGIFHWADDR\n"));
 /*		memcpy(wrqin->u.name, pAd->CurrentAddress, ETH_ALEN); */
 		RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIFHWADDR,
-				0, wrqin->u.name, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
+				0, wrqin->u.name, 0, RtmpDevPrivFlagsGet(net_dev));
 		break;
 	case SIOCGIWNAME:
-		{
-		char *name=&wrqin->u.name[0];
-		rt_ioctl_giwname(net_dev, NULL, name, NULL);
+		rt_ioctl_giwname(net_dev, NULL, &wrqin->u.name[0], NULL);
 		break;
-		}
 	case SIOCGIWESSID:  /*Get ESSID */
 		{
 		struct iw_point *essid=&wrqin->u.essid;
@@ -2150,17 +2082,11 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		Status = -EOPNOTSUPP;
 		break;
 	case SIOCSIWFREQ:   /*set channel/frequency (Hz) */
-		{
-		struct iw_freq *freq=&wrqin->u.freq;
-		rt_ioctl_siwfreq(net_dev, NULL, freq, NULL);
+		rt_ioctl_siwfreq(net_dev, NULL, &wrqin->u.freq, NULL);
 		break;
-		}
 	case SIOCGIWFREQ:   /* get channel/frequency (Hz) */
-		{
-		struct iw_freq *freq=&wrqin->u.freq;
-		rt_ioctl_giwfreq(net_dev, NULL, freq, NULL);
+		rt_ioctl_giwfreq(net_dev, NULL, &wrqin->u.freq, NULL);
 		break;
-		}
 	case SIOCSIWNICKN: /*set node name/nickname */
 		{
 		/*struct iw_point *data=&wrq->u.data; */
@@ -2177,7 +2103,7 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		pNickName->NameLen = IW_ESSID_MAX_SIZE+1;
 		pNickName->pName = (CHAR *)nickname;
 		RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCGIWNICKN, 0,
-				pNickName, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
+				pNickName, 0, RtmpDevPrivFlagsGet(net_dev));
 
 		erq->length = pNickName->NameLen; /*strlen((PSTRING) pAd->nickname); */
 		Status = copy_to_user(erq->pointer, nickname, erq->length);
@@ -2190,29 +2116,17 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		rt_ioctl_siwrate(net_dev, NULL, &wrqin->u, NULL);
 		break;
 	case SIOCGIWRTS:  /* get RTS/CTS threshold (bytes) */
-		{
-		struct iw_param *rts=&wrqin->u.rts;
-		rt_ioctl_giwrts(net_dev, NULL, rts, NULL);
+		rt_ioctl_giwrts(net_dev, NULL, &wrqin->u.rts, NULL);
 		break;
-		}
 	case SIOCSIWRTS:  /*set RTS/CTS threshold (bytes) */
-		{
-		struct iw_param *rts=&wrqin->u.rts;
-		rt_ioctl_siwrts(net_dev, NULL, rts, NULL);
+		rt_ioctl_siwrts(net_dev, NULL, &wrqin->u.rts, NULL);
 		break;
-		}
 	case SIOCGIWFRAG:  /*get fragmentation thr (bytes) */
-		{
-		struct iw_param *frag=&wrqin->u.frag;
-		rt_ioctl_giwfrag(net_dev, NULL, frag, NULL);
+		rt_ioctl_giwfrag(net_dev, NULL, &wrqin->u.frag, NULL);
 		break;
-		}
 	case SIOCSIWFRAG:  /*set fragmentation thr (bytes) */
-		{
-		struct iw_param *frag=&wrqin->u.frag;
-		rt_ioctl_siwfrag(net_dev, NULL, frag, NULL);
+		rt_ioctl_siwfrag(net_dev, NULL, &wrqin->u.frag, NULL);
 		break;
-		}
 	case SIOCGIWENCODE:  /*get encoding token & mode */
 		{
 		struct iw_point *erq=&wrqin->u.encoding;
@@ -2272,13 +2186,13 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 
 	case RT_PRIV_IOCTL_EXT:
 		subcmd = wrqin->u.data.flags;
-
 		Status = RTMP_STA_IoctlHandle(pAd, wrq, CMD_RT_PRIV_IOCTL, subcmd,
-				NULL, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
+				NULL, 0, RtmpDevPrivFlagsGet(net_dev));
 		break;
+#ifdef CONFIG_WEXT_PRIV
 	case SIOCGIWPRIV:
 		if (wrqin->u.data.pointer) {
-			if ( access_ok(VERIFY_WRITE, wrqin->u.data.pointer, sizeof(privtab)) != TRUE)
+			if (access_ok(VERIFY_WRITE, wrqin->u.data.pointer, sizeof(privtab)) != TRUE)
 				break;
 			if ((sizeof(privtab) / sizeof(privtab[0])) <= wrq->u.data.length) {
 				wrqin->u.data.length = sizeof(privtab) / sizeof(privtab[0]);
@@ -2289,30 +2203,28 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 			}
 		}
 		break;
+#endif
 	case RTPRIV_IOCTL_SET:
 		if (access_ok(VERIFY_READ, wrqin->u.data.pointer, wrqin->u.data.length) != TRUE)
 			break;
 		return rt_ioctl_setparam(net_dev, NULL, NULL, wrqin->u.data.pointer);
 	case RTPRIV_IOCTL_GSITESURVEY:
 		RTMP_STA_IoctlHandle(pAd, wrq, CMD_RTPRIV_IOCTL_SITESURVEY_GET, 0,
-				NULL, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
+				NULL, 0, RtmpDevPrivFlagsGet(net_dev));
 		break;
 #ifdef DBG
 	case RTPRIV_IOCTL_MAC:
 		RTMP_STA_IoctlHandle(pAd, wrq, CMD_RTPRIV_IOCTL_MAC, 0,
-				NULL, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
-/*		RTMPIoctlMAC(pAd, wrq); */
+				NULL, 0, RtmpDevPrivFlagsGet(net_dev));
 		break;
 	case RTPRIV_IOCTL_E2P:
 		RTMP_STA_IoctlHandle(pAd, wrq, CMD_RTPRIV_IOCTL_E2P, 0,
-				NULL, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
-/*		RTMPIoctlE2PROM(pAd, wrq); */
+				NULL, 0, RtmpDevPrivFlagsGet(net_dev));
 		break;
 #ifdef RTMP_RF_RW_SUPPORT
 	case RTPRIV_IOCTL_RF:
 		RTMP_STA_IoctlHandle(pAd, wrq, CMD_RTPRIV_IOCTL_RF, 0,
-				NULL, 0, RT_DEV_PRIV_FLAGS_GET(net_dev));
-/*		RTMPIoctlRF(pAd, wrq); */
+				NULL, 0, RtmpDevPrivFlagsGet(net_dev));
 		break;
 #endif /* RTMP_RF_RW_SUPPORT */
 #endif /* DBG */
@@ -2324,9 +2236,6 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		Status = -EOPNOTSUPP;
 		break;
 	}
-
-/*    if(StateMachineTouched) // Upper layer sent a MLME-related operations */
-/*    	RTMP_MLME_HANDLER(pAd); */
 
 	if (Status != 0) {
 		RT_CMD_STATUS_TRANSLATE(Status);
