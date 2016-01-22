@@ -701,18 +701,10 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
  ***********************************************************************************/
 
 #define RTMP_OS_NETDEV_STATE_RUNNING(_pNetDev)	((_pNetDev)->flags & IFF_UP)
-
-//#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
-//#define _RTMP_OS_NETDEV_GET_PRIV(_pNetDev)	(NULL /*(_pNetDev)->ml_priv*/)
-//#else
-//#define _RTMP_OS_NETDEV_GET_PRIV(_pNetDev)	((_pNetDev)->priv)
-//#endif
-
 #define RTMP_OS_NETDEV_GET_DEVNAME(_pNetDev)	((_pNetDev)->name)
 #define RTMP_OS_NETDEV_GET_PHYADDR(_pNetDev)	((_pNetDev)->dev_addr)
 
 /* Get & Set NETDEV interface hardware type */
-//#define RTMP_OS_NETDEV_GET_TYPE(_pNetDev)		((_pNetDev)->type)
 #define RTMP_OS_NETDEV_SET_TYPE(_pNetDev, _type)	((_pNetDev)->type = (_type))
 #define RTMP_OS_NETDEV_SET_TYPE_MONITOR(_pNetDev)	RTMP_OS_NETDEV_SET_TYPE(_pNetDev, ARPHRD_IEEE80211_PRISM)
 
@@ -820,16 +812,11 @@ extern unsigned char (*wf_fwd_entry_delete_hook) (struct net_device *src, struct
 
 void RTMP_GetCurrentSystemTime(LARGE_INTEGER *time);
 int rt28xx_packet_xmit(void *skb);
-
 int rt28xx_ioctl(PNET_DEV net_dev, struct ifreq *rq, int cmd);
 int rt28xx_send_packets(struct sk_buff *skb, struct net_device *ndev);
 
 extern int ra_mtd_write(int num, loff_t to, size_t len, const u_char *buf);
 extern int ra_mtd_read(int num, loff_t from, size_t len, u_char *buf);
-
-#define GET_PAD_FROM_NET_DEV(_pAd, _net_dev)	\
-	_pAd = RTMP_OS_NETDEV_GET_PRIV(_net_dev);
-
 
 /******************************************************************************
 
