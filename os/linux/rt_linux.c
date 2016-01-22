@@ -1429,7 +1429,7 @@ int RtmpOSNetDevAttach(UCHAR OpMode, PNET_DEV pNetDev,
 
 		/* OS specific flags, here we used to indicate if we are virtual interface */
 /*		pNetDev->priv_flags = pDevOpHook->priv_flags; */
-		RT_DEV_PRIV_FLAGS_SET(pNetDev, pDevOpHook->priv_flags);
+		RtmpDevPrivFlagsSet(pNetDev, pDevOpHook->priv_flags);
 
 #if (WIRELESS_EXT < 21) && (WIRELESS_EXT >= 12)
 /*		pNetDev->get_wireless_stats = rt28xx_get_wireless_stats; */
