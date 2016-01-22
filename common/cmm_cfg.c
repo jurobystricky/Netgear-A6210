@@ -761,7 +761,7 @@ INT RTMP_COM_IoctlHandle(
 			pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev.if_dev = (void *)pData;
 			pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev.func_dev = (void *)&pAd->ApCfg.MBSSID[MAIN_MBSSID];
 			pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev.sys_handle = (void *)pAd;
-			RTMP_OS_NETDEV_SET_WDEV(pData, &pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev);
+			RtmpOsSetNetDevWdev(pData, &pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev);
 			wdev = &pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev;
 		}
 #endif /* CONFIG_AP_SUPPORT */
@@ -770,7 +770,7 @@ INT RTMP_COM_IoctlHandle(
 			pAd->StaCfg.wdev.if_dev = pData;
 			pAd->StaCfg.wdev.func_dev = (void *)&pAd->StaCfg;
 			pAd->StaCfg.wdev.sys_handle = (void *)pAd;
-			RTMP_OS_NETDEV_SET_WDEV(pData, &pAd->StaCfg.wdev);
+			RtmpOsSetNetDevWdev(pData, &pAd->StaCfg.wdev);
 			wdev = &pAd->StaCfg.wdev;
 		}
 #endif /* CONFIG_STA_SUPPORT */
