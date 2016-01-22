@@ -520,13 +520,6 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 
 	RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_START_UP);
 
-#ifdef CONFIG_STA_SUPPORT
-#ifdef PCIE_PS_SUPPORT
-	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-		RTMPInitPCIeLinkCtrlValue(pAd);
-#endif /* PCIE_PS_SUPPORT */
-#endif /* CONFIG_STA_SUPPORT */
-
 #ifdef CONFIG_AP_SUPPORT
 #ifdef BG_FT_SUPPORT
 	BG_FTPH_Init();
@@ -600,7 +593,7 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
-	UINT32 i = 0;
+	UINT32 i;
 
 #ifdef RT_CFG80211_SUPPORT
 #ifdef CONFIG_AP_SUPPORT
@@ -640,10 +633,6 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
-#ifdef PCIE_PS_SUPPORT
-		RTMPPCIeLinkCtrlValueRestore(pAd, RESTORE_CLOSE);
-#endif /* PCIE_PS_SUPPORT */
-
 		/* If driver doesn't wake up firmware here,*/
 		/* NICLoadFirmware will hang forever when interface is up again.*/
 		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE)) {
@@ -652,7 +641,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef RTMP_MAC_USB
 		RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_REMOVE_IN_PROGRESS);
-#endif /* RTMP_MAC_USB */
+#endif
 	}
 #endif /* CONFIG_STA_SUPPORT */
 
@@ -968,7 +957,7 @@ static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 
 			NdisZeroMemory(pTempStr, 512);
 			ptr = (PSTRING) offset;
-			while(*ptr && *ptr != '\n') {
+			while (*ptr && *ptr != '\n') {
 				pTempStr[i++] = *ptr++;
 			}
 			pTempStr[i] = 0x00;
@@ -1030,7 +1019,7 @@ out:
 }
 
 //JB: FIX THIS (check return value)
-static INT write_dat_file_thread(ULONG Context)
+static int write_dat_file_thread(ULONG Context)
 {
 	RTMP_OS_TASK *pTask;
 	RTMP_ADAPTER *pAd;
