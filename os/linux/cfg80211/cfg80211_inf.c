@@ -358,7 +358,7 @@ VOID RTMP_CFG80211_VirtualIF_CancelP2pClient(VOID *pAdSrc)
 static INT CFG80211_VirtualIF_Open(PNET_DEV dev_p) {
 	VOID *pAdSrc;
 	PRTMP_ADAPTER pAd;
-	pAdSrc = RTMP_OS_NETDEV_GET_PRIV(dev_p);
+	pAdSrc = RtmpOsGetNetDevPriv(dev_p);
 	ASSERT(pAdSrc);
 	pAd = (PRTMP_ADAPTER)pAdSrc;
 
@@ -391,7 +391,7 @@ static INT CFG80211_VirtualIF_Close(PNET_DEV dev_p)
 	VOID *pAdSrc;
 	PRTMP_ADAPTER pAd;
 
-	pAdSrc = RTMP_OS_NETDEV_GET_PRIV(dev_p);
+	pAdSrc = RtmpOsGetNetDevPriv(dev_p);
 	ASSERT(pAdSrc);
 	pAd = (PRTMP_ADAPTER)pAdSrc;
 
@@ -428,7 +428,7 @@ static INT CFG80211_VirtualIF_Close(PNET_DEV dev_p)
 static INT CFG80211_PacketSend(PNDIS_PACKET pPktSrc, PNET_DEV pDev, RTMP_NET_PACKET_TRANSMIT Func)
 {
 	PRTMP_ADAPTER pAd;
-	pAd = RTMP_OS_NETDEV_GET_PRIV(pDev);
+	pAd = RtmpOsGetNetDevPriv(pDev);
 	ASSERT(pAd);
 
 	/* To Indicate from Which VIF */
@@ -484,7 +484,7 @@ static INT CFG80211_VirtualIF_PacketSend(struct sk_buff *skb, PNET_DEV dev_p)
 	}
 
 	/* The device not ready to send packt. */
-	wdev = RTMP_OS_NETDEV_GET_WDEV(dev_p);
+	wdev = RtmpOsGetNetDevWdev(dev_p);
 	ASSERT(wdev);
 	if (!wdev)
 		return -1;
@@ -494,7 +494,7 @@ static INT CFG80211_VirtualIF_PacketSend(struct sk_buff *skb, PNET_DEV dev_p)
 
 static INT CFG80211_VirtualIF_Ioctl(PNET_DEV dev_p, VOID *rq_p, INT cmd)
 {
-	RTMP_ADAPTER *pAd = RTMP_OS_NETDEV_GET_PRIV(dev_p);
+	RTMP_ADAPTER *pAd = RtmpOsGetNetDevPriv(dev_p);
 	ASSERT(pAd);
 
 	if (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE))
@@ -551,7 +551,7 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 	}
 
 	new_dev_p->destructor =  free_netdev;
-	RTMP_OS_NETDEV_SET_PRIV(new_dev_p, pAd);
+	RtmpOsSetNetDevPriv(new_dev_p, pAd);
 	pNetDevOps->needProtcted = TRUE;
 	NdisMoveMemory(&pNetDevOps->devAddr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
 
@@ -587,7 +587,7 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 		wdev->sys_handle = (void *)pAd;
 		wdev->if_dev = new_dev_p;
 		wdev->tx_pkt_allowed = ApCliAllowToSendPacket;
-		RTMP_OS_NETDEV_SET_PRIV(new_dev_p, pAd);
+		RtmpOsSetNetDevPriv(new_dev_p, pAd);
 		RTMP_OS_NETDEV_SET_WDEV(new_dev_p, wdev);
 		if (rtmp_wdev_idx_reg(pAd, wdev) < 0) {
 			DBGPRINT(RT_DEBUG_ERROR,
@@ -721,7 +721,7 @@ static INT CFG80211_DummyP2pIf_Close(PNET_DEV dev_p)
 
 static INT CFG80211_DummyP2pIf_Ioctl(PNET_DEV dev_p, VOID *rq_p, INT cmd)
 {
-	RTMP_ADAPTER *pAd = RTMP_OS_NETDEV_GET_PRIV(dev_p);
+	RTMP_ADAPTER *pAd = RtmpOsGetNetDevPriv(dev_p);
 	ASSERT(pAd);
 
 	if (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE))
@@ -806,7 +806,7 @@ VOID RTMP_CFG80211_DummyP2pIf_Init(VOID *pAdSrc)
 		DBGPRINT(RT_DEBUG_TRACE, ("Register CFG80211 I/F (%s)\n", RTMP_OS_NETDEV_GET_DEVNAME(new_dev_p)));
 	}
 
-	RTMP_OS_NETDEV_SET_PRIV(new_dev_p, pAd);
+	RtmpOsSetNetDevPriv(new_dev_p, pAd);
 	NdisMoveMemory(&pNetDevOps->devAddr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
 	pNetDevOps->needProtcted = TRUE;
 
