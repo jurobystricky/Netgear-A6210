@@ -65,11 +65,11 @@ MODULE_PARM_DESC (mode, "rt_wifi: wireless operation mode");
 /*---------------------------------------------------------------------*/
 
 /* public function prototype */
-int rt28xx_close(VOID *net_dev);
-int rt28xx_open(VOID *net_dev);
+int rt28xx_close(void *net_dev);
+int rt28xx_open(void *net_dev);
 
 /* private function prototype */
-INT rt28xx_send_packets(struct sk_buff *skb_p, struct net_device *net_dev);
+int rt28xx_send_packets(struct sk_buff *skb_p, struct net_device *net_dev);
 
 struct net_device_stats *RT28xx_get_ether_stats(struct net_device *net_dev);
 
@@ -96,7 +96,7 @@ Note:
 */
 static int MainVirtualIF_close(IN struct net_device *net_dev)
 {
-	VOID *pAd = RTMP_OS_NETDEV_GET_PRIV(net_dev);
+	void *pAd = RtmpOsGetNetDevPriv(net_dev);
 	if (pAd == NULL)
 		return 0;
 
@@ -137,10 +137,7 @@ Note:
 */
 static int MainVirtualIF_open(struct net_device *net_dev)
 {
-	VOID *pAd = NULL;
-
-	GET_PAD_FROM_NET_DEV(pAd, net_dev);
-
+	void *pAd = RtmpOsGetNetDevPriv(net_dev);
 	if (pAd == NULL)
 		return 0;
 
@@ -189,10 +186,10 @@ Note:
 		(3) BA Reordering: 		ba_reordering_resource_release()
 ========================================================================
 */
-int rt28xx_close(VOID *dev)
+int rt28xx_close(void *dev)
 {
 	struct net_device * net_dev = (struct net_device *)dev;
-	VOID *pAd = RTMP_OS_NETDEV_GET_PRIV(net_dev);
+	void *pAd = RtmpOsGetNetDevPriv(net_dev);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("===> rt28xx_close %p\n",pAd));
 
@@ -222,10 +219,10 @@ Return Value:
 Note:
 ========================================================================
 */
-int rt28xx_open(VOID *dev)
+int rt28xx_open(void *dev)
 {
 	struct net_device * net_dev = (struct net_device *)dev;
-	VOID *pAd = NULL;
+	void *pAd;
 	int retval = 0;
 	ULONG OpMode;
 
@@ -234,7 +231,7 @@ int rt28xx_open(VOID *dev)
 #ifdef USB_SUPPORT_SELECTIVE_SUSPEND
 	struct usb_interface *intf;
 	struct usb_device *pUsb_Dev;
-	INT pm_usage_cnt;
+	int pm_usage_cnt;
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
 #endif /* CONFIG_STA_SUPPORT */
@@ -242,7 +239,7 @@ int rt28xx_open(VOID *dev)
 	if (sizeof(ra_dma_addr_t) < sizeof(dma_addr_t))
 		DBGPRINT(RT_DEBUG_ERROR, ("Fatal error for DMA address size!!!\n"));
 
-	GET_PAD_FROM_NET_DEV(pAd, net_dev);
+	pAd = RtmpOsGetNetDevPriv(net_dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -280,8 +277,8 @@ int rt28xx_open(VOID *dev)
 
 
 #if WIRELESS_EXT >= 12
-/*	if (RT_DEV_PRIV_FLAGS_GET(net_dev) == INT_MAIN) */
-	if (RTMP_DRIVER_MAIN_INF_CHECK(pAd, RT_DEV_PRIV_FLAGS_GET(net_dev)) == NDIS_STATUS_SUCCESS) {
+/*	if (RtmpDevPrivFlagsGet(net_dev) == INT_MAIN) */
+	if (RTMP_DRIVER_MAIN_INF_CHECK(pAd, RtmpDevPrivFlagsGet(net_dev)) == NDIS_STATUS_SUCCESS) {
 #ifdef CONFIG_APSTA_MIXED_SUPPORT
 		if (OpMode == OPMODE_AP)
 			net_dev->wireless_handlers = (struct iw_handler_def *) &rt28xx_ap_iw_handler_def;
@@ -352,7 +349,7 @@ err:
 }
 
 
-PNET_DEV RtmpPhyNetDevInit(VOID *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
+PNET_DEV RtmpPhyNetDevInit(void *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
 {
 	struct net_device *net_dev = NULL;
 	ULONG InfId, OpMode;
@@ -381,7 +378,7 @@ PNET_DEV RtmpPhyNetDevInit(VOID *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
 	RTMP_DRIVER_OP_MODE_GET(pAd, &OpMode);
 
 	/* put private data structure */
-	RTMP_OS_NETDEV_SET_PRIV(net_dev, pAd);
+	RtmpOsSetNetDevPriv(net_dev, pAd);
 
 #ifdef CONFIG_STA_SUPPORT
 #if WIRELESS_EXT >= 12
@@ -400,7 +397,7 @@ PNET_DEV RtmpPhyNetDevInit(VOID *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
 #endif /* CONFIG_APSTA_MIXED_SUPPORT */
 
 	/* double-check if pAd is associated with the net_dev */
-	if (RTMP_OS_NETDEV_GET_PRIV(net_dev) == NULL) {
+	if (RtmpOsGetNetDevPriv(net_dev) == NULL) {
 		RtmpOSNetDevFree(net_dev);
 		return NULL;
 	}
@@ -415,7 +412,7 @@ PNET_DEV RtmpPhyNetDevInit(VOID *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
 }
 
 
-static VOID *RtmpNetEthConvertDevSearch(VOID *net_dev_, UCHAR *pData)
+static void *RtmpNetEthConvertDevSearch(void *net_dev_, UCHAR *pData)
 {
 	struct net_device *pNetDev;
 
@@ -447,7 +444,7 @@ static VOID *RtmpNetEthConvertDevSearch(VOID *net_dev_, UCHAR *pData)
 			break;
 	}
 
-	return (VOID *)pNetDev;
+	return (void *)pNetDev;
 }
 
 
@@ -477,7 +474,7 @@ int rt28xx_packet_xmit(void *pkt)
 	struct wifi_dev *wdev;
 	PNDIS_PACKET pPacket = (PNDIS_PACKET)skb;
 
-	wdev = RTMP_OS_NETDEV_GET_WDEV(net_dev);
+	wdev = RtmpOsGetNetDevWdev(net_dev);
 	ASSERT(wdev);
 
 	return RTMPSendPackets((NDIS_HANDLE)wdev, (PPNDIS_PACKET) &pPacket, 1,
@@ -518,15 +515,15 @@ int rt28xx_send_packets(struct sk_buff *skb, struct net_device *ndev)
 /* This function will be called when query /proc */
 struct iw_statistics *rt28xx_get_wireless_stats(struct net_device *net_dev)
 {
-	VOID *pAd = NULL;
+	void *pAd;
 	struct iw_statistics *pStats;
 	RT_CMD_IW_STATS DrvIwStats, *pDrvIwStats = &DrvIwStats;
 
-	GET_PAD_FROM_NET_DEV(pAd, net_dev);
+	pAd = RtmpOsGetNetDevPriv(net_dev);
 
 	DBGPRINT(RT_DEBUG_INFO, ("rt28xx_get_wireless_stats --->\n"));
 
-	pDrvIwStats->priv_flags = RT_DEV_PRIV_FLAGS_GET(net_dev);
+	pDrvIwStats->priv_flags = RtmpDevPrivFlagsGet(net_dev);
 	pDrvIwStats->dev_addr = (PUCHAR)net_dev->dev_addr;
 
 	if (RTMP_DRIVER_IW_STATS_GET(pAd, pDrvIwStats) != NDIS_STATUS_SUCCESS)
@@ -550,13 +547,13 @@ struct iw_statistics *rt28xx_get_wireless_stats(struct net_device *net_dev)
 #endif /* WIRELESS_EXT */
 
 
-INT rt28xx_ioctl(PNET_DEV net_dev, struct ifreq *rq, INT cmd)
+int rt28xx_ioctl(PNET_DEV net_dev, struct ifreq *rq, int cmd)
 {
-	VOID *pAd = NULL;
-	INT ret = 0;
+	void *pAd;
+	int ret = 0;
 	ULONG OpMode;
 
-	GET_PAD_FROM_NET_DEV(pAd, net_dev);
+	pAd = RtmpOsGetNetDevPriv(net_dev);
 	if (pAd == NULL) {
 		/* if 1st open fail, pAd will be free;
 		   So the net_dev->priv will be NULL in 2rd open */
@@ -601,11 +598,11 @@ INT rt28xx_ioctl(PNET_DEV net_dev, struct ifreq *rq, INT cmd)
 */
 struct net_device_stats *RT28xx_get_ether_stats(struct net_device *net_dev)
 {
-	VOID *pAd = NULL;
+	void *pAd = NULL;
 	struct net_device_stats *pStats;
 
 	if (net_dev)
-		GET_PAD_FROM_NET_DEV(pAd, net_dev);
+		pAd = RtmpOsGetNetDevPriv(net_dev);
 
 	if (pAd) {
 		RT_CMD_STATS DrvStats, *pDrvStats = &DrvStats;
@@ -649,7 +646,7 @@ struct net_device_stats *RT28xx_get_ether_stats(struct net_device *net_dev)
 }
 
 
-BOOLEAN RtmpPhyNetDevExit(VOID *pAd, PNET_DEV net_dev)
+BOOLEAN RtmpPhyNetDevExit(void *pAd, PNET_DEV net_dev)
 {
 
 #ifdef CONFIG_AP_SUPPORT
@@ -683,7 +680,7 @@ BOOLEAN RtmpPhyNetDevExit(VOID *pAd, PNET_DEV net_dev)
 
 	/* Unregister network device */
 	if (net_dev != NULL) {
-		printk("RtmpOSNetDevDetach(): RtmpOSNetDeviceDetach(), dev->name=%s!\n", 
+		printk("RtmpOSNetDevDetach(): RtmpOSNetDeviceDetach(), dev->name=%s!\n",
 				net_dev->name);
 		RtmpOSNetDevDetach(net_dev);
 	}
@@ -697,18 +694,15 @@ BOOLEAN RtmpPhyNetDevExit(VOID *pAd, PNET_DEV net_dev)
 	Device IRQ related functions.
 
  *******************************************************************************/
-static int RtmpOSIRQRequest(PNET_DEV pNetDev)
+static int RtmpOSIRQRequest(PNET_DEV net_dev)
 {
 	ULONG infType;
-	VOID *pAd = NULL;
-	int retval = 0;
-
-	GET_PAD_FROM_NET_DEV(pAd, pNetDev);
+	void *pAd = RtmpOsGetNetDevPriv(net_dev);
 
 	ASSERT(pAd);
 
 	RTMP_DRIVER_INF_TYPE_GET(pAd, &infType);
-	return retval;
+	return 0;
 }
 
 
