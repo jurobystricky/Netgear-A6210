@@ -26,7 +26,6 @@
 
 #include <linux/ieee80211.h>
 
-
 typedef enum _NDIS_HOSTAPD_STATUS {
 	Hostapd_Diable = 0,
 	Hostapd_EXT,
@@ -54,9 +53,8 @@ typedef struct __CFG80211_CB {
 
 	/* to protect scan status */
 	spinlock_t scan_notify_lock;
-		
-} CFG80211_CB;
 
+} CFG80211_CB;
 
 
 
@@ -66,9 +64,9 @@ Routine Description:
 	Register MAC80211 Module.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	pDev			- Generic device interface
-	pNetDev			- Network device
+	pAd		- WLAN control block pointer
+	pDev		- Generic device interface
+	pNetDev		- Network device
 
 Return Value:
 	NONE
@@ -80,10 +78,7 @@ Note:
 	Can not use pNetDev to replace pDev; Or kernel panic.
 ========================================================================
 */
-BOOLEAN CFG80211_Register(
-	VOID						*pAd,
-	struct device				*pDev,
-	struct net_device			*pNetDev);
+BOOLEAN CFG80211_Register(void *pAd, struct device *pDev, struct net_device *pNetDev);
 
 #endif /* RT_CFG80211_SUPPORT */
 
