@@ -7,11 +7,11 @@
  *
  * (c) Copyright 2012, Ralink Technology, Inc.
  *
- * All rights reserved.	Ralink's source	code is	an unpublished work	and	the
- * use of a	copyright notice does not imply	otherwise. This	source code
- * contains	confidential trade secret material of Ralink Tech. Any attemp
- * or participation	in deciphering,	decoding, reverse engineering or in	any
- * way altering	the	source code	is stricitly prohibited, unless	the	prior
+ * All rights reserved. Ralink's source code is an unpublished work and the
+ * use of a copyright notice does not imply otherwise. This source code
+ * contains confidential trade secret material of Ralink Tech. Any attemp
+ * or participation in deciphering, decoding, reverse engineering or in any
+ * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
@@ -22,12 +22,13 @@
 
 	Revision History:
 	Who		When			What
-	--------	----------		----------------------------------------------
+	--------	----------		-----------------------------
 	YF Luo		06-28-2012		Init version
-				12-26-2013		Integration of NXTC
+			12-26-2013		Integration of NXTC
 */
 #define RTMP_MODULE_OS
 
+#include <linux/rtnetlink.h>
 #include "rt_config.h"
 #include "rtmp_comm.h"
 #include "rt_os_util.h"
@@ -77,7 +78,7 @@ BOOLEAN CFG80211DRV_OpsChgVirtualInf(RTMP_ADAPTER *pAd, VOID *pData)
 	if (newType == RT_CMD_80211_IFTYPE_ADHOC) {
 		Set_NetworkType_Proc(pAd, "Adhoc");
 	} else if ((newType == RT_CMD_80211_IFTYPE_STATION) ||
-			 (newType == RT_CMD_80211_IFTYPE_P2P_CLIENT)) {
+		(newType == RT_CMD_80211_IFTYPE_P2P_CLIENT)) {
 		CFG80211DBG(RT_DEBUG_TRACE, ("80211> Change the Interface to STA Mode\n"));
 
 #ifdef CONFIG_AP_SUPPORT
@@ -524,7 +525,7 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 
 	memset(preIfName, 0, sizeof(preIfName));
 	NdisCopyMemory(preIfName, pDevName, devNameLen-1);
-	pNetDevOps=&netDevHook;
+	pNetDevOps = &netDevHook;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s ---> (%s, %s, %d)\n",
 			__FUNCTION__, pDevName, preIfName, preIfIndex));
@@ -552,7 +553,6 @@ VOID RTMP_CFG80211_VirtualIF_Init(VOID *pAdSrc, CHAR *pDevName, UINT32 DevType)
 
 	new_dev_p->destructor =  free_netdev;
 	RtmpOsSetNetDevPriv(new_dev_p, pAd);
-	pNetDevOps->needProtcted = TRUE;
 	NdisMoveMemory(&pNetDevOps->devAddr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
 
 	//CFG_TODO
@@ -688,9 +688,9 @@ VOID RTMP_CFG80211_AllVirtualIF_Remove(VOID *pAdSrc)
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
 
 	while ((pDevEntry != NULL) && (pCacheList->size != 0)) {
-		RtmpOSNetDevProtect(1);
+		rtnl_lock();
 		RTMP_CFG80211_VirtualIF_Remove(pAd, pDevEntry->net_dev, pDevEntry->net_dev->ieee80211_ptr->iftype);
-		RtmpOSNetDevProtect(0);
+		rtnl_unlock();
 		pListEntry = pListEntry->pNext;
 		pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
 	}
@@ -744,7 +744,7 @@ VOID RTMP_CFG80211_DummyP2pIf_Remove(VOID *pAdSrc)
 	PNET_DEV dummy_p2p_net_dev = (PNET_DEV)cfg80211_ctrl->dummy_p2p_net_dev;
 
 	DBGPRINT(RT_DEBUG_TRACE, (" %s =====> \n", __FUNCTION__));
-	RtmpOSNetDevProtect(1);
+	rtnl_lock();
 
 	if (dummy_p2p_net_dev) {
 		RTMP_OS_NETDEV_STOP_QUEUE(dummy_p2p_net_dev);
@@ -754,12 +754,12 @@ VOID RTMP_CFG80211_DummyP2pIf_Remove(VOID *pAdSrc)
 			dummy_p2p_net_dev->ieee80211_ptr = NULL;
 		}
 
-		RtmpOSNetDevProtect(0);
+		rtnl_unlock();
 		RtmpOSNetDevFree(dummy_p2p_net_dev);
-		RtmpOSNetDevProtect(1);
+		rtnl_lock();
 		cfg80211_ctrl->flg_cfg_dummy_p2p_init = FALSE;
 	}
-	RtmpOSNetDevProtect(0);
+	rtnl_unlock();
 	DBGPRINT(RT_DEBUG_TRACE, (" %s <=====\n", __FUNCTION__));
 }
 
