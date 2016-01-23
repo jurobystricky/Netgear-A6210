@@ -19,16 +19,16 @@
 #include "rt_os_net.h"
 
 extern USB_DEVICE_ID rtusb_dev_id[];
-extern INT const rtusb_usb_id_len;
+extern int const rtusb_usb_id_len;
 
-static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *intf, VOID *pAd);
+static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *intf, void *pAd);
 
 #ifndef PF_NOFREEZE
 #define PF_NOFREEZE  0
 #endif
 
 
-static VOID rtusb_vendor_specific_check(struct usb_device *dev, VOID *pAd)
+static void rtusb_vendor_specific_check(struct usb_device *dev, void *pAd)
 {
 	RT_CMD_USB_MORE_FLAG_CONFIG Config = { 
 		dev->descriptor.idVendor, dev->descriptor.idProduct };
@@ -37,17 +37,17 @@ static VOID rtusb_vendor_specific_check(struct usb_device *dev, VOID *pAd)
 
 
 static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
-	const USB_DEVICE_ID *dev_id, VOID **ppAd)
+	const USB_DEVICE_ID *dev_id, void **ppAd)
 {
 	struct net_device *net_dev = NULL;
-	VOID *pAd = (VOID *) NULL;
-	INT status, rv;
+	void *pAd = (void *) NULL;
+	int status, rv;
 	PVOID handle;
 	RTMP_OS_NETDEV_OP_HOOK netDevHook;
 	ULONG OpMode;
 #ifdef CONFIG_PM
 #ifdef USB_SUPPORT_SELECTIVE_SUSPEND
-	INT res = 1 ;
+	int res = 1 ;
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
 
@@ -87,14 +87,6 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
 
-	/* set/get operators to/from DRIVER module */
-#ifdef OS_ABL_FUNC_SUPPORT
-	/* get DRIVER operations */
-	RtmpNetOpsInit(pRtmpDrvNetOps);
-	RTMP_DRV_OPS_FUNCTION(pRtmpDrvOps, pRtmpDrvNetOps, NULL, NULL);
-	RtmpNetOpsSet(pRtmpDrvNetOps);
-#endif /* OS_ABL_FUNC_SUPPORT */
-
 	rv = RTMPAllocAdapterBlock(handle, &pAd);
 	if (rv != NDIS_STATUS_SUCCESS) {
 		os_free_mem(NULL, handle);
@@ -124,7 +116,7 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 #ifdef CONFIG_STA_SUPPORT
 /*    pAd->StaCfg.OriDevType = net_dev->type; */
 	RTMP_DRIVER_STA_DEV_TYPE_SET(pAd, net_dev->type);
-#endif /* CONFIG_STA_SUPPORT */
+#endif
 
 /*All done, it's time to register the net device to linux kernel. */
 	/* Register this device */
@@ -147,13 +139,11 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 	if (status != 0)
 		goto err_out_free_netdev;
 
-/*#ifdef KTHREAD_SUPPORT */
-
 	*ppAd = pAd;
 
 #ifdef INF_PPA_SUPPORT
 	RTMP_DRIVER_INF_PPA_INIT(pAd);
-#endif /* INF_PPA_SUPPORT */
+#endif
 
 #ifdef PRE_ASSIGN_MAC_ADDR
 {
@@ -171,7 +161,7 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 
 #ifdef EXT_BUILD_CHANNEL_LIST
 	RTMP_DRIVER_SET_PRECONFIG_VALUE(pAd);
-#endif /* EXT_BUILD_CHANNEL_LIST */
+#endif
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<===rt2870_probe()!\n"));
 
@@ -205,7 +195,7 @@ Return Value:
 Note:
 ========================================================================
 */
-static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
+static void rt2870_disconnect(struct usb_device *dev, void *pAd)
 {
 	struct net_device *net_dev;
 
@@ -233,7 +223,7 @@ static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
 
 #ifdef RT_CFG80211_SUPPORT
 	RTMP_DRIVER_80211_UNREGISTER(pAd, net_dev);
-#endif /* RT_CFG80211_SUPPORT */
+#endif
 
 	/* free the root net_device */
 //	RtmpOSNetDevFree(net_dev);
@@ -244,7 +234,6 @@ static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
 	RtmpOSNetDevFree(net_dev);
 
 	/* release a use of the usb device structure */
-
 	usb_put_dev(dev);
 	udelay(1);
 
@@ -256,7 +245,7 @@ static void rt2870_disconnect(struct usb_device *dev, VOID *pAd)
 static int rtusb_suspend(struct usb_interface *intf, pm_message_t state)
 {
 	struct net_device *net_dev;
-	VOID *pAd = usb_get_intfdata(intf);
+	void *pAd = usb_get_intfdata(intf);
 
 #ifdef USB_SUPPORT_SELECTIVE_SUSPEND
 	UCHAR Flag;
@@ -271,7 +260,7 @@ static int rtusb_suspend(struct usb_interface *intf, pm_message_t state)
 /*	if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF)) */
 		RTMP_DRIVER_ADAPTER_END_DISSASSOCIATE(pAd);
 		RTMP_DRIVER_ADAPTER_IDLE_RADIO_OFF_TEST(pAd, &Flag);
-		if(!Flag) {
+		if (!Flag) {
 			/*RT28xxUsbAsicRadioOff(pAd); */
 			RTMP_DRIVER_ADAPTER_RT28XX_USB_ASICRADIO_OFF(pAd);
 		}
@@ -280,7 +269,6 @@ static int rtusb_suspend(struct usb_interface *intf, pm_message_t state)
 	RTMP_DRIVER_ADAPTER_SUSPEND_SET(pAd);
 	return 0;
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
-
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s()=>\n", __FUNCTION__));
 /*	net_dev = pAd->net_dev; */
@@ -296,10 +284,10 @@ static int rtusb_suspend(struct usb_interface *intf, pm_message_t state)
 static int rtusb_resume(struct usb_interface *intf)
 {
 	struct net_device *net_dev;
-	VOID *pAd = usb_get_intfdata(intf);
+	void *pAd = usb_get_intfdata(intf);
 
 #ifdef USB_SUPPORT_SELECTIVE_SUSPEND
-	INT pm_usage_cnt;
+	int pm_usage_cnt;
 	UCHAR Flag;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
@@ -307,7 +295,6 @@ static int rtusb_resume(struct usb_interface *intf)
 #else
 	pm_usage_cnt = intf->pm_usage_cnt;
 #endif
-
 	if(pm_usage_cnt  <= 0)
 		usb_autopm_get_interface(intf);
 
@@ -348,7 +335,7 @@ static int rtusb_resume(struct usb_interface *intf)
 #endif /* CONFIG_PM */
 
 
-static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *intf, VOID *pAd)
+static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *intf, void *pAd)
 {
 	struct usb_host_interface *iface_desc;
 	ULONG BulkOutIdx;
@@ -427,7 +414,7 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 
 static int rtusb_probe(struct usb_interface *intf, const USB_DEVICE_ID *id)
 {
-	VOID *pAd;
+	void *pAd;
 	struct usb_device *dev;
 	int rv;
 
@@ -455,7 +442,7 @@ static int rtusb_probe(struct usb_interface *intf, const USB_DEVICE_ID *id)
 static void rtusb_disconnect(struct usb_interface *intf)
 {
 	struct usb_device *dev = interface_to_usbdev(intf);
-	VOID *pAd;
+	void *pAd;
 
 	pAd = usb_get_intfdata(intf);
 #ifdef IFUP_IN_PROBE
@@ -476,9 +463,7 @@ static void rtusb_disconnect(struct usb_interface *intf)
 #endif
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
-
 }
-
 
 static struct usb_driver rtusb_driver = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
@@ -506,7 +491,7 @@ ULONG RTDebugFunc = 0;
 static struct dentry *dbgfs_dir = 0;
 #endif
 
-INT __init rtusb_init(void)
+int __init rtusb_init(void)
 {
 #ifdef DBG
 	struct dentry *tmp;
@@ -527,7 +512,7 @@ INT __init rtusb_init(void)
 }
 
 
-VOID __exit rtusb_exit(void)
+void __exit rtusb_exit(void)
 {
 	usb_deregister(&rtusb_driver);
 #ifdef DBG
