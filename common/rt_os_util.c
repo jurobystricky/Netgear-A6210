@@ -6,9 +6,6 @@
 	Abstract:
 	All functions provided from UTIL module are put here (OS independent).
 
-	Revision History:
-	Who        When          What
-	---------  ----------    ----------------------------------------------
 
 ***************************************************************************/
 
@@ -18,24 +15,20 @@
 #include "rtmp_comm.h"
 #include "rt_os_util.h"
 
-VOID RtmpDrvRateGet(
-	IN VOID		*pReserved,
-	IN UINT8	MODE,
-	IN UINT8	ShortGI,
-	IN UINT8	BW,
-	IN UINT8	MCS,
-	IN UINT8	Antenna,
-//	OUT	UINT32	*pRate)
-	OUT	ULONG	*pRate)
+void RtmpDrvRateGet(void *pReserved, UINT8 MODE, UINT8 ShortGI, UINT8 BW,
+	UINT8 MCS, UINT8 Antenna, ULONG *pRate)
 {
 	UINT32 MCS_1NSS = (UINT32) MCS;
 	*pRate = 0;
 
-	DBGPRINT(RT_DEBUG_TRACE,("<==== %s \nMODE: %x shortGI: %x BW: %x MCS: %x Antenna: %x \n"
-		,__FUNCTION__,MODE,ShortGI,BW,MCS,Antenna));
-	if ((BW >= Rate_BW_MAX) || (ShortGI >= Rate_GI_MAX) || (BW >= Rate_BW_MAX)) {
-		DBGPRINT(RT_DEBUG_ERROR,("<==== %s MODE: %x shortGI: %x BW: %x MCS: %x Antenna: %x , param error\n",
+	DBGPRINT(RT_DEBUG_TRACE,
+			("<==== %s \nMODE: %x shortGI: %x BW: %x MCS: %x Antenna: %x \n",
 			__FUNCTION__,MODE,ShortGI,BW,MCS,Antenna));
+	if ((BW >= Rate_BW_MAX) || (ShortGI >= Rate_GI_MAX) ||
+		(BW >= Rate_BW_MAX)) {
+		DBGPRINT(RT_DEBUG_ERROR,
+				("<==== %s MODE: %x shortGI: %x BW: %x MCS: %x Antenna: %x , param error\n",
+				__FUNCTION__,MODE,ShortGI,BW,MCS,Antenna));
 		return;
 	}
 
@@ -69,8 +62,10 @@ VOID RtmpDrvRateGet(
 		*pRate *= Antenna;
 #endif /* DOT11_VHT_AC */
 
-	DBGPRINT(RT_DEBUG_TRACE,("=====> %s \nMODE: %x shortGI: %x BW: %x MCS: %x Antenna: %x  Rate = %lu\n"
-		,__FUNCTION__,MODE,ShortGI,BW,MCS_1NSS,Antenna, (*pRate)/1000000));
+	DBGPRINT(RT_DEBUG_TRACE,
+			("=====> %s \nMODE: %x shortGI: %x BW: %x MCS: %x Antenna: %x  Rate = %lu\n",
+			__FUNCTION__,MODE,ShortGI,BW,MCS_1NSS,Antenna,
+			(*pRate)/1000000));
 }
 
 
@@ -84,12 +79,8 @@ char *rtstrchr(const char * s, int c)
 
 
 #ifdef WPA_SUPPLICANT_SUPPORT
-VOID WpaSendMicFailureToWpaSupplicant(
-	IN PNET_DEV pNetDev,
-	IN const PUCHAR src_addr,
-	IN BOOLEAN bUnicast,
-	IN INT key_id,
-	IN const PUCHAR tsc)
+void WpaSendMicFailureToWpaSupplicant(PNET_DEV pNetDev, const PUCHAR src_addr,
+	BOOLEAN bUnicast, int key_id, const PUCHAR tsc)
 {
 #ifdef RT_CFG80211_SUPPORT
 	CFG80211OS_MICFailReport(pNetDev, src_addr, bUnicast, key_id, tsc);
@@ -97,10 +88,11 @@ VOID WpaSendMicFailureToWpaSupplicant(
 	char custom[IW_CUSTOM_MAX] = {0};
 
 	snprintf(custom, sizeof(custom), "MLME-MICHAELMICFAILURE.indication");
-	if(bUnicast)
+	if (bUnicast)
 		sprintf(custom, "%s unicast", custom);
 
-	RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM, -1, NULL, (PUCHAR)custom, strlen(custom));
+	RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM, -1, NULL,
+			(PUCHAR)custom, strlen(custom));
 #endif /* RT_CFG80211_SUPPORT */
 
 	return;
@@ -109,20 +101,18 @@ VOID WpaSendMicFailureToWpaSupplicant(
 
 
 #ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
-int wext_notify_event_assoc(
-	IN PNET_DEV pNetDev,
-	IN UCHAR *ReqVarIEs,
-	IN UINT32 ReqVarIELen)
+int wext_notify_event_assoc(PNET_DEV pNetDev, UCHAR *ReqVarIEs, UINT32 ReqVarIELen)
 {
 	char custom[IW_CUSTOM_MAX] = {0};
 
 #if WIRELESS_EXT > 17
 	if (ReqVarIELen <= IW_CUSTOM_MAX) {
 		NdisMoveMemory(custom, ReqVarIEs, ReqVarIELen);
-		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_ASSOC_REQ_IE, -1, NULL,
-								(UCHAR *)custom, ReqVarIELen);
+		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_ASSOC_REQ_IE, -1,
+				NULL, (UCHAR *)custom, ReqVarIELen);
 	} else {
-		DBGPRINT(RT_DEBUG_TRACE, ("pAd->StaCfg.ReqVarIELen > MAX_CUSTOM_LEN\n"));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("pAd->StaCfg.ReqVarIELen > MAX_CUSTOM_LEN\n"));
 	}
 #else
 	int len;
@@ -131,9 +121,12 @@ int wext_notify_event_assoc(
 	if (len <= IW_CUSTOM_MAX) {
 		UCHAR   idx;
 		snprintf(custom, sizeof(custom), "ASSOCINFO(ReqIEs=");
-		for (idx=0; idx<ReqVarIELen; idx++)
-				sprintf(custom, "%s%02x", custom, ReqVarIEs[idx]);
-		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM, -1, NULL, custom, len);
+
+		for (idx = 0; idx < ReqVarIELen; idx++)
+			sprintf(custom, "%s%02x", custom, ReqVarIEs[idx]);
+
+		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM, -1,
+				NULL, custom, len);
 	} else {
 		DBGPRINT(RT_DEBUG_TRACE, ("len(%d) > MAX_CUSTOM_LEN\n", len));
 	}
@@ -146,64 +139,30 @@ int wext_notify_event_assoc(
 #ifdef CONFIG_STA_SUPPORT
 #ifdef WPA_SUPPLICANT_SUPPORT
 #ifndef NATIVE_WPA_SUPPLICANT_SUPPORT
-VOID SendAssocIEsToWpaSupplicant(
-	IN PNET_DEV pNetDev,
-	IN UCHAR *ReqVarIEs,
-	IN UINT32 ReqVarIELen)
+void SendAssocIEsToWpaSupplicant(PNET_DEV pNetDev, UCHAR *ReqVarIEs,
+	UINT32 ReqVarIELen)
 {
 	STRING custom[IW_CUSTOM_MAX] = {0};
 
 	if ((ReqVarIELen + 17) <= IW_CUSTOM_MAX) {
 		snprintf(custom, sizeof(custom), "ASSOCINFO_ReqIEs=");
 		NdisMoveMemory(custom+17, ReqVarIEs, ReqVarIELen);
-		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM, RT_REQIE_EVENT_FLAG, NULL, (PUCHAR)custom, ReqVarIELen + 17);
-
-		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM, RT_ASSOCINFO_EVENT_FLAG, NULL, NULL, 0);
+		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM,
+				RT_REQIE_EVENT_FLAG, NULL, (PUCHAR)custom,
+				ReqVarIELen + 17);
+		RtmpOSWrielessEventSend(pNetDev, RT_WLAN_EVENT_CUSTOM,
+				RT_ASSOCINFO_EVENT_FLAG, NULL, NULL, 0);
 	} else {
-		DBGPRINT(RT_DEBUG_TRACE, ("pAd->StaCfg.ReqVarIELen + 17 > MAX_CUSTOM_LEN\n"));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("pAd->StaCfg.ReqVarIELen + 17 > MAX_CUSTOM_LEN\n"));
 	}
-
-	return;
 }
 #endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
 #endif /* WPA_SUPPLICANT_SUPPORT */
 #endif /*CONFIG_STA_SUPPORT*/
 
-INT32  RtPrivIoctlSetVal(VOID)
+INT32 RtPrivIoctlSetVal(void)
 {
 	return (INT32)RTPRIV_IOCTL_SET;
 }
-
-
-#ifndef RTMP_ANDES_JAY
-#ifdef RTMP_USB_SUPPORT
-PVOID RtmpAllocCompletion(VOID)
-{
-	struct completion *comp = NULL;
-	os_alloc_mem(NULL, (UCHAR **)&comp, sizeof(struct completion));
-	if (comp)
-		init_completion(comp);
-
-	return comp;
-}
-
-VOID RtmpInitCompletion(VOID *comp)
-{
-	struct completion *complete = (struct completion *)comp;
-	init_completion(complete);
-}
-
-
-ULONG RtmpWaitForCompletionTimeout(VOID *Completion, ULONG Expire)
-{
-	return wait_for_completion_timeout((struct completion *)Completion, Expire);
-}
-
-VOID RtmpComplete(VOID *Completion)
-{
-	complete((struct completion *)Completion);
-}
-
-#endif /* RTMP_USB_SUPPORT */
-#endif /* RTMP_ANDES_JAY */
 
