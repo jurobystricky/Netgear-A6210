@@ -138,8 +138,6 @@ int RtmpOSNotifyRawData(PNET_DEV pNetDev, UCHAR *buf, int len, ULONG type, USHOR
 void RtmpOSNetDevDetach(PNET_DEV pNetDev);
 int RtmpOSNetDevAttach(UCHAR OpMode, PNET_DEV pNetDev, RTMP_OS_NETDEV_OP_HOOK *pDevOpHook);
 
-void RtmpOSNetDevProtect(BOOLEAN lock_it);
-
 PNET_DEV RtmpOSNetDevCreate(INT32 MC_RowID, UINT32 *pIoctlIF, int devType,
 	int devNum, int privMemSize, PSTRING pNamePrefix);
 
@@ -214,7 +212,6 @@ UINT16 RtmpOsGetUnaligned(UINT16 *pWord);
 UINT32 RtmpOsGetUnaligned32(UINT32 *pWord);
 ULONG RtmpOsGetUnalignedlong(ULONG *pWord);
 long RtmpOsSimpleStrtol(const char *cp, char **endp, unsigned int base);
-void RtmpOsOpsInit(RTMP_OS_ABL_OPS *pOps);
 
 /* ============================ rt_os_util.c ================================ */
 void RtmpDrvRateGet(void *pReserved, UINT8 MODE, UINT8 ShortGI, UINT8 BW,
@@ -301,15 +298,10 @@ BOOLEAN CFG80211OS_RxMgmt(PNET_DEV pNetDev, INT32 freq, PUCHAR frame, UINT32 len
 
 void CFG80211OS_TxStatus(PNET_DEV pNetDev, INT32 cookie, PUCHAR frame,
 	UINT32 len, BOOLEAN ack);
-void CFG80211OS_NewSta(PNET_DEV pNetDev, const PUCHAR mac_addr,
-	const PUCHAR assoc_frame,  UINT32 assoc_len);
-void CFG80211OS_DelSta(PNET_DEV pNetDev, const PUCHAR mac_addr);
+
 void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr,
 	BOOLEAN unicast, int key_id, const PUCHAR tsc);
-void CFG80211OS_Roamed(PNET_DEV pNetDev, UCHAR *pBSSID, UCHAR *pReqIe,
-	UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen);
-void CFG80211OS_RecvObssBeacon(void *pCB, const PUCHAR pFrame, int frameLen,
-	int freq);
+
 #endif /* RT_CFG80211_SUPPORT */
 
 
