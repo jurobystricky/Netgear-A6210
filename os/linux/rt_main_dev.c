@@ -124,7 +124,7 @@ Arguments:
 	*net_dev	the raxx interface pointer
 
 Return Value:
-    0			Open OK
+	0		Open OK
 	otherwise	Open Fail
 
 Note:
@@ -149,7 +149,7 @@ static int MainVirtualIF_open(struct net_device *net_dev)
 #ifdef IFUP_IN_PROBE
 	while (RTMP_DRIVER_IOCTL_SANITY_CHECK(pAd, NULL) != NDIS_STATUS_SUCCESS) {
 		OS_WAIT(10);
-		DBGPRINT(RT_DEBUG_TRACE, ("Card not ready, NDIS_STATUS_SUCCESS!\n"));
+		DBGPRINT(RT_DEBUG_TRACE, ("%s: Card not ready\n",__FUNCTION__));
 	}
 #else
 	if (VIRTUAL_IF_UP(pAd) != 0)
@@ -175,7 +175,7 @@ Arguments:
 	*net_dev	the raxx interface pointer
 
 Return Value:
-    0			Open OK
+	0		Open OK
 	otherwise	Open Fail
 
 Note:
@@ -370,7 +370,7 @@ PNET_DEV RtmpPhyNetDevInit(void *pAd, RTMP_OS_NETDEV_OP_HOOK *pNetDevHook)
 	pNetDevHook->ioctl = rt28xx_ioctl;
 	pNetDevHook->priv_flags = InfId; /*INT_MAIN; */
 	pNetDevHook->get_stats = RT28xx_get_ether_stats;
-	pNetDevHook->needProtcted = FALSE;
+//	pNetDevHook->needProtcted = FALSE;
 
 #if (WIRELESS_EXT < 21) && (WIRELESS_EXT >= 12)
 	pNetDevHook->get_wstats = rt28xx_get_wireless_stats;
@@ -680,8 +680,7 @@ BOOLEAN RtmpPhyNetDevExit(void *pAd, PNET_DEV net_dev)
 
 	/* Unregister network device */
 	if (net_dev != NULL) {
-		printk("RtmpOSNetDevDetach(): RtmpOSNetDeviceDetach(), dev->name=%s!\n",
-				net_dev->name);
+		printk("%s: dev->name=%s!\n", __FUNCTION__, net_dev->name);
 		RtmpOSNetDevDetach(net_dev);
 	}
 
