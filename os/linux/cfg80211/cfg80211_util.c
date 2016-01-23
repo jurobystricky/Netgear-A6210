@@ -146,7 +146,7 @@ static const UINT32 CipherSuites[] = {
 static BOOLEAN IsRadarChannel(UCHAR ch)
 {
 	UINT idx = 0;
-	for (idx = 0; idx<sizeof(Cfg80211_RadarChan); idx++) {
+	for (idx = 0; idx < sizeof(Cfg80211_RadarChan); idx++) {
 		if (Cfg80211_RadarChan[idx] == ch)
 			return TRUE;
 	}
@@ -160,8 +160,8 @@ Routine Description:
 	UnRegister MAC80211 Module.
 
 Arguments:
-	pCB				- CFG80211 control block pointer
-	pNetDev			- Network device
+	pCB		- CFG80211 control block pointer
+	pNetDev		- Network device
 
 Return Value:
 	NONE
@@ -169,15 +169,14 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID CFG80211OS_UnRegister(VOID *pCB, VOID *pNetDevOrg)
+void CFG80211OS_UnRegister(void *pCB, void *pNetDevOrg)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	struct net_device *pNetDev = (struct net_device *)pNetDevOrg;
 
-
 	/* unregister */
 	if (pCfg80211_CB->pCfg80211_Wdev != NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("80211> unregister/free wireless device\n"));
+		DBGPRINT(RT_DEBUG_WARN, ("80211> unregister/free wireless device\n"));
 
 		/*
 			Must unregister, or you will suffer problem when you change
@@ -186,7 +185,7 @@ VOID CFG80211OS_UnRegister(VOID *pCB, VOID *pNetDevOrg)
 
 #ifdef RFKILL_HW_SUPPORT
 		wiphy_rfkill_stop_polling(pCfg80211_CB->pCfg80211_Wdev->wiphy);
-#endif /* RFKILL_HW_SUPPORT */
+#endif
 		wiphy_unregister(pCfg80211_CB->pCfg80211_Wdev->wiphy);
 		wiphy_free(pCfg80211_CB->pCfg80211_Wdev->wiphy);
 		kfree(pCfg80211_CB->pCfg80211_Wdev);
@@ -216,14 +215,14 @@ Routine Description:
 	Initialize wireless channel in 2.4GHZ and 5GHZ.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	pWiphy			- WLAN PHY interface
-	pChannels		- Current channel info
-	pRates			- Current rate info
+	pAd		- WLAN control block pointer
+	pWiphy		- WLAN PHY interface
+	pChannels	- Current channel info
+	pRates		- Current rate info
 
 Return Value:
-	TRUE			- init successfully
-	FALSE			- init fail
+	TRUE		- init successfully
+	FALSE		- init fail
 
 Note:
 	TX Power related:
@@ -240,12 +239,8 @@ Note:
 	2. Maximum TX power limitation in the regulatory domain.
 ========================================================================
 */
-BOOLEAN CFG80211_SupBandInit(
-	IN VOID *pCB,
-	IN CFG80211_BAND *pDriverBandInfo,
-	IN VOID *pWiphyOrg,
-	IN VOID *pChannelsOrg,
-	IN VOID *pRatesOrg)
+BOOLEAN CFG80211_SupBandInit(void *pCB, CFG80211_BAND *pDriverBandInfo,
+	void *pWiphyOrg, void *pChannelsOrg, void *pRatesOrg)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	struct wiphy *pWiphy = (struct wiphy *)pWiphyOrg;
@@ -272,14 +267,14 @@ BOOLEAN CFG80211_SupBandInit(
 	else
 		NumOfRate = 4 + 8;
 
-	CFG80211DBG(RT_DEBUG_ERROR, ("80211> RFICType= %d, NumOfChan= %d\n", pDriverBandInfo->RFICType, NumOfChan));
-	CFG80211DBG(RT_DEBUG_ERROR, ("80211> Number of rate = %d\n", NumOfRate));
+	CFG80211DBG(RT_DEBUG_TRACE, ("80211> RFICType= %d, NumOfChan= %d\n",
+			pDriverBandInfo->RFICType, NumOfChan));
+	CFG80211DBG(RT_DEBUG_TRACE, ("80211> Number of rate = %d\n", NumOfRate));
 
 	/* 3. Allocate the Channel instance */
 	if (pChannels == NULL) {
 		pChannels = kzalloc(sizeof(*pChannels) * NumOfChan, GFP_KERNEL);
 		if (!pChannels) {
-			DBGPRINT(RT_DEBUG_ERROR, ("80211> ieee80211_channel allocation fail!\n"));
 			return FALSE;
 		}
 	}
@@ -289,7 +284,6 @@ BOOLEAN CFG80211_SupBandInit(
 		pRates = kzalloc(sizeof(*pRates) * NumOfRate, GFP_KERNEL);
 		if (!pRates) {
 			os_free_mem(NULL, pChannels);
-			DBGPRINT(RT_DEBUG_ERROR, ("80211> ieee80211_rate allocation fail!\n"));
 			return FALSE;
 		}
 	}
@@ -304,17 +298,17 @@ BOOLEAN CFG80211_SupBandInit(
 	CFG80211DBG(RT_DEBUG_ERROR, ("80211> CurTxPower = %d dBm\n", CurTxPower));
 
 	/* 5. init channel */
-	for (IdLoop=0; IdLoop<NumOfChan; IdLoop++) {
+	for (IdLoop = 0; IdLoop < NumOfChan; IdLoop++) {
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		if (IdLoop >= 14) {
 			pChannels[IdLoop].band = IEEE80211_BAND_5GHZ;
 			pChannels[IdLoop].center_freq = \
-			    		ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop], IEEE80211_BAND_5GHZ);
+				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop], IEEE80211_BAND_5GHZ);
 		} else {
 			pChannels[IdLoop].band = IEEE80211_BAND_2GHZ;
 		    pChannels[IdLoop].center_freq = \
-			    		ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop], IEEE80211_BAND_2GHZ);
+				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop], IEEE80211_BAND_2GHZ);
 		}
 #else
 		pChannels[IdLoop].center_freq = ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop]);
@@ -488,12 +482,12 @@ Routine Description:
 	Re-Initialize wireless channel/PHY in 2.4GHZ and 5GHZ.
 
 Arguments:
-	pCB				- CFG80211 control block pointer
-	pBandInfo		- Band information
+	pCB		- CFG80211 control block pointer
+	pBandInfo	- Band information
 
 Return Value:
-	TRUE			- re-init successfully
-	FALSE			- re-init fail
+	TRUE		- re-init successfully
+	FALSE		- re-init fail
 
 Note:
 	CFG80211_SupBandInit() is called in xx_probe().
@@ -501,9 +495,7 @@ Note:
 	need to re-init bands in xx_open().
 ========================================================================
 */
-BOOLEAN CFG80211OS_SupBandReInit(
-	IN VOID *pCB,
-	IN CFG80211_BAND *pBandInfo)
+BOOLEAN CFG80211OS_SupBandReInit(void *pCB, CFG80211_BAND *pBandInfo)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	struct wiphy *pWiphy;
@@ -518,8 +510,8 @@ BOOLEAN CFG80211OS_SupBandReInit(
 
 		/* re-init bands */
 		CFG80211_SupBandInit(pCfg80211_CB, pBandInfo, pWiphy,
-							pCfg80211_CB->pCfg80211_Channels,
-							pCfg80211_CB->pCfg80211_Rates);
+				pCfg80211_CB->pCfg80211_Channels,
+				pCfg80211_CB->pCfg80211_Rates);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 		/* re-init PHY */
@@ -542,8 +534,8 @@ Routine Description:
 	Hint to the wireless core a regulatory domain from driver.
 
 Arguments:
-	pAd				- WLAN control block pointer
-	pCountryIe		- pointer to the country IE
+	pAd		- WLAN control block pointer
+	pCountryIe	- pointer to the country IE
 	CountryIeLen	- length of the country IE
 
 Return Value:
@@ -553,20 +545,17 @@ Note:
 	Must call the function in kernel thread.
 ========================================================================
 */
-VOID CFG80211OS_RegHint(
-	IN VOID *pCB,
-	IN UCHAR *pCountryIe,
-	IN ULONG CountryIeLen)
+void CFG80211OS_RegHint(void *pCB, UCHAR *pCountryIe, ULONG CountryIeLen)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
-
 
 	CFG80211DBG(RT_DEBUG_ERROR,
 			("crda> regulatory domain hint: %c%c\n",
 			pCountryIe[0], pCountryIe[1]));
 
 	if ((pCfg80211_CB->pCfg80211_Wdev == NULL) || (pCountryIe == NULL)) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("crda> regulatory domain hint not support!\n"));
+		CFG80211DBG(RT_DEBUG_ERROR,
+				("crda> regulatory domain hint not support!\n"));
 		return;
 	}
 
@@ -581,8 +570,8 @@ Routine Description:
 	Hint to the wireless core a regulatory domain from country element.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
-	pCountryIe		- pointer to the country IE
+	pAdCB		- WLAN control block pointer
+	pCountryIe	- pointer to the country IE
 	CountryIeLen	- length of the country IE
 
 Return Value:
@@ -592,22 +581,20 @@ Note:
 	Must call the function in kernel thread.
 ========================================================================
 */
-VOID CFG80211OS_RegHint11D(
-	IN VOID *pCB,
-	IN UCHAR *pCountryIe,
-	IN ULONG CountryIeLen)
+void CFG80211OS_RegHint11D(void *pCB, UCHAR *pCountryIe, ULONG CountryIeLen)
 {
 	/* no regulatory_hint_11d() in 2.6.32 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,32))
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 
 	if ((pCfg80211_CB->pCfg80211_Wdev == NULL) || (pCountryIe == NULL)) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("crda> regulatory domain hint not support!\n"));
+		CFG80211DBG(RT_DEBUG_ERROR,
+				("crda> regulatory domain hint not support!\n"));
 		return;
 	}
 
 	CFG80211DBG(RT_DEBUG_ERROR, ("crda> regulatory domain hint: %c%c\n",
-				pCountryIe[0], pCountryIe[1]));
+			pCountryIe[0], pCountryIe[1]));
 
 	/*
 		hints a country IE as a regulatory domain "with" channel/power info.
@@ -618,11 +605,8 @@ VOID CFG80211OS_RegHint11D(
 }
 
 
-BOOLEAN CFG80211OS_BandInfoGet(
-	IN VOID *pCB,
-	IN VOID *pWiphyOrg,
-	OUT VOID **ppBand24,
-	OUT VOID **ppBand5)
+BOOLEAN CFG80211OS_BandInfoGet(void *pCB, void *pWiphyOrg, void **ppBand24,
+	void **ppBand5)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	struct wiphy *pWiphy = (struct wiphy *)pWiphyOrg;
@@ -641,10 +625,7 @@ BOOLEAN CFG80211OS_BandInfoGet(
 }
 
 
-UINT32 CFG80211OS_ChanNumGet(
-	IN VOID						*pCB,
-	IN VOID						*pWiphyOrg,
-	IN UINT32					IdBand)
+UINT32 CFG80211OS_ChanNumGet(void *pCB, void *pWiphyOrg, UINT32 IdBand)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	struct wiphy *pWiphy = (struct wiphy *)pWiphyOrg;
@@ -664,14 +645,8 @@ UINT32 CFG80211OS_ChanNumGet(
 }
 
 
-BOOLEAN CFG80211OS_ChanInfoGet(
-	IN VOID						*pCB,
-	IN VOID						*pWiphyOrg,
-	IN UINT32					IdBand,
-	IN UINT32					IdChan,
-	OUT UINT32					*pChanId,
-	OUT UINT32					*pPower,
-	OUT BOOLEAN					*pFlgIsRadar)
+BOOLEAN CFG80211OS_ChanInfoGet(void *pCB, void *pWiphyOrg, UINT32 IdBand,
+	UINT32 IdChan, UINT32 *pChanId, UINT32 *pPower, BOOLEAN *pFlgIsRadar)
 {
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	struct wiphy *pWiphy = (struct wiphy *)pWiphyOrg;
@@ -692,8 +667,9 @@ BOOLEAN CFG80211OS_ChanInfoGet(
 	*pChanId = ieee80211_frequency_to_channel(pChan->center_freq);
 
 	if (pChan->flags & IEEE80211_CHAN_DISABLED) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("Chan %03d (frq %d):\tnot allowed!\n",
-					(*pChanId), pChan->center_freq));
+		CFG80211DBG(RT_DEBUG_ERROR,
+				("Chan %03d (frq %d):\tnot allowed!\n",
+				(*pChanId), pChan->center_freq));
 		return FALSE;
 	}
 
@@ -722,15 +698,10 @@ Return Value:
 Note:
 ========================================================================
 */
-BOOLEAN CFG80211OS_ChanInfoInit(
-	IN VOID						*pCB,
-	IN UINT32					InfoIndex,
-	IN UCHAR					ChanId,
-	IN UCHAR					MaxTxPwr,
-	IN BOOLEAN					FlgIsNMode,
-	IN BOOLEAN					FlgIsBW20M)
+BOOLEAN CFG80211OS_ChanInfoInit(void *pCB, UINT32 InfoIndex, UCHAR ChanId,
+	UCHAR MaxTxPwr, BOOLEAN FlgIsNMode, BOOLEAN FlgIsBW20M)
 {
-	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
+	CFG80211_CB *pCfg80211_CB = (CFG80211_CB*)pCB;
 	struct ieee80211_channel *pChan;
 
 	if (InfoIndex >= MAX_NUM_OF_CHANNELS)
@@ -774,7 +745,7 @@ Routine Description:
 	Inform us that a scan is got.
 
 Arguments:
-	pAdCB				- WLAN control block pointer
+	pAdCB		- WLAN control block pointer
 
 Return Value:
 	NONE
@@ -783,7 +754,7 @@ Note:
 	Call RT_CFG80211_SCANNING_INFORM, not CFG80211_Scaning
 ========================================================================
 */
-VOID CFG80211OS_Scaning(VOID *pCB, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen,
+void CFG80211OS_Scaning(void *pCB, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen,
 	INT32 RSSI, BOOLEAN FlgIsNMode, UINT8 BW)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30))
@@ -868,7 +839,7 @@ Routine Description:
 	Inform us that scan ends.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
+	pAdCB		- WLAN control block pointer
 	FlgIsAborted	- 1: scan is aborted
 
 Return Value:
@@ -877,18 +848,18 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID CFG80211OS_ScanEnd(VOID *pCB, BOOLEAN FlgIsAborted)
+void CFG80211OS_ScanEnd(void *pCB, BOOLEAN FlgIsAborted)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30))
 #ifdef CONFIG_STA_SUPPORT
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	NdisAcquireSpinLock(&pCfg80211_CB->scan_notify_lock);
 	if (pCfg80211_CB->pCfg80211_ScanReq) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("80211> cfg80211_scan_done\n"));
+		CFG80211DBG(RT_DEBUG_TRACE, ("80211> cfg80211_scan_done\n"));
 		cfg80211_scan_done(pCfg80211_CB->pCfg80211_ScanReq, FlgIsAborted);
 		pCfg80211_CB->pCfg80211_ScanReq = NULL;
 	} else {
-		CFG80211DBG(RT_DEBUG_ERROR, ("80211> cfg80211_scan_done ==> NULL\n"));
+		CFG80211DBG(RT_DEBUG_WARN, ("80211> cfg80211_scan_done ==> NULL\n"));
 	}
 	NdisReleaseSpinLock(&pCfg80211_CB->scan_notify_lock);
 #endif /* CONFIG_STA_SUPPORT */
@@ -902,12 +873,12 @@ Routine Description:
 	Inform CFG80211 about association status.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
-	pBSSID			- the BSSID of the AP
-	pReqIe			- the element list in the association request frame
-	ReqIeLen		- the request element length
-	pRspIe			- the element list in the association response frame
-	RspIeLen		- the response element length
+	pAdCB		- WLAN control block pointer
+	pBSSID		- the BSSID of the AP
+	pReqIe		- the element list in the association request frame
+	ReqIeLen	- the request element length
+	pRspIe		- the element list in the association response frame
+	RspIeLen	- the response element length
 	FlgIsSuccess	- 1: success; otherwise: fail
 
 Return Value:
@@ -916,14 +887,8 @@ Return Value:
 Note:
 ========================================================================
 */
-void CFG80211OS_ConnectResultInform(
-	IN VOID *pCB,
-	IN UCHAR *pBSSID,
-	IN UCHAR *pReqIe,
-	IN UINT32 ReqIeLen,
-	IN UCHAR *pRspIe,
-	IN UINT32 RspIeLen,
-	IN UCHAR FlgIsSuccess)
+void CFG80211OS_ConnectResultInform(void *pCB, UCHAR *pBSSID, UCHAR *pReqIe,
+	UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen, UCHAR FlgIsSuccess)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
@@ -933,32 +898,20 @@ void CFG80211OS_ConnectResultInform(
 
 	if (FlgIsSuccess) {
 		cfg80211_connect_result(pCfg80211_CB->pCfg80211_Wdev->netdev,
-								pBSSID,
-								pReqIe,
-								ReqIeLen,
-								pRspIe,
-								RspIeLen,
-								WLAN_STATUS_SUCCESS,
-								GFP_KERNEL);
+				pBSSID, pReqIe, ReqIeLen, pRspIe, RspIeLen,
+				WLAN_STATUS_SUCCESS, GFP_KERNEL);
 	} else {
 		cfg80211_connect_result(pCfg80211_CB->pCfg80211_Wdev->netdev,
-								pBSSID,
-								NULL, 0, NULL, 0,
-								WLAN_STATUS_UNSPECIFIED_FAILURE,
-								GFP_KERNEL);
+				pBSSID, NULL, 0, NULL, 0,
+				WLAN_STATUS_UNSPECIFIED_FAILURE, GFP_KERNEL);
 	}
 #endif /* LINUX_VERSION_CODE */
 }
 
 /* CFG_TODO: should be merge totoger */
-void CFG80211OS_P2pClientConnectResultInform(
-	IN PNET_DEV 				pNetDev,
-	IN UCHAR					*pBSSID,
-	IN UCHAR					*pReqIe,
-	IN UINT32					ReqIeLen,
-	IN UCHAR					*pRspIe,
-	IN UINT32					RspIeLen,
-	IN UCHAR					FlgIsSuccess)
+void CFG80211OS_P2pClientConnectResultInform(PNET_DEV pNetDev, UCHAR *pBSSID,
+	UCHAR *pReqIe, UINT32 ReqIeLen, UCHAR *pRspIe, UINT32 RspIeLen,
+	UCHAR FlgIsSuccess)
 {
 	if ((pNetDev == NULL) || (pBSSID == NULL))
 		return;
@@ -968,23 +921,15 @@ void CFG80211OS_P2pClientConnectResultInform(
 		hex_dump("APCLI Req:", pReqIe, ReqIeLen);
 		hex_dump("APCLI Rsp:", pRspIe, RspIeLen);
 		cfg80211_connect_result(pNetDev,
-								pBSSID,
-								pReqIe,
-								ReqIeLen,
-								pRspIe,
-								RspIeLen,
-								WLAN_STATUS_SUCCESS,
-								GFP_KERNEL);
+				pBSSID, pReqIe, ReqIeLen, pRspIe, RspIeLen,
+				WLAN_STATUS_SUCCESS, GFP_KERNEL);
 	} else {
-		cfg80211_connect_result(pNetDev,
-								pBSSID,
-								NULL, 0, NULL, 0,
-								WLAN_STATUS_UNSPECIFIED_FAILURE,
-								GFP_KERNEL);
+		cfg80211_connect_result(pNetDev, pBSSID, NULL, 0, NULL, 0,
+				WLAN_STATUS_UNSPECIFIED_FAILURE, GFP_KERNEL);
 	}
 }
 
-BOOLEAN CFG80211OS_RxMgmt(IN PNET_DEV pNetDev, IN INT32 freq, IN PUCHAR frame, IN UINT32 len)
+BOOLEAN CFG80211OS_RxMgmt(PNET_DEV pNetDev, INT32 freq, PUCHAR frame, UINT32 len)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 	struct wireless_dev *pWdev;
@@ -1008,7 +953,8 @@ BOOLEAN CFG80211OS_RxMgmt(IN PNET_DEV pNetDev, IN INT32 freq, IN PUCHAR frame, I
 #endif /* LINUX_VERSION_CODE 3.4.0*/
 }
 
-VOID CFG80211OS_TxStatus(IN PNET_DEV pNetDev, IN INT32 cookie, IN PUCHAR frame, IN UINT32 len, IN BOOLEAN ack)
+void CFG80211OS_TxStatus(PNET_DEV pNetDev, INT32 cookie, PUCHAR frame,
+	UINT32 len, BOOLEAN ack)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 	struct wireless_dev *pWdev;
@@ -1029,76 +975,14 @@ VOID CFG80211OS_TxStatus(IN PNET_DEV pNetDev, IN INT32 cookie, IN PUCHAR frame, 
 
 }
 
-VOID CFG80211OS_NewSta(IN PNET_DEV pNetDev, IN const PUCHAR mac_addr, IN const PUCHAR assoc_frame, IN UINT32 assoc_len)
-{
-	struct station_info sinfo;
-	struct ieee80211_mgmt *mgmt;
 
-	NdisZeroMemory(&sinfo, sizeof(sinfo));
-
-/* If get error here, be sure patch the cfg80211_new_sta.patch into kernel. */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)
-	sinfo.filled = STATION_INFO_ASSOC_REQ_IES;
-#else
-	sinfo.filled = 0;
-#endif /* >= 3.2 but < 4.0 */
-#else
-	sinfo.filled = 0;
-#endif /* > 3.19. */
-
-	mgmt = (struct ieee80211_mgmt *) assoc_frame;
-	sinfo.assoc_req_ies_len = assoc_len - 24 - 4;
-	sinfo.assoc_req_ies = mgmt->u.assoc_req.variable;
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-	return cfg80211_new_sta(pNetDev, mac_addr, &sinfo, GFP_ATOMIC);
-#endif
-
-}
-
-VOID CFG80211OS_DelSta(IN PNET_DEV pNetDev, IN const PUCHAR mac_addr)
-{
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
-	return cfg80211_del_sta(pNetDev, mac_addr, GFP_ATOMIC);
-#endif
-}
-
-VOID CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr, BOOLEAN unicast, INT key_id, const PUCHAR tsc)
+void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr,
+	BOOLEAN unicast, int key_id, const PUCHAR tsc)
 {
 	cfg80211_michael_mic_failure(pNetDev, src_addr,
 		(unicast ? NL80211_KEYTYPE_PAIRWISE : NL80211_KEYTYPE_GROUP),
 		key_id, tsc, GFP_ATOMIC);
 }
 
-VOID CFG80211OS_Roamed(
-	PNET_DEV pNetDev, IN UCHAR *pBSSID,
-	IN UCHAR *pReqIe, IN UINT32 ReqIeLen,
-	IN UCHAR *pRspIe, IN UINT32 RspIeLen)
-{
-	cfg80211_roamed(pNetDev,
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39))
-		NULL,
-#endif
-		pBSSID,
-		pReqIe, ReqIeLen,
-		pRspIe, RspIeLen,
-		GFP_KERNEL);
-}
-
-VOID CFG80211OS_RecvObssBeacon(VOID *pCB, const PUCHAR pFrame, INT frameLen, INT freq)
-{
-	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
-	struct wiphy *pWiphy = pCfg80211_CB->pCfg80211_Wdev->wiphy;
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-        cfg80211_report_obss_beacon(pWiphy, pFrame,frameLen, freq, 50);
-//jb was         cfg80211_report_obss_beacon(pWiphy, pFrame,frameLen, freq, 50, GFP_ATOMIC);
-#else
-	cfg80211_report_obss_beacon(pWiphy, pFrame,frameLen, freq, GFP_ATOMIC);
-#endif /*LINUX_VERSION_CODE: 3.4.0*/
-#endif /* LINUX_VERSION_CODE: 3.3.0 */
-}
 
 #endif /* RT_CFG80211_SUPPORT */
