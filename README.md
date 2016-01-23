@@ -20,14 +20,12 @@ The original code was downloaded from:
 http://cdn-cw.mediatek.com/Downloads/linux/MT7612U_DPO_LinuxSTA_3.0.0.1_20140718.tar.bz2
 
 This is work in progress. The driver is functional. However, there are still
-several issues that need to be addressed. In particular, hot-unplugging will
-hang the system. In order to unplug the USB dongle, you need to stop the networking
-first. You can do this either via GUI or from the command line:
+several issues that need to be addressed. In particular, hot-unplugging may
+cause the network manager to segfault. After plugging the dongle back in, 
+you may need to restart the manager:
 
-    $ sudo ifconfig wlan0 down
+    $ sudo service network-manager restart
     
-or
 
-    $ sudo ifconfig eth0 down
     
     
