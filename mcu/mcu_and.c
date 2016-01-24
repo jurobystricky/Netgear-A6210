@@ -144,7 +144,7 @@ static u16 andes_usb_get_crc(RTMP_ADAPTER *ad)
 	return crc;
 }
 
-static VOID usb_upload_rom_patch_complete(purbb_t urb, pregs *pt_regs)
+static void usb_upload_rom_patch_complete(purbb_t urb, pregs *pt_regs)
 {
 	struct completion *load_rom_patch_done = 
 			(struct completion *)RTMP_OS_USB_CONTEXT_GET(urb);
@@ -160,7 +160,8 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 	TXINFO_NMAC_CMD *tx_info;
 	s32 sent_len;
 	u32 cur_len = 0;
-	u32 mac_value, loop = 0;
+	u32 mac_value;
+	int i;
 	u16 value;
 	int ret = 0, total_checksum = 0;
 	RTMP_CHIP_CAP *cap = &ad->chipCap;
@@ -169,18 +170,17 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 	struct completion load_rom_patch_done;
 
 	if (cap->rom_code_protect) {
-load_patch_protect:
-		RTUSBReadMACRegister(ad, SEMAPHORE_03, &mac_value);
-		loop++;
-
-		if (((mac_value & 0x01) == 0x00) && (loop < GET_SEMAPHORE_RETRY_MAX)) {
+		for (i = 0; i < GET_SEMAPHORE_RETRY_MAX; i++) {
+			RTUSBReadMACRegister(ad, SEMAPHORE_03, &mac_value);
+			if ((mac_value & 0x01) == 0x01)
+				break;
 			RtmpOsMsDelay(1);
-			goto load_patch_protect;
 		}
-
-		if (loop >= GET_SEMAPHORE_RETRY_MAX) {
+		
+		if (i >= GET_SEMAPHORE_RETRY_MAX) {
 			DBGPRINT(RT_DEBUG_ERROR,
-				("%s: can not get the hw semaphore\n", __FUNCTION__));
+					("%s: Failed to obtain SEMAPHORE_03\n", 
+					__FUNCTION__));
 			return NDIS_STATUS_FAILURE;
 		}
 	}
@@ -224,14 +224,13 @@ load_patch_protect:
 		goto error0;
 	}
 
-	RTUSBVenderReset(ad);
-	RtmpOsMsDelay(5);
+	RTUSBVendorReset(ad);
 
 	/* get rom patch information */
 	DBGPRINT(RT_DEBUG_TRACE, ("build time = \n"));
 
-	for (loop = 0; loop < 16; loop++)
-		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + loop)));
+	for (i = 0; i < 16; i++)
+		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + i)));
 
 	if (IS_MT76x2(ad)) {
 		if (((strncmp(cap->rom_patch, "20130809", 8) >= 0)) &&
@@ -249,22 +248,24 @@ load_patch_protect:
 		}
 	}
 
+#ifdef DBG
 	DBGPRINT(RT_DEBUG_TRACE, ("\nplatform = \n"));
 
-	for (loop = 0; loop < 4; loop++)
-		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + 16 + loop)));
+	for (i = 0; i < 4; i++)
+		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + 16 + i)));
 
 	DBGPRINT(RT_DEBUG_TRACE, ("\nhw/sw version = \n"));
 
-	for (loop = 0; loop < 4; loop++)
-		DBGPRINT(RT_DEBUG_TRACE, ("0x%2x ", *(cap->rom_patch + 20 + loop)));
+	for (i = 0; i < 4; i++)
+		DBGPRINT(RT_DEBUG_TRACE, ("0x%2x ", *(cap->rom_patch + 20 + i)));
 
 	DBGPRINT(RT_DEBUG_TRACE, ("\npatch version = \n"));
 
-	for (loop = 0; loop < 4; loop++)
-		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + 24 + loop)));
+	for (i = 0; i < 4; i++)
+		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + 24 + i)));
 
 	DBGPRINT(RT_DEBUG_TRACE, ("\n"));
+#endif
 
 	/* Enable FCE */
 	RTUSBWriteMACRegister(ad, FCE_PSE_CTRL, 0x01, FALSE);
@@ -283,9 +284,8 @@ load_patch_protect:
 
 	/* Allocate URB */
 	urb = RTUSB_ALLOC_URB(0);
-
 	if (!urb) {
-		DBGPRINT(RT_DEBUG_ERROR, ("can not allocate URB\n"));
+		DBGPRINT(RT_DEBUG_ERROR, ("cannot allocate URB\n"));
 		ret = NDIS_STATUS_RESOURCES;
 		goto error0;
 	}
@@ -335,7 +335,9 @@ load_patch_protect:
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x230, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma descriptor fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: set fce dma descriptor fail (0x230)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -345,7 +347,9 @@ load_patch_protect:
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x232, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma descriptor fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: set fce dma descriptor fail (0x232)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -360,7 +364,9 @@ load_patch_protect:
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x234, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma length fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: set fce dma length fail (0x234)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -370,7 +376,9 @@ load_patch_protect:
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x236, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma length fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: set fce dma length fail (0x236)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -381,7 +389,8 @@ load_patch_protect:
 
 			ret = RTUSB_SUBMIT_URB(urb);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("submit urb fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, ("%s: submit urb fail\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -436,7 +445,7 @@ load_patch_protect:
 	RtmpOsMsDelay(20);
 
 	/* Check ROM_PATCH if ready */
-	loop = 0;
+	i = 0;
 
 	do {
 		if (MT_REV_GTE(ad, MT76x2, REV_MT76x2E3)) {
@@ -450,8 +459,10 @@ load_patch_protect:
 		}
 
 		RtmpOsMsDelay(10);
-		loop++;
-	} while (loop <= 100);
+		i++;
+	} while (i <= 100);
+
+	WARN_ON(i >= 100);
 
 	if (MT_REV_GTE(ad, MT76x2, REV_MT76x2E3)) {
 		DBGPRINT(RT_DEBUG_TRACE, ("%s: CLOCK_CTL(0x%x) = 0x%x\n",
@@ -498,7 +509,7 @@ int andes_usb_erase_rom_patch(RTMP_ADAPTER *ad)
 	return 0;
 }
 
-static VOID usb_uploadfw_complete(purbb_t urb, pregs *pt_regs)
+static void usb_uploadfw_complete(purbb_t urb, pregs *pt_regs)
 {
 	struct completion *load_fw_done = 
 			(struct completion *)RTMP_OS_USB_CONTEXT_GET(urb);
@@ -537,8 +548,8 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 	PUCHAR fw_data;
 	TXINFO_NMAC_CMD *tx_info;
 	s32 sent_len;
-	u32 cur_len = 0;
-	u32 mac_value, loop = 0;
+	u32 cur_len;
+	u32 mac_value, loop;
 	u16 value;
 	int ret = 0;
 	RTMP_CHIP_CAP *cap = &ad->chipCap;
@@ -548,18 +559,16 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 	struct completion load_fw_done;
 
 	if (cap->ram_code_protect) {
-loadfw_protect:
-		RTUSBReadMACRegister(ad, SEMAPHORE_00, &mac_value);
-		loop++;
-
-		if (((mac_value & 0x01) == 0x00) && (loop < GET_SEMAPHORE_RETRY_MAX)) {
+		for (loop = 0; loop < GET_SEMAPHORE_RETRY_MAX; loop++) {
+			RTUSBReadMACRegister(ad, SEMAPHORE_00, &mac_value);
+			if ((mac_value & 0x01) == 0x01)
+				break;
 			RtmpOsMsDelay(1);
-			goto loadfw_protect;
 		}
-
+		
 		if (loop >= GET_SEMAPHORE_RETRY_MAX) {
 			DBGPRINT(RT_DEBUG_ERROR,
-					("%s: can not get the hw semaphore\n",
+					("%s: Failed to obtain SEMAPHORE_00\n", 
 					__FUNCTION__));
 			return NDIS_STATUS_FAILURE;
 		}
@@ -572,8 +581,7 @@ loadfw_protect:
 		goto error0;
 	}
 
-	RTUSBVenderReset(ad);
-	RtmpOsMsDelay(5);
+	RTUSBVendorReset(ad);
 
 	/* Enable USB_DMA_CFG */
 	USB_CFG_READ(ad, &cfg.word);
@@ -581,7 +589,8 @@ loadfw_protect:
 	USB_CFG_WRITE(ad, cfg.word);
 
 	if (cap->load_code_method == BIN_FILE_METHOD)
-		OS_LOAD_CODE_FROM_BIN(&cap->FWImageName, cap->fw_bin_file_name, obj->pUsb_Dev, &cap->fw_len);
+		OS_LOAD_CODE_FROM_BIN(&cap->FWImageName, cap->fw_bin_file_name, 
+				obj->pUsb_Dev, &cap->fw_len);
 	else
 		cap->FWImageName = cap->fw_header_image;
 
@@ -710,7 +719,9 @@ loadfw_protect:
 				0x42, value, 0x230, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma descriptor fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR,
+						("%s: set fce dma descriptor fail (0x230)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -722,7 +733,9 @@ loadfw_protect:
 					0x232, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma descriptor fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR,
+						("%s: set fce dma descriptor fail (0x232)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -739,7 +752,9 @@ loadfw_protect:
 					0x234, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma length fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR,
+						("%s: set fce dma descriptor fail (0x234)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -751,7 +766,9 @@ loadfw_protect:
 					0x236, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma length fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR,
+						("%s: set fce dma descriptor fail (0x236)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -765,7 +782,8 @@ loadfw_protect:
 			ret = RTUSB_SUBMIT_URB(urb);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("submit urb fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, ("%s: submit urb fail\n",
+					__FUNCTION__));
 				goto error2;
 			}
 
@@ -831,7 +849,9 @@ loadfw_protect:
 					0x230, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma descriptor fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+					("%s: set fce dma descriptor fail (DLM: 0x230)\n",
+					__FUNCTION__));
 				goto error2;
 			}
 
@@ -841,17 +861,14 @@ loadfw_protect:
 				value = (((cur_len + (cap->dlm_offset)) & 0xFFFF0000) >> 16);
 
 			/* Set FCE DMA descriptor */
-			ret = RTUSB_VendorRequest(ad,
-									  USBD_TRANSFER_DIRECTION_OUT,
-									  DEVICE_VENDOR_REQUEST_OUT,
-									  0x42,
-									  value,
-									  0x232,
-									  NULL,
-									  0);
+			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
+					DEVICE_VENDOR_REQUEST_OUT, 0x42, value,
+					0x232, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma descriptor fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: set fce dma descriptor fail (DLM: 0x232)\n",
+						__FUNCTION__));
 				goto error2;
 			}
 
@@ -868,10 +885,11 @@ loadfw_protect:
 					0x42, value, 0x234, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, ("set fce dma length fail\n"));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s: set fce dma descriptor fail (DLM: 0x234)\n",
+						__FUNCTION__));
 				goto error2;
 			}
-
 			value = (((sent_len << 16) & 0xFFFF0000) >> 16);
 
 			/* Set FCE DMA length */
@@ -939,6 +957,9 @@ loadfw_protect:
 		loop++;
 	} while (loop <= 100);
 
+
+	WARN_ON(loop >= 100);
+
 	DBGPRINT(RT_DEBUG_TRACE, ("%s: COM_REG0(0x%x) = 0x%x\n", __FUNCTION__, COM_REG0, mac_value));
 
 	RTMP_IO_READ32(ad, COM_REG0, &mac_value);
@@ -993,7 +1014,6 @@ static struct cmd_msg *andes_alloc_cmd_msg(RTMP_ADAPTER *ad, unsigned int length
 #endif
 
 	net_pkt = RTMP_AllocateFragPacketBuffer(ad, cap->cmd_header_len + length + cap->cmd_padding_len);
-
 	if (!net_pkt) {
 		DBGPRINT(RT_DEBUG_ERROR, ("can not allocate net_pkt\n"));
 		goto error0;
@@ -1002,7 +1022,6 @@ static struct cmd_msg *andes_alloc_cmd_msg(RTMP_ADAPTER *ad, unsigned int length
 	OS_PKT_RESERVE(net_pkt, cap->cmd_header_len);
 
 	os_alloc_mem(NULL, (PUCHAR *)&msg, sizeof(*msg));
-
 	if (!msg) {
 		DBGPRINT(RT_DEBUG_ERROR, ("can not allocate cmd msg\n"));
 		goto error1;
@@ -1014,7 +1033,6 @@ static struct cmd_msg *andes_alloc_cmd_msg(RTMP_ADAPTER *ad, unsigned int length
 
 #ifdef RTMP_USB_SUPPORT
 	urb = RTUSB_ALLOC_URB(0);
-
 	if (!urb) {
 		DBGPRINT(RT_DEBUG_ERROR, ("can not allocate urb\n"));
 		goto error2;
@@ -1039,9 +1057,9 @@ error0:
 	return NULL;
 }
 
-static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait, u16 timeout,
-   BOOLEAN need_retransmit, BOOLEAN need_rsp, u16 rsp_payload_len,
-   char *rsp_payload, MSG_RSP_HANDLER rsp_handler)
+static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait, 
+	u16 timeout, BOOLEAN need_retransmit, BOOLEAN need_rsp,
+	u16 rsp_payload_len, char *rsp_payload, MSG_RSP_HANDLER rsp_handler)
 {
 	msg->type = type;
 #ifdef RTMP_USB_SUPPORT
@@ -1081,7 +1099,8 @@ static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait, 
 	msg->rsp_handler = rsp_handler;
 }
 
-static void andes_append_cmd_msg(struct cmd_msg *msg, char *data, unsigned int len)
+static void andes_append_cmd_msg(struct cmd_msg *msg, char *data,
+	unsigned int len)
 {
 	PNDIS_PACKET net_pkt = msg->net_pkt;
 
@@ -1110,7 +1129,8 @@ BOOLEAN is_inband_cmd_processing(RTMP_ADAPTER *ad)
 	return FALSE;
 }
 
-static inline void andes_inc_error_count(struct MCU_CTRL *ctl, enum cmd_msg_error_type type)
+static inline void andes_inc_error_count(struct MCU_CTRL *ctl,
+	enum cmd_msg_error_type type)
 {
 	if (OS_TEST_BIT(MCU_INIT, &ctl->flags)) {
 		switch (type) {
@@ -1124,7 +1144,9 @@ static inline void andes_inc_error_count(struct MCU_CTRL *ctl, enum cmd_msg_erro
 			ctl->rx_receive_fail_count++;
 			break;
 		default:
-			DBGPRINT(RT_DEBUG_ERROR, ("%s:unknown cmd_msg_error_type(%d)\n", __FUNCTION__, type));
+			DBGPRINT(RT_DEBUG_ERROR, 
+					("%s:unknown cmd_msg_error_type(%d)\n", 
+					__FUNCTION__, type));
 		}
 	}
 }
@@ -1839,9 +1861,6 @@ static int andes_wait_for_complete_timeout(struct cmd_msg *msg, long timeout)
 #ifdef RTMP_USB_SUPPORT
 	long expire;
 	expire = timeout ? msecs_to_jiffies(timeout) : msecs_to_jiffies(CMD_MSG_TIMEOUT);
-#endif
-
-#ifdef RTMP_USB_SUPPORT
 	ret = wait_for_completion_timeout(&msg->ack_done, expire);
 #endif
 
