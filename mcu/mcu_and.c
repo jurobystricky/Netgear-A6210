@@ -1953,31 +1953,6 @@ retransmit:
 	return ret;
 }
 
-static void andes_pwr_event_handler(RTMP_ADAPTER *ad, char *payload, u16 payload_len)
-{
-}
-
-
-static void andes_wow_event_handler(RTMP_ADAPTER *ad, char *payload, u16 payload_len)
-{
-}
-
-static void andes_carrier_detect_event_handler(RTMP_ADAPTER *ad, char *payload, u16 payload_len)
-{
-}
-
-static void andes_dfs_detect_event_handler(PRTMP_ADAPTER ad, char *payload, u16 payload_len)
-{
-}
-
-MSG_EVENT_HANDLER msg_event_handler_tb[] =
-{
-	andes_pwr_event_handler,
-	andes_wow_event_handler,
-	andes_carrier_detect_event_handler,
-	andes_dfs_detect_event_handler,
-};
-
 
 int andes_burst_write(RTMP_ADAPTER *ad, u32 offset, u32 *data, u32 cnt)
 {
