@@ -18,37 +18,12 @@
 	Module Name:
 	rtmp_mcu.c
 
-	Abstract:
-
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
 */
 
 
-#include	"rt_config.h"
+#include "rt_config.h"
 
-INT MCUBurstWrite(PRTMP_ADAPTER pAd, UINT32 Offset, UINT32 *Data, UINT32 Cnt)
-{
-#ifdef RTMP_USB_SUPPORT
-	RTUSBMultiWrite_nBytes(pAd, Offset, (UCHAR *)Data, Cnt * 4, 64);
-#endif /* RTMP_USB_SUPPORT */
-	return 0;
-}
-
-
-INT MCURandomWrite(PRTMP_ADAPTER pAd, RTMP_REG_PAIR *RegPair, UINT32 Num)
-{
-	UINT32 Index;
-
-	for (Index = 0; Index < Num; Index++)
-		RTMP_IO_WRITE32(pAd, RegPair->Register, RegPair->Value);
-
-	return 0;
-}
-
-
-INT mcu_sys_init(RTMP_ADAPTER *pAd)
+int mcu_sys_init(RTMP_ADAPTER *pAd)
 {
 	NDIS_STATUS Status;
 
@@ -72,14 +47,13 @@ INT mcu_sys_init(RTMP_ADAPTER *pAd)
 }
 
 
-VOID ChipOpsMCUHook(PRTMP_ADAPTER pAd, enum MCU_TYPE MCUType)
+void ChipOpsMCUHook(PRTMP_ADAPTER pAd, enum MCU_TYPE MCUType)
 {
 	RTMP_CHIP_OP *pChipOps = &pAd->chipOps;
 
 #ifdef CONFIG_ANDES_SUPPORT
 	if (MCUType == ANDES) {
 		RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
-
 
 #ifdef RTMP_USB_SUPPORT
 		if (pChipCap->need_load_rom_patch) {
