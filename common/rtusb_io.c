@@ -222,21 +222,15 @@ NTSTATUS RTUSBFirmwareWrite(RTMP_ADAPTER *pAd, UCHAR *pFwImage, ULONG FwLen)
 }
 
 
-NTSTATUS RTUSBVenderReset(RTMP_ADAPTER *pAd)
+NTSTATUS RTUSBVendorReset(RTMP_ADAPTER *pAd)
 {
 	NTSTATUS Status;
-	DBGPRINT(RT_DEBUG_ERROR, ("-->RTUSBVenderReset\n"));
-	Status = RTUSB_VendorRequest(
-		pAd,
-		USBD_TRANSFER_DIRECTION_OUT,
-		DEVICE_VENDOR_REQUEST_OUT,
-		0x01,
-		0x1,
-		0,
-		NULL,
-		0);
 
-	DBGPRINT(RT_DEBUG_ERROR, ("<--RTUSBVenderReset\n"));
+	DBGPRINT(RT_DEBUG_ERROR, ("-->RTUSBVendorReset\n"));
+	Status = RTUSB_VendorRequest(pAd, USBD_TRANSFER_DIRECTION_OUT,
+			DEVICE_VENDOR_REQUEST_OUT, 0x01, 0x1, 0, NULL, 0);
+	RtmpOsMsDelay(VENDOR_RESET_DELAY_MS);
+	DBGPRINT(RT_DEBUG_ERROR, ("<--RTUSBVendorReset\n"));
 	return Status;
 }
 
@@ -368,7 +362,7 @@ NTSTATUS RTUSBMultiWrite(
 }
 
 
-NTSTATUS RTUSBSingleWrite(RTMP_ADAPTER *pAd, USHORT Offset, USHORT Value, 
+NTSTATUS RTUSBSingleWrite(RTMP_ADAPTER *pAd, USHORT Offset, USHORT Value,
 	BOOLEAN WriteHigh)
 {
 	NTSTATUS status = RTUSB_VendorRequest(pAd, USBD_TRANSFER_DIRECTION_OUT,
@@ -378,7 +372,7 @@ NTSTATUS RTUSBSingleWrite(RTMP_ADAPTER *pAd, USHORT Offset, USHORT Value,
 	if (status != STATUS_SUCCESS) {
 			DBGPRINT(RT_DEBUG_ERROR, ("JB:  %s failed! [%x]\n",__FUNCTION__,status));
 	}
-	
+
 	return status;
 }
 
@@ -752,7 +746,7 @@ NTSTATUS RTUSBWriteBBPRegister(RTMP_ADAPTER *pAd, UCHAR Id, UCHAR Value)
 
 	RTMP_SEM_EVENT_UP(&pAd->reg_atomic);
 
-	if ((BusyCnt == MAX_BUSY_COUNT) || 
+	if ((BusyCnt == MAX_BUSY_COUNT) ||
 		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
 		DBGPRINT_ERR(("BBP write R%d=0x%x fail\n", Id, BbpCsr.word));
 		return STATUS_UNSUCCESSFUL;
@@ -897,7 +891,7 @@ NTSTATUS RTUSBWriteEEPROM16(RTMP_ADAPTER *pAd, USHORT offset, USHORT value)
 
 	========================================================================
 */
-VOID RTUSBPutToSleep(RTMP_ADAPTER *pAd)
+void RTUSBPutToSleep(RTMP_ADAPTER *pAd)
 {
 	UINT32 value;
 
@@ -946,7 +940,7 @@ NTSTATUS RTUSBWakeUp(RTMP_ADAPTER *pAd)
 
 	========================================================================
 */
-NDIS_STATUS	RTUSBEnqueueCmdFromNdis(PRTMP_ADAPTER pAd, NDIS_OID Oid, 
+NDIS_STATUS	RTUSBEnqueueCmdFromNdis(PRTMP_ADAPTER pAd, NDIS_OID Oid,
 	BOOLEAN SetInformation, PVOID pInformationBuffer, UINT32 InformationBufferLength)
 {
 	NDIS_STATUS status;
@@ -1075,8 +1069,8 @@ NTSTATUS RTUSB_VendorRequest(PRTMP_ADAPTER pAd, UINT32 TransferFlags, UCHAR Requ
 			return NDIS_STATUS_FAILURE;
 		}
 
-		if ((TransferBufferLength > 0) && 
-			((RequestType == DEVICE_VENDOR_REQUEST_OUT) || 
+		if ((TransferBufferLength > 0) &&
+			((RequestType == DEVICE_VENDOR_REQUEST_OUT) ||
 			(RequestType == DEVICE_CLASS_REQUEST_OUT))) {
 			NdisMoveMemory(pAd->UsbVendorReqBuf, TransferBuffer, TransferBufferLength);
 		}
@@ -1104,10 +1098,10 @@ NTSTATUS RTUSB_VendorRequest(PRTMP_ADAPTER pAd, UINT32 TransferFlags, UCHAR Requ
 		RTMP_SEM_EVENT_UP(&(pAd->UsbVendorReq_semaphore));
 
 		if (RET < 0) {
-			DBGPRINT(RT_DEBUG_ERROR, 
+			DBGPRINT(RT_DEBUG_ERROR,
 					("RTUSB_VendorRequest failed(%d),TxFlags=0x%x, ReqType=%s, Req=0x%x, Idx=0x%x,pAd->Flags=0x%lx\n",
-					RET, TransferFlags, 
-					(RequestType == DEVICE_VENDOR_REQUEST_OUT ? "OUT" : "IN"), 
+					RET, TransferFlags,
+					(RequestType == DEVICE_VENDOR_REQUEST_OUT ? "OUT" : "IN"),
 					Request, Index, pAd->Flags));
 			if (Request == 0x2)
 				DBGPRINT(RT_DEBUG_ERROR, ("\tRequest Value=0x%04x!\n", Value));
@@ -1424,14 +1418,14 @@ static NTSTATUS ResetBulkInHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 				pAd->PendingRx--;
 				pAd->BulkInReq--;
 				RTMP_IRQ_UNLOCK(&pAd->BulkInLock, IrqFlags);
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("CMDTHREAD_RESET_BULK_IN: Submit Rx URB failed(%d), status=%d\n",
 						ret, RTMP_USB_URB_STATUS_GET(pUrb)));
 			} else {
 				/* success*/
 				/*DBGPRINT(RT_DEBUG_TRACE, ("BIDone, Pend=%d,BIIdx=%d,BIRIdx=%d!\n", */
 				/*		pAd->PendingRx, pAd->NextRxBulkInIndex, pAd->NextRxBulkInReadIndex));*/
-				DBGPRINT(RT_DEBUG_TRACE, 
+				DBGPRINT(RT_DEBUG_TRACE,
 						("CMDTHREAD_RESET_BULK_IN: Submit Rx URB Done, status=%d!\n",
 						RTMP_USB_URB_STATUS_GET(pUrb)));
 				ASSERT((pRxContext->InUse == pRxContext->IRPPending));
@@ -1441,7 +1435,7 @@ static NTSTATUS ResetBulkInHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 		/* Card must be removed*/
 		if (NT_SUCCESS(ntStatus) != TRUE) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
-			DBGPRINT(RT_DEBUG_ERROR, 
+			DBGPRINT(RT_DEBUG_ERROR,
 					("CMDTHREAD_RESET_BULK_IN: Read Register Failed!Card must be removed!!\n\n"));
 		} else {
 			DBGPRINT(RT_DEBUG_ERROR, ("CMDTHREAD_RESET_BULK_IN: Cannot do bulk in because flags(0x%lx) on !\n", pAd->Flags));
@@ -1465,7 +1459,7 @@ static NTSTATUS SetAsicWcidHdlr(IN PRTMP_ADAPTER pAd, IN PCmdQElmt CMDQelmt)
 
 	offset = MAC_WCID_BASE + ((UCHAR)SetAsicWcid.WCID)*HW_WCID_ENTRY_SIZE;
 
-	DBGPRINT(RT_DEBUG_TRACE, 
+	DBGPRINT(RT_DEBUG_TRACE,
 			("CmdThread : CMDTHREAD_SET_ASIC_WCID : WCID = %ld, SetTid  = %lx, DeleteTid = %lx.\n",
 			SetAsicWcid.WCID, SetAsicWcid.SetTid, SetAsicWcid.DeleteTid));
 
@@ -1897,12 +1891,11 @@ static inline BOOLEAN ValidCMD(IN PCmdQElmt CMDQelmt)
 }
 
 
-VOID CMDHandler(RTMP_ADAPTER *pAd)
+void CMDHandler(RTMP_ADAPTER *pAd)
 {
 	PCmdQElmt cmdqelmt;
 	NDIS_STATUS NdisStatus = NDIS_STATUS_SUCCESS;
 	NTSTATUS ntStatus;
-/*	unsigned long	IrqFlags;*/
 
 	while (pAd && pAd->CmdQ.size > 0) {
 		NdisStatus = NDIS_STATUS_SUCCESS;
@@ -1913,7 +1906,7 @@ VOID CMDHandler(RTMP_ADAPTER *pAd)
 		if (cmdqelmt == NULL)
 			break;
 
-		if (!(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) || 
+		if (!(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) ||
 			RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS))) {
 			if (ValidCMD(cmdqelmt))
 				ntStatus = (*CMDHdlrTable[cmdqelmt->command - CMDTHREAD_FIRST_CMD_ID])(pAd, cmdqelmt);
@@ -1932,7 +1925,7 @@ VOID CMDHandler(RTMP_ADAPTER *pAd)
 }
 
 
-VOID RTUSBWatchDog(RTMP_ADAPTER *pAd)
+void RTUSBWatchDog(RTMP_ADAPTER *pAd)
 {
 #ifdef RTMP_MAC
 	PHT_TX_CONTEXT pHTTXContext;
@@ -1961,7 +1954,7 @@ VOID RTUSBWatchDog(RTMP_ADAPTER *pAd)
 	idx = 0;
 	RTMP_IO_READ32(pAd, TXRXQ_PCNT, &MACValue);
 	if ((MACValue & 0xff) != 0) {
-		DBGPRINT(RT_DEBUG_TRACE, 
+		DBGPRINT(RT_DEBUG_TRACE,
 				("TX QUEUE 0 Not EMPTY(Value=0x%0x). !!!!!!!!!!!!!!!\n", MACValue));
 		RTMP_IO_WRITE32(pAd, PBF_CFG, 0xf40012);
 		while ((MACValue &0xff) != 0 && (idx++ < 10)) {
@@ -1973,7 +1966,7 @@ VOID RTUSBWatchDog(RTMP_ADAPTER *pAd)
 
 	idx = 0;
 	if ((MACValue & 0xff00) != 0) {
-		DBGPRINT(RT_DEBUG_TRACE, 
+		DBGPRINT(RT_DEBUG_TRACE,
 				("TX QUEUE 1 Not EMPTY(Value=0x%0x). !!!!!!!!!!!!!!!\n", MACValue));
 		RTMP_IO_WRITE32(pAd, PBF_CFG, 0xf4000a);
 		while ((MACValue &0xff00) != 0 && (idx++ < 10)) {
@@ -2006,8 +1999,8 @@ VOID RTUSBWatchDog(RTMP_ADAPTER *pAd)
 			pAd->watchDogTxPendingCnt[idx]++;
 
 			if ((pAd->watchDogTxPendingCnt[idx] > 2) &&
-				 (!RTMP_TEST_FLAG(pAd, (fRTMP_ADAPTER_RESET_IN_PROGRESS | 
-				 fRTMP_ADAPTER_HALT_IN_PROGRESS | fRTMP_ADAPTER_NIC_NOT_EXIST | 
+				 (!RTMP_TEST_FLAG(pAd, (fRTMP_ADAPTER_RESET_IN_PROGRESS |
+				 fRTMP_ADAPTER_HALT_IN_PROGRESS | fRTMP_ADAPTER_NIC_NOT_EXIST |
 				 fRTMP_ADAPTER_BULKOUT_RESET)))) {
 				/* FIXME: Following code just support single bulk out. If you wanna support multiple bulk out. Modify it!*/
 				pHTTXContext = (PHT_TX_CONTEXT)(&pAd->TxContext[idx]);
@@ -2040,7 +2033,7 @@ VOID RTUSBWatchDog(RTMP_ADAPTER *pAd)
 
 				RTMP_IRQ_UNLOCK(&pAd->BulkOutLock[idx], irqFlags);
 
-				DBGPRINT(RT_DEBUG_TRACE, 
+				DBGPRINT(RT_DEBUG_TRACE,
 						("Maybe the Tx Bulk-Out hanged! Cancel the pending Tx bulks request of idx(%d)!\n",
 						idx));
 
@@ -2074,12 +2067,12 @@ VOID RTUSBWatchDog(RTMP_ADAPTER *pAd)
 
 		pBAEntry = &pAd->BATable.BARecEntry[Idx];
 		if ((pBAEntry->list.qlen > 0) && (pBAEntry->list.next != NULL)) {
-			DBGPRINT(RT_DEBUG_TRACE, 
+			DBGPRINT(RT_DEBUG_TRACE,
 					("NICUpdateRawCounters():The Queueing pkt in reordering buffer:\n"));
 			NdisAcquireSpinLock(&pBAEntry->RxReRingLock);
 			mpdu_blk = pBAEntry->list.next;
 			while (mpdu_blk) {
-				DBGPRINT(RT_DEBUG_TRACE, 
+				DBGPRINT(RT_DEBUG_TRACE,
 						("\t%d:Seq-%d, bAMSDU-%d!\n", count, mpdu_blk->Sequence, mpdu_blk->bAMSDU));
 				mpdu_blk = mpdu_blk->next;
 				count++;
