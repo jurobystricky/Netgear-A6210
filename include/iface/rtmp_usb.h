@@ -60,14 +60,12 @@ extern UCHAR EpToQueue[6];
 #endif
 
 /* vendor-specific control operations */
-#define USB_REQUEST_TIMEOUT_MS 		300
-/*#define UNLINK_TIMEOUT_MS		3 // os abl move */
+#define USB_REQUEST_TIMEOUT_MS		300
+#define VENDOR_RESET_DELAY_MS		20
 
 #define DEVICE_CLASS_REQUEST_OUT	0x20
 #define DEVICE_VENDOR_REQUEST_OUT	0x40
 #define DEVICE_VENDOR_REQUEST_IN	0xc0
-/*#define INTERFACE_VENDOR_REQUEST_OUT	0x41 */
-/*#define INTERFACE_VENDOR_REQUEST_IN	0xc1 */
 #define BULKOUT_MGMT_RESET_FLAG		0x80
 
 #define RTUSB_SET_BULK_FLAG(_M, _F)	((_M)->BulkFlags |= (_F))
@@ -96,17 +94,17 @@ NTSTATUS RTUSBReadMACRegister(struct _RTMP_ADAPTER *pAd, USHORT Offset, UINT32 *
 NTSTATUS RTUSBReadEEPROM(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, USHORT len);
 NTSTATUS RTUSBWriteEEPROM(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, USHORT len);
 NTSTATUS RTUSBFirmwareWrite(struct _RTMP_ADAPTER *pAd, UCHAR *pFwImage, ULONG FwLen);
-NTSTATUS RTUSBVenderReset(struct _RTMP_ADAPTER *pAd);
+NTSTATUS RTUSBVendorReset(struct _RTMP_ADAPTER *pAd);
 BOOLEAN AsicCheckCommandOk(struct _RTMP_ADAPTER *pAd, UCHAR cmd);
 
 NDIS_STATUS RTUSBEnqueueCmdFromNdis(struct _RTMP_ADAPTER *pAd, NDIS_OID Oid,
 	BOOLEAN SetInfo, PVOID pInfoBuf, UINT32 BufLen);
-VOID RTUSBDequeueCmd(PCmdQ cmdq, PCmdQElmt *pcmdqelmt);
+void RTUSBDequeueCmd(PCmdQ cmdq, PCmdQElmt *pcmdqelmt);
 
-VOID RTUSBBssBeaconExit(struct _RTMP_ADAPTER *pAd);
-VOID RTUSBBssBeaconStop(struct _RTMP_ADAPTER *pAd);
-VOID RTUSBBssBeaconStart(struct _RTMP_ADAPTER * pAd);
-VOID RTUSBBssBeaconInit(struct _RTMP_ADAPTER *pAd);
+void RTUSBBssBeaconExit(struct _RTMP_ADAPTER *pAd);
+void RTUSBBssBeaconStop(struct _RTMP_ADAPTER *pAd);
+void RTUSBBssBeaconStart(struct _RTMP_ADAPTER * pAd);
+void RTUSBBssBeaconInit(struct _RTMP_ADAPTER *pAd);
 
 NDIS_STATUS RTUSBFreeDescRequest(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId, UINT32 req_cnt);
 BOOLEAN	RTUSBNeedQueueBackForAgg(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId);
@@ -115,27 +113,27 @@ USHORT RtmpUSB_WriteSubTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTx
 USHORT RtmpUSB_WriteSingleTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, BOOLEAN bIsLast, USHORT *freeCnt);
 USHORT RtmpUSB_WriteFragTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR fragNum, USHORT *freeCnt);
 USHORT RtmpUSB_WriteMultiTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR frmNum, USHORT *freeCnt);
-VOID RtmpUSB_FinalWriteTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, USHORT mpdu_len, USHORT TxIdx);
+void RtmpUSB_FinalWriteTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, USHORT mpdu_len, USHORT TxIdx);
 
-VOID RtmpUSBDataLastTxIdx(struct _RTMP_ADAPTER *pAd, UCHAR QueIdx, USHORT TxIdx);
-VOID RtmpUSBDataKickOut(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR QueIdx);
+void RtmpUSBDataLastTxIdx(struct _RTMP_ADAPTER *pAd, UCHAR QueIdx, USHORT TxIdx);
+void RtmpUSBDataKickOut(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR QueIdx);
 int RtmpUSBMgmtKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, PNDIS_PACKET pkt, UCHAR *pSrcBufVA, UINT SrcBufLen);
-VOID RtmpUSBNullFrameKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, UCHAR *pNullFrm, UINT32 frmLen);
+void RtmpUSBNullFrameKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, UCHAR *pNullFrm, UINT32 frmLen);
 
-VOID RTUSBWatchDog(struct _RTMP_ADAPTER *pAd);
+void RTUSBWatchDog(struct _RTMP_ADAPTER *pAd);
 
-VOID RTUSBPutToSleep(struct _RTMP_ADAPTER *pAd);
+void RTUSBPutToSleep(struct _RTMP_ADAPTER *pAd);
 NTSTATUS RTUSBWakeUp(struct _RTMP_ADAPTER *pAd);
 
-VOID RtmpUsbStaAsicForceWakeupTimeout(PVOID arg1, PVOID FuncContext, PVOID arg2, PVOID arg3);
+void RtmpUsbStaAsicForceWakeupTimeout(PVOID arg1, PVOID FuncContext, PVOID arg2, PVOID arg3);
 
-VOID RT28xxUsbStaAsicForceWakeup(struct _RTMP_ADAPTER *pAd, BOOLEAN bFromTx);
-VOID RT28xxUsbStaAsicSleepThenAutoWakeup(struct _RTMP_ADAPTER *pAd, USHORT TbttNumToNextWakeUp);
+void RT28xxUsbStaAsicForceWakeup(struct _RTMP_ADAPTER *pAd, BOOLEAN bFromTx);
+void RT28xxUsbStaAsicSleepThenAutoWakeup(struct _RTMP_ADAPTER *pAd, USHORT TbttNumToNextWakeUp);
 
-VOID RT28xxUsbMlmeRadioOn(struct _RTMP_ADAPTER *pAd);
-VOID RT28xxUsbMlmeRadioOFF(struct _RTMP_ADAPTER *pAd);
-VOID RT28xxUsbAsicRadioOn(struct _RTMP_ADAPTER *pAd);
-VOID RT28xxUsbAsicRadioOff(struct _RTMP_ADAPTER *pAd);
+void RT28xxUsbMlmeRadioOn(struct _RTMP_ADAPTER *pAd);
+void RT28xxUsbMlmeRadioOFF(struct _RTMP_ADAPTER *pAd);
+void RT28xxUsbAsicRadioOn(struct _RTMP_ADAPTER *pAd);
+void RT28xxUsbAsicRadioOff(struct _RTMP_ADAPTER *pAd);
 
 struct usb_control {
 	BOOLEAN usb_aggregation;
