@@ -1132,8 +1132,7 @@ static NDIS_STATUS NICInitializeAsic(RTMP_ADAPTER *pAd, BOOLEAN bHardReset)
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP) {
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, 0x3);
-		RTUSBVenderReset(pAd);
-
+		RTUSBVendorReset(pAd);
 		RtmpusecDelay(1);
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, 0x0);
 	}
