@@ -1087,7 +1087,7 @@ NDIS_STATUS MlmeHardTransmitMgmtRing(
 
 
 	/* Now do hardware-depened kick out.*/
-	HAL_KickOutMgmtTx(pAd, QueIdx, pPacket, pSrcBufVA, SrcBufLen);
+	RtmpUSBMgmtKickOut(pAd, QueIdx, pPacket, pSrcBufVA, SrcBufLen);
 
 	/* Make sure to release MGMT ring resource*/
 /*	if (!IrqState)*/
