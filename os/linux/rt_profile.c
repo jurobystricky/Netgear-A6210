@@ -473,7 +473,7 @@ void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 		RtmpOsPktRcvHandle(pRxPkt);
 }
 
-extern NDIS_SPIN_LOCK TimerSemLock;
+extern spinlock_t TimerSemLock;
 
 VOID RTMPFreeAdapter(VOID *pAdSrc)
 {
