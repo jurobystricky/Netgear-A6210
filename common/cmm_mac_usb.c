@@ -53,8 +53,8 @@ static NDIS_STATUS RTMPFreeUsbBulkBufStruct(
 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
 
 	if (NULL != *ppUrb) {
-		RTUSB_UNLINK_URB(*ppUrb);
-		RTUSB_FREE_URB(*ppUrb);
+		usb_kill_urb(*ppUrb);
+		usb_free_urb(*ppUrb);
 		*ppUrb = NULL;
 	}
 
@@ -97,27 +97,27 @@ VOID RTMPResetTxRxRingMemory(
 	for (i = 0; i < RX_RING_SIZE; i++) {
 		PRX_CONTEXT  pRxContext = &(pAd->RxContext[i]);
 		if (pRxContext->pUrb)
-			RTUSB_UNLINK_URB(pRxContext->pUrb);
+			usb_kill_urb(pRxContext->pUrb);
 	}
 
 	if (pCmdRspEventContext->pUrb)
-		RTUSB_UNLINK_URB(pCmdRspEventContext->pUrb);
+		usb_kill_urb(pCmdRspEventContext->pUrb);
 
 	/* unlink PsPoll urb resource*/
 	if (pPsPollContext && pPsPollContext->pUrb)
-		RTUSB_UNLINK_URB(pPsPollContext->pUrb);
+		usb_kill_urb(pPsPollContext->pUrb);
 
 	/* Free NULL frame urb resource*/
 	if (pNullContext && pNullContext->pUrb)
-		RTUSB_UNLINK_URB(pNullContext->pUrb);
+		usb_kill_urb(pNullContext->pUrb);
 
 	/* Free mgmt frame resource*/
 	for (i = 0; i < MGMT_RING_SIZE; i++) {
 		PTX_CONTEXT pMLMEContext = (PTX_CONTEXT)pAd->MgmtRing.Cell[i].AllocVa;
 		if (pMLMEContext) {
 			if (pMLMEContext->pUrb != NULL) {
-				RTUSB_UNLINK_URB(pMLMEContext->pUrb);
-				RTUSB_FREE_URB(pMLMEContext->pUrb);
+				usb_kill_urb(pMLMEContext->pUrb);
+				usb_free_urb(pMLMEContext->pUrb);
 				pMLMEContext->pUrb = NULL;
 			}
 		}
@@ -134,7 +134,7 @@ VOID RTMPResetTxRxRingMemory(
 	for (acidx = 0; acidx < 4; acidx++) {
 		PHT_TX_CONTEXT pHTTXContext = &(pAd->TxContext[acidx]);
 		if (pHTTXContext && pHTTXContext->pUrb)
-			RTUSB_UNLINK_URB(pHTTXContext->pUrb);
+			usb_kill_urb(pHTTXContext->pUrb);
 	}
 
 	for (i = 0; i < 6; i++) {
@@ -219,8 +219,8 @@ VOID	RTMPFreeTxRxRingMemory(PRTMP_ADAPTER pAd)
 		PTX_CONTEXT pMLMEContext = (PTX_CONTEXT)pAd->MgmtRing.Cell[i].AllocVa;
 		if (pMLMEContext) {
 			if (pMLMEContext->pUrb != NULL) {
-				RTUSB_UNLINK_URB(pMLMEContext->pUrb);
-				RTUSB_FREE_URB(pMLMEContext->pUrb);
+				usb_kill_urb(pMLMEContext->pUrb);
+				usb_free_urb(pMLMEContext->pUrb);
 				pMLMEContext->pUrb = NULL;
 			}
 		}
@@ -762,8 +762,8 @@ out1:
 
 		if (NULL != pRxContext->pUrb)
 		{
-			RTUSB_UNLINK_URB(pRxContext->pUrb);
-			RTUSB_FREE_URB(pRxContext->pUrb);
+			usb_kill_urb(pRxContext->pUrb);
+			usb_free_urb(pRxContext->pUrb);
 			pRxContext->pUrb = NULL;
 		}
 	}
@@ -1143,8 +1143,8 @@ VOID RTMPFreeTxRxRingMemory(PRTMP_ADAPTER pAd)
 		PTX_CONTEXT pMLMEContext = (PTX_CONTEXT)pAd->MgmtRing.Cell[i].AllocVa;
 		if (pMLMEContext) {
 			if (NULL != pMLMEContext->pUrb) {
-				RTUSB_UNLINK_URB(pMLMEContext->pUrb);
-				RTUSB_FREE_URB(pMLMEContext->pUrb);
+				usb_kill_urb(pMLMEContext->pUrb);
+				usb_free_urb(pMLMEContext->pUrb);
 				pMLMEContext->pUrb = NULL;
 			}
 		}
