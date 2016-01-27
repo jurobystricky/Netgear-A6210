@@ -1,29 +1,23 @@
 /*
  ***************************************************************************
  * Ralink Tech Inc.
- * 4F, No. 2 Technology	5th	Rd.
- * Science-based Industrial	Park
+ * 4F, No. 2 Technology 5th Rd.
+ * Science-based Industrial Park
  * Hsin-chu, Taiwan, R.O.C.
  *
  * (c) Copyright 2002-2006, Ralink Technology, Inc.
  *
- * All rights reserved.	Ralink's source	code is	an unpublished work	and	the
- * use of a	copyright notice does not imply	otherwise. This	source code
- * contains	confidential trade secret material of Ralink Tech. Any attemp
- * or participation	in deciphering,	decoding, reverse engineering or in	any
- * way altering	the	source code	is stricitly prohibited, unless	the	prior
+ * All rights reserved. Ralink's source code is an unpublished work and the
+ * use of a copyright notice does not imply otherwise. This source code
+ * contains confidential trade secret material of Ralink Tech. Any attemp
+ * or participation in deciphering, decoding, reverse engineering or in any
+ * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
- 	Module Name:
+	Module Name:
 	ate_usb.c
 
-	Abstract:
-
-	Revision History:
-	Who			When	    What
-	--------	----------  ----------------------------------------------
-	Name		Date	    Modification logs
 */
 
 #ifdef RTMP_MAC_USB
@@ -31,12 +25,17 @@
 #include "rt_config.h"
 
 extern UCHAR EpToQueue[];
-/* 802.11 MAC Header, Type:Data, Length:24bytes + 6 bytes QOS/HTC + 2 bytes padding */
-extern UCHAR TemplateFrame[32];
 
-INT TxDmaBusy(RTMP_ADAPTER *pAd)
+/* 802.11 MAC Header, Type:Data, Length:24bytes + 6 bytes QOS/HTC + 2 bytes padding */
+static UCHAR TemplateFrame[32] = {
+	0x08,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0x00,0xAA,0xBB,0x12,0x34,0x56,
+	0x00,0x11,0x22,0xAA,0xBB,0xCC,0x00,0x00,
+	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+
+static BOOLEAN TxDmaBusy(RTMP_ADAPTER *pAd)
 {
-	INT result;
+	int result;
 	USB_DMA_CFG_STRUC UsbCfg;
 	BOOLEAN is_busy;
 
@@ -54,9 +53,9 @@ INT TxDmaBusy(RTMP_ADAPTER *pAd)
 }
 
 
-INT RxDmaBusy(RTMP_ADAPTER *pAd)
+static BOOLEAN RxDmaBusy(RTMP_ADAPTER *pAd)
 {
-	INT result;
+	int result;
 	USB_DMA_CFG_STRUC UsbCfg;
 	BOOLEAN is_busy;
 
@@ -74,23 +73,24 @@ INT RxDmaBusy(RTMP_ADAPTER *pAd)
 }
 
 
-VOID RtmpDmaEnable(RTMP_ADAPTER *pAd, INT Enable)
+void RtmpDmaEnable(RTMP_ADAPTER *pAd, int Enable)
 {
 	BOOLEAN value;
 	ULONG WaitCnt;
 	USB_DMA_CFG_STRUC UsbCfg;
-	
+
 	value = Enable > 0 ? 1 : 0;
 
 	/* check DMA is in busy mode. */
 	WaitCnt = 0;
 
-	while (TxDmaBusy(pAd) || RxDmaBusy(pAd))
-	{
+	while (TxDmaBusy(pAd) || RxDmaBusy(pAd)) {
 		RtmpusecDelay(10);
 		if (WaitCnt++ > 100)
 			break;
 	}
+
+	WARN_ON(WaitCnt > 100);
 
 	USB_CFG_READ(pAd, &UsbCfg.word);
 #ifdef MT76x2
@@ -107,27 +107,13 @@ VOID RtmpDmaEnable(RTMP_ADAPTER *pAd, INT Enable)
 
 	USB_CFG_WRITE(pAd, UsbCfg.word);
 	RtmpOsMsDelay(5);
-
-	return;
 }
 
 
-static VOID ATEWriteTxWI(
-	IN	PRTMP_ADAPTER	pAd,
-	IN	TXWI_STRUC *pTxWI,
-	IN	BOOLEAN			FRAG,	
-	IN	BOOLEAN			InsTimestamp,
-	IN	BOOLEAN 		AMPDU,
-	IN	BOOLEAN 		Ack,
-	IN	BOOLEAN 		NSeq,		/* HW new a sequence. */
-	IN	UCHAR			BASize,
-	IN	UCHAR			WCID,
-	IN	ULONG			Length,
-	IN	UCHAR 			PID,
-	IN	UCHAR			MIMOps,
-	IN	UCHAR			Txopmode,	
-	IN	BOOLEAN			CfAck,	
-	IN	HTTRANSMIT_SETTING	Transmit)
+static void ATEWriteTxWI(PRTMP_ADAPTER pAd, TXWI_STRUC *pTxWI, BOOLEAN FRAG,
+	BOOLEAN InsTimestamp, BOOLEAN AMPDU, BOOLEAN Ack, BOOLEAN NSeq,		/* HW new a sequence. */
+	UCHAR BASize, UCHAR WCID, ULONG Length, UCHAR PID, UCHAR MIMOps,
+	UCHAR Txopmode, BOOLEAN CfAck, HTTRANSMIT_SETTING Transmit)
 {
 	OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_SHORT_PREAMBLE_INUSED);
 #ifdef RLT_MAC
@@ -143,16 +129,16 @@ static VOID ATEWriteTxWI(
 		txwi_n->ACK = Ack;
 		txwi_n->txop = Txopmode;
 		txwi_n->NSEQ = NSeq;
-		txwi_n->BAWinSize = BASize;	
+		txwi_n->BAWinSize = BASize;
 
 		txwi_n->wcid = WCID;
-		txwi_n->MPDUtotalByteCnt = Length; 
-		txwi_n->TxPktId = PID; 
-		
+		txwi_n->MPDUtotalByteCnt = Length;
+		txwi_n->TxPktId = PID;
+
 		txwi_n->BW = Transmit.field.BW;
 		txwi_n->ShortGI = Transmit.field.ShortGI;
 		txwi_n->STBC= Transmit.field.STBC;
-		
+
 		txwi_n->MCS = Transmit.field.MCS;
 		txwi_n->PHYMODE= Transmit.field.MODE;
 		txwi_n->CFACK = CfAck;
@@ -166,29 +152,23 @@ static VOID ATEWriteTxWI(
 		txwi_o->FRAG= FRAG;
 		txwi_o->TS = InsTimestamp;
 		txwi_o->AMPDU = AMPDU;
-
 		txwi_o->MIMOps = PWR_ACTIVE;
 		txwi_o->MpduDensity = 4;
 		txwi_o->ACK = Ack;
 		txwi_o->txop = Txopmode;
 		txwi_o->NSEQ = NSeq;
-		txwi_o->BAWinSize = BASize;	
-
+		txwi_o->BAWinSize = BASize;
 		txwi_o->wcid = WCID;
-		txwi_o->MPDUtotalByteCnt = Length; 
-		txwi_o->PacketId = PID; 
-		
+		txwi_o->MPDUtotalByteCnt = Length;
+		txwi_o->PacketId = PID;
 		txwi_o->BW = Transmit.field.BW;
 		txwi_o->ShortGI = Transmit.field.ShortGI;
 		txwi_o->STBC= Transmit.field.STBC;
-		
 		txwi_o->MCS = Transmit.field.MCS;
 		txwi_o->PHYMODE= Transmit.field.MODE;
 		txwi_o->CFACK = CfAck;
 	}
 #endif /* RTMP_MAC */
-
-	return;
 }
 
 
@@ -196,49 +176,44 @@ static VOID ATEWriteTxWI(
 ========================================================================
 	Routine	Description:
 		Write TxInfo for ATE mode.
-		
+
 	Return Value:
 		None
 ========================================================================
 */
-static VOID ATEWriteTxInfo(
-	IN	PRTMP_ADAPTER	pAd,
-	IN	TXINFO_STRUC *pTxInfo,
-	IN	USHORT		USBDMApktLen,
-	IN	BOOLEAN		bWiv,
-	IN	UCHAR			QueueSel,
-	IN	UCHAR			NextValid,
-	IN	UCHAR			TxBurst)
+static void ATEWriteTxInfo(PRTMP_ADAPTER pAd, TXINFO_STRUC *pTxInfo,
+	USHORT USBDMApktLen, BOOLEAN bWiv, UCHAR QueueSel, UCHAR NextValid,
+	UCHAR TxBurst)
 {
-	rlt_usb_write_txinfo(pAd, pTxInfo, USBDMApktLen, bWiv, QueueSel, NextValid, TxBurst);
+	rlt_usb_write_txinfo(pAd, pTxInfo, USBDMApktLen, bWiv, QueueSel,
+		NextValid, TxBurst);
 }
 
 
-INT ATESetUpFrame(
-	IN PRTMP_ADAPTER pAd,
-	IN UINT32 TxIdx)
+int ATESetUpFrame(PRTMP_ADAPTER pAd, UINT32 TxIdx)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	UINT pos = 0;
-	PTX_CONTEXT	pNullContext;
-	PUCHAR			pDest;
-	HTTRANSMIT_SETTING	TxHTPhyMode;
+	PTX_CONTEXT pNullContext;
+	PUCHAR pDest;
+	HTTRANSMIT_SETTING TxHTPhyMode;
 	TXWI_STRUC *pTxWI;
-	TXINFO_STRUC *pTxInfo;	
-	UINT32			TransferBufferLength, OrgBufferLength = 0;
-	UCHAR			padLen = 0;
+	TXINFO_STRUC *pTxInfo;
+	UINT32 TransferBufferLength, OrgBufferLength = 0;
+	UCHAR padLen = 0;
 	UINT8 TXWISize = pAd->chipCap.TXWISize;
-	UCHAR bw, sgi, stbc, mcs, phymode, frag, ts, ampdu, ack, nseq, basize, pid, txop, cfack;
+	UCHAR bw, sgi, stbc, mcs, phymode, frag, ts, ampdu, ack, nseq, 
+			basize, pid, txop, cfack;
 	USHORT mpdu_len;
 
-	bw = sgi = stbc = mcs = phymode = frag = ts = ampdu = ack = nseq = basize = pid = txop = cfack = 0;
+	bw = sgi = stbc = mcs = phymode = frag = ts = ampdu = ack = nseq = 
+		basize = pid = txop = cfack = 0;
 	mpdu_len = 0;
 
 	if ((RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RESET_IN_PROGRESS)) ||
 		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BULKOUT_RESET)) ||
 		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS)) ||
-		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)))
-	{
+		(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
 		return -1;
 	}
 
@@ -246,43 +221,34 @@ INT ATESetUpFrame(
 
 	pNullContext = &(pAd->NullContext);
 	ASSERT(pNullContext != NULL);
-	
-	if (pNullContext->InUse == FALSE)
-	{
+
+	if (pNullContext->InUse == FALSE) {
 		/* set the in use bit */
 		pNullContext->InUse = TRUE;
 		NdisZeroMemory(&(pAd->NullFrame), sizeof(HEADER_802_11));
-		
+
 		/* fill 802.11 header */
-		{
-			NdisMoveMemory(&(pAd->NullFrame), TemplateFrame,
-			sizeof(HEADER_802_11));
-		}
+		NdisMoveMemory(&(pAd->NullFrame), TemplateFrame, sizeof(HEADER_802_11));
 
 #ifdef RT_BIG_ENDIAN
 		RTMPFrameEndianChange(pAd, (PUCHAR)&(pAd->NullFrame), DIR_READ, FALSE);
 #endif /* RT_BIG_ENDIAN */
 
-		{
-			COPY_MAC_ADDR(pAd->NullFrame.Addr1, pATEInfo->Addr1);
-			COPY_MAC_ADDR(pAd->NullFrame.Addr2, pATEInfo->Addr2);
-			COPY_MAC_ADDR(pAd->NullFrame.Addr3, pATEInfo->Addr3);
-		}
+		COPY_MAC_ADDR(pAd->NullFrame.Addr1, pATEInfo->Addr1);
+		COPY_MAC_ADDR(pAd->NullFrame.Addr2, pATEInfo->Addr2);
+		COPY_MAC_ADDR(pAd->NullFrame.Addr3, pATEInfo->Addr3);
 
 		RTMPZeroMemory(&pAd->NullContext.TransferBuffer->field.WirelessPacket[0], TX_BUFFER_NORMSIZE);
 		pTxInfo = (TXINFO_STRUC *)&pAd->NullContext.TransferBuffer->field.WirelessPacket[0];
 
-		{
-			/* Avoid to exceed the range of WirelessPacket[]. */
-			ASSERT(pATEInfo->TxLength <= (MAX_FRAME_SIZE - 34/* == 2312 */));
+		/* Avoid to exceed the range of WirelessPacket[]. */
+		ASSERT(pATEInfo->TxLength <= (MAX_FRAME_SIZE - 34/* == 2312 */));
 
-			/* pTxInfo->TxInfoPktLen will be updated to include padding later */
-			ATEWriteTxInfo(pAd, pTxInfo, (USHORT)(TXWISize + pATEInfo->TxLength)
-			, TRUE, FIFO_EDCA, FALSE,  FALSE);
-		}
+		/* pTxInfo->TxInfoPktLen will be updated to include padding later */
+		ATEWriteTxInfo(pAd, pTxInfo, (USHORT)(TXWISize + pATEInfo->TxLength),
+				TRUE, FIFO_EDCA, FALSE,  FALSE);
 
 		pTxWI = (TXWI_STRUC *)&pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE];
-
 #ifdef RLT_MAC
 		if (pAd->chipCap.hif_type == HIF_RLT) {
 			bw = pATEInfo->TxWI.TXWI_N.BW;
@@ -324,23 +290,17 @@ INT ATESetUpFrame(
 #endif /* RTMP_MAC */
 
 		/* fill TxWI */
-		if (pATEInfo->bQATxStart == TRUE) 
-		{
+		if (pATEInfo->bQATxStart == TRUE) {
 			TxHTPhyMode.field.BW = bw;
 			TxHTPhyMode.field.ShortGI = sgi;
 			TxHTPhyMode.field.STBC = stbc;
 			TxHTPhyMode.field.MCS = mcs;
 			TxHTPhyMode.field.MODE = phymode;
-			ATEWriteTxWI(pAd, pTxWI, frag, ts,
-				ampdu, ack, nseq, 
-				basize, BSSID_WCID,
-				mpdu_len /* include 802.11 header */,
-				pid,
-				0, txop/*IFS_HTTXOP*/, cfack
+			ATEWriteTxWI(pAd, pTxWI, frag, ts, ampdu, ack, nseq,
+				basize, BSSID_WCID, mpdu_len /* include 802.11 header */,
+				pid, 0, txop/*IFS_HTTXOP*/, cfack
 				/*FALSE*/, TxHTPhyMode);
-		}
-		else
-		{
+		} else {
 			TxHTPhyMode.field.BW = bw;
 			TxHTPhyMode.field.ShortGI = sgi;
 			TxHTPhyMode.field.STBC = 0;
@@ -348,8 +308,9 @@ INT ATESetUpFrame(
 			TxHTPhyMode.field.MODE = phymode;
 
 			ATEWriteTxWI(pAd, pTxWI,  FALSE, FALSE, FALSE, FALSE
-				/* No ack required. */, FALSE, 0, BSSID_WCID, pATEInfo->TxLength,
-				0, 0, IFS_HTTXOP, FALSE, TxHTPhyMode);
+				/* No ack required. */, FALSE, 0, BSSID_WCID, 
+				pATEInfo->TxLength, 0, 0, IFS_HTTXOP, FALSE, 
+				TxHTPhyMode);
 		}
 
 		RTMPMoveMemory(&pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE + TXWISize],
@@ -358,22 +319,17 @@ INT ATESetUpFrame(
 		pDest = &(pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE + TXWISize + sizeof(HEADER_802_11)]);
 
 		/* prepare frame payload */
-		{
-		    for (pos = 0; pos < (pATEInfo->TxLength - sizeof(HEADER_802_11)); pos++)
-		    {
-		    		if ( pATEInfo->bFixedPayload )
-		    		{
-					/* default payload is 0xA5 */
-					*pDest = pATEInfo->Payload;
-		    		} 
-				else
-				{
-					*pDest = RandomByte(pAd);
-		    		}
-				pDest += 1;
-		    }
-			TransferBufferLength = TXINFO_SIZE + TXWISize + pATEInfo->TxLength;
+
+		for (pos = 0; pos < (pATEInfo->TxLength - sizeof(HEADER_802_11)); pos++) {
+			if (pATEInfo->bFixedPayload) {
+				/* default payload is 0xA5 */
+				*pDest = pATEInfo->Payload;
+			} else {
+				*pDest = RandomByte(pAd);
+			}
+			pDest += 1;
 		}
+		TransferBufferLength = TXINFO_SIZE + TXWISize + pATEInfo->TxLength;
 
 		OrgBufferLength = TransferBufferLength;
 		TransferBufferLength = (TransferBufferLength + 3) & (~3);
@@ -381,9 +337,9 @@ INT ATESetUpFrame(
 		/* Always add 4 extra bytes at every packet. */
 		padLen = TransferBufferLength - OrgBufferLength + 4;/* 4 == last packet padding */
 
-		/* 
-			RTMP_PKT_TAIL_PADDING == 11.
-			[11 == 3(max 4 byte padding) + 4(last packet padding) + 4(MaxBulkOutsize align padding)]		
+		/*
+		RTMP_PKT_TAIL_PADDING == 11.
+		[11 == 3(max 4 byte padding) + 4(last packet padding) + 4(MaxBulkOutsize align padding)]
 		*/
 		ASSERT((padLen <= (RTMP_PKT_TAIL_PADDING - 4/* 4 == MaxBulkOutsize alignment padding */)));
 
@@ -393,12 +349,10 @@ INT ATESetUpFrame(
 
 		/* Update pTxInfo->TxInfoPktLen to include padding. */
 		pTxInfo->TxInfoPktLen = TransferBufferLength - TXINFO_SIZE;
-
 		TransferBufferLength += 4;
 
 		/* If TransferBufferLength is multiple of 64, add extra 4 bytes again. */
-		if ((TransferBufferLength % pAd->BulkOutMaxPacketSize) == 0)
-		{
+		if ((TransferBufferLength % pAd->BulkOutMaxPacketSize) == 0) {
 			NdisZeroMemory(pDest, 4);
 			TransferBufferLength += 4;
 		}
@@ -409,7 +363,8 @@ INT ATESetUpFrame(
 
 #ifdef RT_BIG_ENDIAN
 	RTMPWIEndianChange(pAd, (PUCHAR)pTxWI, TYPE_TXWI);
-	RTMPFrameEndianChange(pAd, (((PUCHAR)pTxInfo) + TXWISize + TXINFO_SIZE), DIR_WRITE, FALSE);
+	RTMPFrameEndianChange(pAd, (((PUCHAR)pTxInfo) + TXWISize + TXINFO_SIZE), 
+			DIR_WRITE, FALSE);
 	RTMPDescriptorEndianChange((PUCHAR)pTxInfo, TYPE_TXINFO);
 #endif /* RT_BIG_ENDIAN */
 
@@ -419,7 +374,7 @@ INT ATESetUpFrame(
 
 /*
 ========================================================================
-	
+
 	Routine Description:
 
 	Arguments:
@@ -428,26 +383,22 @@ INT ATESetUpFrame(
 		None
 
 	Note:
-	
+
 ========================================================================
 */
-VOID ATE_RTUSBBulkOutDataPacket(
-	IN	PRTMP_ADAPTER	pAd,
-	IN	UCHAR			BulkOutPipeId)
+void ATE_RTUSBBulkOutDataPacket(PRTMP_ADAPTER pAd, UCHAR BulkOutPipeId)
 {
-	PTX_CONTEXT		pNullContext = &(pAd->NullContext);
-	PURB			pUrb;
-	INT			ret = 0;
-	ULONG			IrqFlags;
-
+	PTX_CONTEXT pNullContext = &(pAd->NullContext);
+	PURB pUrb;
+	int ret = 0;
+	ULONG IrqFlags;
 
 	ASSERT(BulkOutPipeId == 0);
 
 	/* Build up the frame first. */
 	BULK_OUT_LOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
 
-	if (pAd->BulkOutPending[BulkOutPipeId] == TRUE)
-	{
+	if (pAd->BulkOutPending[BulkOutPipeId] == TRUE) {
 		BULK_OUT_UNLOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
 		return;
 	}
@@ -456,7 +407,7 @@ VOID ATE_RTUSBBulkOutDataPacket(
 	BULK_OUT_UNLOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
 
 	/* Increase total transmit byte counter. */
-	pAd->RalinkCounters.OneSecTransmittedByteCount +=  pNullContext->BulkOutSize; 
+	pAd->RalinkCounters.OneSecTransmittedByteCount +=  pNullContext->BulkOutSize;
 	pAd->RalinkCounters.TransmittedByteCount +=  pNullContext->BulkOutSize;
 
 	/* Clear ATE frame bulk out flag. */
@@ -468,21 +419,19 @@ VOID ATE_RTUSBBulkOutDataPacket(
 		(usb_complete_t)RTUSBBulkOutDataPacketComplete);
 	pUrb = pNullContext->pUrb;
 
-	if ((ret = RTUSB_SUBMIT_URB(pUrb))!=0)
-	{
-		DBGPRINT_ERR(("ATE_RTUSBBulkOutDataPacket: Submit Tx URB failed %d\n", ret));
+	if ((ret = RTUSB_SUBMIT_URB(pUrb)) != 0) {
+		DBGPRINT_ERR(("ATE_RTUSBBulkOutDataPacket: Submit Tx URB failed %d\n", 
+				ret));
 		return;
 	}
 
 	pAd->BulkOutReq++;
-
-	return;
 }
 
 
 /*
 ========================================================================
-	
+
 	Routine Description:
 
 	Arguments:
@@ -491,10 +440,10 @@ VOID ATE_RTUSBBulkOutDataPacket(
 		None
 
 	Note:
-	
+
 ========================================================================
 */
-VOID ATE_RTUSBCancelPendingBulkInIRP(
+void ATE_RTUSBCancelPendingBulkInIRP(
 	IN	PRTMP_ADAPTER	pAd)
 {
 	PRX_CONTEXT		pRxContext = NULL;
@@ -508,7 +457,7 @@ VOID ATE_RTUSBCancelPendingBulkInIRP(
 
 		if (pRxContext->IRPPending == TRUE)
 		{
-			RTUSB_UNLINK_URB(pRxContext->pUrb);
+			usb_kill_urb(pRxContext->pUrb);
 			pRxContext->IRPPending = FALSE;
 			pRxContext->InUse = FALSE;
 		}
@@ -522,7 +471,7 @@ VOID ATE_RTUSBCancelPendingBulkInIRP(
 
 /*
 ========================================================================
-	
+
 	Routine Description:
 
 	Arguments:
@@ -531,27 +480,24 @@ VOID ATE_RTUSBCancelPendingBulkInIRP(
 		None
 
 	Note:
-	
+
 ========================================================================
 */
-VOID ATEResetBulkIn(
-	IN PRTMP_ADAPTER	pAd)
+void ATEResetBulkIn(PRTMP_ADAPTER pAd)
 {
-	if ((pAd->PendingRx > 0) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)))
-	{
+	if ((pAd->PendingRx > 0) && 
+		(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))) {
 		DBGPRINT_ERR(("ATE : BulkIn IRP Pending!!!\n"));
 		ATE_RTUSBCancelPendingBulkInIRP(pAd);
 		RtmpOsMsDelay(100);
 		pAd->PendingRx = 0;
 	}
-
-	return;
 }
 
 
 /*
 ========================================================================
-	
+
 	Routine Description:
 
 	Arguments:
@@ -559,35 +505,39 @@ VOID ATEResetBulkIn(
 	Return Value:
 
 	Note:
-	
+
 ========================================================================
 */
-INT ATEResetBulkOut(
-	IN PRTMP_ADAPTER	pAd)
+int ATEResetBulkOut(PRTMP_ADAPTER pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
-	PTX_CONTEXT	pNullContext = &(pAd->NullContext);
-	INT ret=0;
+	PTX_CONTEXT pNullContext = &(pAd->NullContext);
+	int ret = 0;
 
 	pNullContext->IRPPending = TRUE;
 
 	/*
-		If driver is still in ATE TXFRAME mode, 
+		If driver is still in ATE TXFRAME mode,
 		keep on transmitting ATE frames.
 	*/
-	DBGPRINT(RT_DEBUG_TRACE, ("pATEInfo->Mode == %d\npAd->ContinBulkOut == %d\npAd->BulkOutRemained == %d\n",
-		pATEInfo->Mode, pAd->ContinBulkOut, atomic_read(&pAd->BulkOutRemained)));
+	DBGPRINT(RT_DEBUG_TRACE, 
+			("pATEInfo->Mode == %d\npAd->ContinBulkOut == %d\npAd->BulkOutRemained == %d\n",
+			pATEInfo->Mode, pAd->ContinBulkOut, 
+			atomic_read(&pAd->BulkOutRemained)));
 
-	if ((pATEInfo->Mode == ATE_TXFRAME) && ((pAd->ContinBulkOut == TRUE) || (atomic_read(&pAd->BulkOutRemained) > 0)))
-    {
-		DBGPRINT(RT_DEBUG_TRACE, ("After CMDTHREAD_RESET_BULK_OUT, continue to bulk out frames !\n"));
+	if ((pATEInfo->Mode == ATE_TXFRAME) && ((pAd->ContinBulkOut == TRUE) ||
+		(atomic_read(&pAd->BulkOutRemained) > 0))) {
+		DBGPRINT(RT_DEBUG_TRACE, 
+				("After CMDTHREAD_RESET_BULK_OUT, continue to bulk out frames !\n"));
 
 		/* Init Tx context descriptor. */
-		RTUSBInitTxDesc(pAd, pNullContext, 0/* pAd->bulkResetPipeid */, (usb_complete_t)RTUSBBulkOutDataPacketComplete);
-		
-		if ((ret = RTUSB_SUBMIT_URB(pNullContext->pUrb))!=0)
-		{
-			DBGPRINT_ERR(("ATE_RTUSBBulkOutDataPacket: Submit Tx URB failed %d\n", ret));
+		RTUSBInitTxDesc(pAd, pNullContext, 0/* pAd->bulkResetPipeid */, 
+				(usb_complete_t)RTUSBBulkOutDataPacketComplete);
+
+		if ((ret = RTUSB_SUBMIT_URB(pNullContext->pUrb)) != 0) {
+			DBGPRINT_ERR(
+					("ATE_RTUSBBulkOutDataPacket: Submit Tx URB failed %d\n",
+					ret));
 		}
 
 		pAd->BulkOutReq++;
@@ -599,42 +549,36 @@ INT ATEResetBulkOut(
 
 /*
 ========================================================================
-	
+
 	Routine Description:
 
 	Arguments:
 
 	Return Value:
 
-	IRQL = 
-	
+	IRQL =
+
 	Note:
-	
+
 ========================================================================
 */
-VOID RTUSBRejectPendingPackets(
-	IN	PRTMP_ADAPTER	pAd)
+void RTUSBRejectPendingPackets(PRTMP_ADAPTER pAd)
 {
-	UCHAR			Index;
-	PQUEUE_ENTRY	pEntry;
-	PNDIS_PACKET	pPacket;
-	PQUEUE_HEADER	pQueue;
-	
+	UCHAR Index;
+	PQUEUE_ENTRY pEntry;
+	PNDIS_PACKET pPacket;
+	PQUEUE_HEADER pQueue;
 
-	for (Index = 0; Index < 4; Index++)
-	{
+	for (Index = 0; Index < 4; Index++) {
 		NdisAcquireSpinLock(&pAd->TxSwQueueLock[Index]);
-		while (pAd->TxSwQueue[Index].Head != NULL)
-		{
+		while (pAd->TxSwQueue[Index].Head != NULL) {
 			pQueue = (PQUEUE_HEADER) &(pAd->TxSwQueue[Index]);
 			pEntry = RemoveHeadQueue(pQueue);
 			pPacket = QUEUE_ENTRY_TO_PACKET(pEntry);
 			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
 		}
 		NdisReleaseSpinLock(&pAd->TxSwQueueLock[Index]);
-
 	}
-
 }
 
 #endif /* RTMP_MAC_USB */
