@@ -63,7 +63,7 @@ static ULONG RTPktOffsetData = 0, RTPktOffsetLen = 0, RTPktOffsetCB = 0;
  * path so throughput should not be impacted
  */
 static BOOLEAN FlgIsUtilInit = FALSE;
-OS_NDIS_SPIN_LOCK UtilSemLock;
+spinlock_t UtilSemLock;
 
 static void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev);
 
@@ -408,7 +408,8 @@ PNDIS_PACKET duplicate_pkt_with_TKIP_MIC(void *pReserved, PNDIS_PACKET pPacket)
 		dev_kfree_skb_any(skb);
 
 		if (newskb == NULL) {
-			DBGPRINT(RT_DEBUG_ERROR, ("Extend Tx.MIC for packet failed!, dropping packet!\n"));
+			DBGPRINT(RT_DEBUG_ERROR, 
+					("Extend Tx.MIC for packet failed!, dropping packet!\n"));
 			return NULL;
 		}
 		skb = newskb;
@@ -517,7 +518,7 @@ PNDIS_PACKET ExpandPacket(void *pReserved, PNDIS_PACKET pPacket,
 
 		if (newskb == NULL) {
 			DBGPRINT(RT_DEBUG_ERROR,
-				 ("Extend Tx buffer for WPI failed!, dropping packet!\n"));
+					("Extend Tx buffer for WPI failed!, dropping packet!\n"));
 			return NULL;
 		}
 		skb = newskb;
@@ -802,7 +803,6 @@ static inline NDIS_STATUS __RtmpOSTaskKill(OS_TASK *pTask)
 #endif
 
 	return ret;
-
 }
 
 
@@ -836,13 +836,13 @@ static inline void __RtmpOSTaskCustomize(OS_TASK *pTask)
 }
 
 
-static inline NDIS_STATUS __RtmpOSTaskAttach(OS_TASK *pTask, RTMP_OS_TASK_CALLBACK fn,
-	ULONG arg)
+static inline NDIS_STATUS __RtmpOSTaskAttach(OS_TASK *pTask,
+	RTMP_OS_TASK_CALLBACK fn, ULONG arg)
 {
 	NDIS_STATUS status = NDIS_STATUS_SUCCESS;
 #ifndef KTHREAD_SUPPORT
 	pid_t pid_number = -1;
-#endif /* KTHREAD_SUPPORT */
+#endif
 
 #ifdef KTHREAD_SUPPORT
 	pTask->task_killed = 0;
@@ -2071,34 +2071,34 @@ int RtmpOSNotifyRawData(PNET_DEV pNetDev, PUCHAR buff, int len, ULONG type,
 #endif /* CONFIG_STA_SUPPORT */
 
 
-void OS_SPIN_LOCK_IRQSAVE(NDIS_SPIN_LOCK *lock, unsigned long *flags)
+void OS_SPIN_LOCK_IRQSAVE(spinlock_t *lock, unsigned long *flags)
 {
-	spin_lock_irqsave((spinlock_t *)(lock), *flags);
+	spin_lock_irqsave(lock, *flags);
 }
 
-void OS_SPIN_UNLOCK_IRQRESTORE(NDIS_SPIN_LOCK *lock, unsigned long *flags)
+void OS_SPIN_UNLOCK_IRQRESTORE(spinlock_t *lock, unsigned long *flags)
 {
-	spin_unlock_irqrestore((spinlock_t *)(lock), *flags);
+	spin_unlock_irqrestore(lock, *flags);
 }
 
-void OS_SPIN_LOCK(NDIS_SPIN_LOCK *lock)
+void OS_SPIN_LOCK(spinlock_t *lock)
 {
-	spin_lock((spinlock_t *)(lock));
+	spin_lock(lock);
 }
 
-void OS_SPIN_UNLOCK(NDIS_SPIN_LOCK *lock)
+void OS_SPIN_UNLOCK(spinlock_t *lock)
 {
-	spin_unlock((spinlock_t *)(lock));
+	spin_unlock(lock);
 }
 
-void OS_SPIN_LOCK_IRQ(NDIS_SPIN_LOCK *lock)
+void OS_SPIN_LOCK_IRQ(spinlock_t *lock)
 {
-	spin_lock_irq((spinlock_t *)(lock));
+	spin_lock_irq(lock);
 }
 
-void OS_SPIN_UNLOCK_IRQ(NDIS_SPIN_LOCK *lock)
+void OS_SPIN_UNLOCK_IRQ(spinlock_t *lock)
 {
-	spin_unlock_irq((spinlock_t *)(lock));
+	spin_unlock_irq(lock);
 }
 
 int OS_TEST_BIT(int bit, unsigned long *flags)
