@@ -6,9 +6,10 @@
 
 #ifdef RTMP_MAC_USB
 
-#include	"rt_config.h"
+#include "rt_config.h"
 
-NDIS_STATUS RTUSBFreeDescriptorRelease(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId)
+#if 0 //JB removed
+static NDIS_STATUS RTUSBFreeDescriptorRelease(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId)
 {
 	HT_TX_CONTEXT *pHTTXContext;
 	unsigned long IrqFlags;
@@ -20,6 +21,7 @@ NDIS_STATUS RTUSBFreeDescriptorRelease(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId)
 
 	return NDIS_STATUS_SUCCESS;
 }
+#endif
 
 /*
 	========================================================================
@@ -40,10 +42,10 @@ NDIS_STATUS RTUSBFreeDescriptorRelease(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId)
 
 	========================================================================
 */
-NDIS_STATUS	RTUSBFreeDescRequest(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId,
+NDIS_STATUS RTUSBFreeDescRequest(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId,
 	UINT32 req_cnt)
 {
-	NDIS_STATUS	 Status = NDIS_STATUS_FAILURE;
+	NDIS_STATUS  Status = NDIS_STATUS_FAILURE;
 	unsigned long IrqFlags;
 	HT_TX_CONTEXT *pHTTXContext;
 
@@ -137,14 +139,9 @@ BOOLEAN	RTUSBNeedQueueBackForAgg(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId)
 
 	========================================================================
 */
-VOID rlt_usb_write_txinfo(
-	IN RTMP_ADAPTER *pAd,
-	IN TXINFO_STRUC *pTxInfo,
-	IN USHORT USBDMApktLen,
-	IN BOOLEAN bWiv,
-	IN UCHAR QueueSel,
-	IN UCHAR NextValid,
-	IN UCHAR TxBurst)
+void rlt_usb_write_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo,
+	USHORT USBDMApktLen, BOOLEAN bWiv, UCHAR QueueSel, UCHAR NextValid,
+	UCHAR TxBurst)
 {
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT) {
@@ -193,18 +190,14 @@ VOID rlt_usb_write_txinfo(
 }
 
 #if 0 //JB removed
-static VOID rlt_usb_update_txinfo(
-	IN RTMP_ADAPTER *pAd,
-	IN TXINFO_STRUC *pTxInfo,
-	IN TX_BLK *pTxBlk)
+static void rlt_usb_update_txinfo(RTMP_ADAPTER *pAd, TXINFO_STRUC *pTxInfo,
+	TX_BLK *pTxBlk)
 {
-#ifdef RLT_MAC
-#endif /* RLT_MAC */
 }
 #endif
 
 #ifdef CONFIG_STA_SUPPORT
-VOID ComposePsPoll(RTMP_ADAPTER *pAd)
+void ComposePsPoll(RTMP_ADAPTER *pAd)
 {
 	TXINFO_STRUC *pTxInfo;
 	TXWI_STRUC *pTxWI;
@@ -228,12 +221,12 @@ VOID ComposePsPoll(RTMP_ADAPTER *pAd)
 	RTMPZeroMemory(buf, 100);
 	data_len = sizeof (PSPOLL_FRAME);
 	rlt_usb_write_txinfo(pAd, pTxInfo, data_len + TXWISize + TSO_SIZE, TRUE,
-						EpToQueue[MGMTPIPEIDX], FALSE, FALSE);
+			EpToQueue[MGMTPIPEIDX], FALSE, FALSE);
 	RTMPWriteTxWI(pAd, pTxWI, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, 0,
-					BSSID_WCID, data_len, 0, 0,
-					(UCHAR) pAd->CommonCfg.MlmeTransmit.field.MCS,
-					IFS_BACKOFF, &pAd->CommonCfg.MlmeTransmit);
-	RTMPMoveMemory((VOID *)&buf[TXWISize + TXINFO_SIZE + TSO_SIZE], (VOID *)&pAd->PsPollFrame, data_len);
+			BSSID_WCID, data_len, 0, 0,
+			(UCHAR) pAd->CommonCfg.MlmeTransmit.field.MCS,
+			IFS_BACKOFF, &pAd->CommonCfg.MlmeTransmit);
+	RTMPMoveMemory((void *)&buf[TXWISize + TXINFO_SIZE + TSO_SIZE], (void *)&pAd->PsPollFrame, data_len);
 	/* Append 4 extra zero bytes. */
 	pAd->PsPollContext.BulkOutSize = TXINFO_SIZE + TXWISize + TSO_SIZE + data_len + 4;
 }
@@ -241,14 +234,13 @@ VOID ComposePsPoll(RTMP_ADAPTER *pAd)
 
 
 /* IRQL = DISPATCH_LEVEL */
-VOID ComposeNullFrame(RTMP_ADAPTER *pAd)
+void ComposeNullFrame(RTMP_ADAPTER *pAd)
 {
 	TXINFO_STRUC *pTxInfo;
 	TXWI_STRUC *pTxWI;
 	UCHAR *buf;
 	UINT8 TXWISize = pAd->chipCap.TXWISize;
 	USHORT data_len = sizeof(pAd->NullFrame);;
-
 
 	NdisZeroMemory(&pAd->NullFrame, data_len);
 	pAd->NullFrame.FC.Type = FC_TYPE_DATA;
@@ -268,7 +260,7 @@ VOID ComposeNullFrame(RTMP_ADAPTER *pAd)
 					BSSID_WCID, data_len, 0, 0,
 					(UCHAR)pAd->CommonCfg.MlmeTransmit.field.MCS,
 					IFS_BACKOFF, &pAd->CommonCfg.MlmeTransmit);
-	RTMPMoveMemory((VOID *)&buf[TXWISize + TXINFO_SIZE], (VOID *)&pAd->NullFrame, data_len);
+	RTMPMoveMemory((void *)&buf[TXWISize + TXINFO_SIZE], (void *)&pAd->NullFrame, data_len);
 	pAd->NullContext.BulkOutSize = TXINFO_SIZE + TXWISize + TSO_SIZE + data_len + 4;
 }
 
@@ -279,12 +271,10 @@ VOID ComposeNullFrame(RTMP_ADAPTER *pAd)
 		=>
 		=>
 */
-static inline NDIS_STATUS RtmpUSBCanDoWrite(
-	IN RTMP_ADAPTER *pAd,
-	IN UCHAR QueIdx,
-	IN HT_TX_CONTEXT *pHTTXContext)
+static inline NDIS_STATUS RtmpUSBCanDoWrite(RTMP_ADAPTER *pAd, UCHAR QueIdx,
+	HT_TX_CONTEXT *pHTTXContext)
 {
-	NDIS_STATUS	canWrite = NDIS_STATUS_RESOURCES;
+	NDIS_STATUS canWrite = NDIS_STATUS_RESOURCES;
 
 #ifdef USB_BULK_BUF_ALIGMENT
 	if (((pHTTXContext->CurWriteIdx< pHTTXContext->NextBulkIdx) &&
@@ -298,17 +288,18 @@ static inline NDIS_STATUS RtmpUSBCanDoWrite(
 	}
 #else
 	if (((pHTTXContext->CurWritePosition) < pHTTXContext->NextBulkOutPosition) &&
-			(pHTTXContext->CurWritePosition + LOCAL_TXBUF_SIZE) > pHTTXContext->NextBulkOutPosition) {
+		(pHTTXContext->CurWritePosition + LOCAL_TXBUF_SIZE) > 
+		pHTTXContext->NextBulkOutPosition) {
 		DBGPRINT(RT_DEBUG_ERROR,("RtmpUSBCanDoWrite c1!\n"));
 		RTUSB_SET_BULK_FLAG(pAd, (fRTUSB_BULK_OUT_DATA_NORMAL << QueIdx));
 	} else if ((pHTTXContext->CurWritePosition == 8) &&
-			(pHTTXContext->NextBulkOutPosition < LOCAL_TXBUF_SIZE)) {
+		(pHTTXContext->NextBulkOutPosition < LOCAL_TXBUF_SIZE)) {
 		DBGPRINT(RT_DEBUG_ERROR,("RtmpUSBCanDoWrite c2!\n"));
 		RTUSB_SET_BULK_FLAG(pAd, (fRTUSB_BULK_OUT_DATA_NORMAL << QueIdx));
 	} else if (pHTTXContext->bCurWriting == TRUE) {
 		DBGPRINT(RT_DEBUG_ERROR,("RtmpUSBCanDoWrite c3!\n"));
 	} else if ((pHTTXContext->ENextBulkOutPosition == 8) &&
-			((pHTTXContext->CurWritePosition + 7912 ) > MAX_TXBULK_LIMIT)) {
+		((pHTTXContext->CurWritePosition + 7912 ) > MAX_TXBULK_LIMIT)) {
 		DBGPRINT(RT_DEBUG_ERROR,("RtmpUSBCanDoWrite c4!\n"));
 		RTUSB_SET_BULK_FLAG(pAd, (fRTUSB_BULK_OUT_DATA_NORMAL << QueIdx));
 	}
@@ -321,37 +312,32 @@ static inline NDIS_STATUS RtmpUSBCanDoWrite(
 	return canWrite;
 }
 
-
-USHORT RtmpUSB_WriteSubTxResource(
-	IN RTMP_ADAPTER *pAd,
-	IN TX_BLK *pTxBlk,
-	IN BOOLEAN bIsLast,
-	OUT	USHORT *freeCnt)
+#if 0 //JB removed
+static USHORT RtmpUSB_WriteSubTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
+	BOOLEAN bIsLast, USHORT *freeCnt)
 {
 	/* Dummy function. Should be removed in the future.*/
 	return 0;
 }
+#endif //0
 
-USHORT	RtmpUSB_WriteFragTxResource(
-	IN RTMP_ADAPTER *pAd,
-	IN TX_BLK *pTxBlk,
-	IN UCHAR fragNum,
-	OUT	USHORT *freeCnt)
+USHORT RtmpUSB_WriteFragTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
+	UCHAR fragNum, USHORT *freeCnt)
 {
-	HT_TX_CONTEXT	*pHTTXContext;
-	USHORT			hwHdrLen;	/* The hwHdrLen consist of 802.11 header length plus the header padding length.*/
-	UINT32			fillOffset;
-	TXINFO_STRUC	*pTxInfo;
-	TXWI_STRUC		*pTxWI;
-	PUCHAR			pWirelessPacket = NULL;
-	UCHAR			QueIdx;
-	NDIS_STATUS		Status;
-	unsigned long	IrqFlags;
-	UINT32			USBDMApktLen = 0, DMAHdrLen, padding;
+	HT_TX_CONTEXT *pHTTXContext;
+	USHORT hwHdrLen;	/* The hwHdrLen consist of 802.11 header length plus the header padding length.*/
+	UINT32 fillOffset;
+	TXINFO_STRUC *pTxInfo;
+	TXWI_STRUC *pTxWI;
+	PUCHAR pWirelessPacket = NULL;
+	UCHAR QueIdx;
+	NDIS_STATUS Status;
+	unsigned long IrqFlags;
+	UINT32 USBDMApktLen = 0, DMAHdrLen, padding;
 #ifdef USB_BULK_BUF_ALIGMENT
-	BOOLEAN			bLasAlignmentsectiontRound = FALSE;
+	BOOLEAN bLasAlignmentsectiontRound = FALSE;
 #else
-	BOOLEAN			TxQLastRound = FALSE;
+	BOOLEAN TxQLastRound = FALSE;
 #endif /* USB_BULK_BUF_ALIGMENT */
 	UINT8 TXWISize = pAd->chipCap.TXWISize;
 
@@ -431,9 +417,7 @@ USHORT	RtmpUSB_WriteFragTxResource(
 	ex:   when secoend packet writeresouce and it > 0x6000
 		And the last packet writesource and it also > 0x6000  at this time CurWriteIdx++
 		but when data bulk out , because at second packet it will > 0x6000 , the last packet will not bulk out.
-
 	*/
-
 		if (((pHTTXContext->CurWritePosition + 3906) & 0x00006000) == 0x00006000) {
 			bLasAlignmentsectiontRound = TRUE;
 			pTxInfo->bFragLasAlignmentsectiontRound = 1;
@@ -503,11 +487,8 @@ USHORT	RtmpUSB_WriteFragTxResource(
 }
 
 
-USHORT RtmpUSB_WriteSingleTxResource(
-	IN RTMP_ADAPTER *pAd,
-	IN TX_BLK *pTxBlk,
-	IN BOOLEAN bIsLast,
-	OUT	USHORT *freeCnt)
+USHORT RtmpUSB_WriteSingleTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
+	BOOLEAN bIsLast, USHORT *freeCnt)
 {
 	HT_TX_CONTEXT *pHTTXContext;
 	UINT32 fillOffset;
@@ -515,7 +496,7 @@ USHORT RtmpUSB_WriteSingleTxResource(
 	TXWI_STRUC *pTxWI;
 	UCHAR *pWirelessPacket, *buf;
 	UCHAR QueIdx;
-	unsigned long	IrqFlags;
+	unsigned long IrqFlags;
 	NDIS_STATUS Status;
 	UINT32 hdr_copy_len, hdr_len, dma_len = 0, padding;
 #ifndef USB_BULK_BUF_ALIGMENT
@@ -604,8 +585,12 @@ USHORT RtmpUSB_WriteSingleTxResource(
 				}
 				//DBGPRINT(RT_DEBUG_TRACE, ("%s:sg[%d]=0x%x, len=%d\n", __FUNCTION__, i, data, len));
 				if (len <= 0) {
-					DBGPRINT(RT_DEBUG_ERROR, ("%s():sg[%d] info error, sg.data=0x%x, sg.len=%d, pTxBlk->pSrcBufData=0x%x, pTxBlk->SrcBufLen=%d, data=0x%x, len=%d\n",
-								__FUNCTION__, i, sg[i].data, sg[i].len, pTxBlk->pSrcBufData, pTxBlk->SrcBufLen, data, len));
+					DBGPRINT(RT_DEBUG_ERROR,
+							("%s():sg[%d] info error, sg.data=0x%x, sg.len=%d, pTxBlk->pSrcBufData=0x%x, pTxBlk->SrcBufLen=%d, data=0x%x, len=%d\n",
+							__FUNCTION__, i,
+							sg[i].data, sg[i].len,
+							pTxBlk->pSrcBufData, pTxBlk->SrcBufLen,
+							data, len));
 					break;
 				}
 				NdisMoveMemory(pWirelessPacket, data, len);
@@ -629,7 +614,7 @@ USHORT RtmpUSB_WriteSingleTxResource(
 #ifdef RT_CFG80211_P2P_SUPPORT
 		if (RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
 #else
-			IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
+		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 #endif /* RT_CFG80211_P2P_SUPPORT */
 		{
 			UAPSD_TagFrame(pAd, pTxBlk->pPacket, pTxBlk->Wcid, pHTTXContext->CurWritePosition);
@@ -665,11 +650,8 @@ USHORT RtmpUSB_WriteSingleTxResource(
 }
 
 
-USHORT RtmpUSB_WriteMultiTxResource(
-	IN RTMP_ADAPTER *pAd,
-	IN TX_BLK *pTxBlk,
-	IN UCHAR frmNum,
-	OUT USHORT *freeCnt)
+USHORT RtmpUSB_WriteMultiTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
+	UCHAR frmNum, USHORT *freeCnt)
 {
 	HT_TX_CONTEXT *pHTTXContext;
 	USHORT hwHdrLen;	/* The hwHdrLen consist of 802.11 header length plus the header padding length.*/
@@ -746,7 +728,8 @@ USHORT RtmpUSB_WriteMultiTxResource(
 			pTxBlk->Priv += pTxBlk->MpduHeaderLen;
 		} else {
 			/* It should not happened now unless we are going to shutdown.*/
-			DBGPRINT(RT_DEBUG_ERROR, ("WriteMultiTxResource():bCurWriting is FALSE when handle sub-sequent frames.\n"));
+			DBGPRINT(RT_DEBUG_ERROR,
+					("WriteMultiTxResource():bCurWriting is FALSE when handle sub-sequent frames.\n"));
 			Status = NDIS_STATUS_FAILURE;
 		}
 	}
@@ -766,7 +749,10 @@ USHORT RtmpUSB_WriteMultiTxResource(
 	RTMP_IRQ_UNLOCK(&pAd->TxContextQueueLock[QueIdx], IrqFlags);
 
 	if (Status != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_ERROR,("WriteMultiTxResource: CWPos = %ld, NBOutPos = %ld.\n", pHTTXContext->CurWritePosition, pHTTXContext->NextBulkOutPosition));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("WriteMultiTxResource: CWPos = %ld, NBOutPos = %ld.\n",
+				pHTTXContext->CurWritePosition,
+				pHTTXContext->NextBulkOutPosition));
 		goto done;
 	}
 
@@ -782,20 +768,17 @@ done:
 }
 
 
-VOID RtmpUSB_FinalWriteTxResource(
-	IN RTMP_ADAPTER	*pAd,
-	IN TX_BLK *pTxBlk,
-	IN USHORT totalMPDUSize,
-	IN USHORT TxIdx)
+void RtmpUSB_FinalWriteTxResource(RTMP_ADAPTER *pAd,TX_BLK *pTxBlk,
+	USHORT totalMPDUSize, USHORT TxIdx)
 {
-	UCHAR			QueIdx;
-	HT_TX_CONTEXT	*pHTTXContext;
-	UINT32			fillOffset;
-	TXINFO_STRUC	*pTxInfo;
-	TXWI_STRUC		*pTxWI;
-	UINT32			USBDMApktLen, padding;
-	unsigned long	IrqFlags;
-	PUCHAR			pWirelessPacket;
+	UCHAR QueIdx;
+	HT_TX_CONTEXT *pHTTXContext;
+	UINT32 fillOffset;
+	TXINFO_STRUC *pTxInfo;
+	TXWI_STRUC *pTxWI;
+	UINT32 USBDMApktLen, padding;
+	unsigned long IrqFlags;
+	PUCHAR pWirelessPacket;
 
 	QueIdx = pTxBlk->QueIdx;
 	pHTTXContext  = &pAd->TxContext[QueIdx];
@@ -804,8 +787,8 @@ VOID RtmpUSB_FinalWriteTxResource(
 	if (pHTTXContext->bCurWriting == TRUE) {
 		fillOffset = pHTTXContext->CurWritePosition;
 #ifndef USB_BULK_BUF_ALIGMENT
-		if (((pHTTXContext->ENextBulkOutPosition == pHTTXContext->CurWritePosition) || 
-			((pHTTXContext->ENextBulkOutPosition-8) == pHTTXContext->CurWritePosition)) && 
+		if (((pHTTXContext->ENextBulkOutPosition == pHTTXContext->CurWritePosition) ||
+			((pHTTXContext->ENextBulkOutPosition-8) == pHTTXContext->CurWritePosition)) &&
 			(pHTTXContext->bCopySavePad == TRUE))
 			pWirelessPacket = (PUCHAR)(&pHTTXContext->SavedPad[0]);
 		else
@@ -870,7 +853,7 @@ VOID RtmpUSB_FinalWriteTxResource(
 #ifdef RT_CFG80211_P2P_SUPPORT
 		if (RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
 #else
-			IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
+		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 #endif /* RT_CFG80211_P2P_SUPPORT */
 		{
 			UAPSD_TagFrame(pAd, pTxBlk->pPacket, pTxBlk->Wcid, pHTTXContext->CurWritePosition);
@@ -893,14 +876,12 @@ VOID RtmpUSB_FinalWriteTxResource(
 }
 
 
-VOID RtmpUSBDataLastTxIdx(
-	IN RTMP_ADAPTER *pAd,
-	IN UCHAR QueIdx,
-	IN USHORT TxIdx)
+#if 0 //JB removed
+void RtmpUSBDataLastTxIdx(RTMP_ADAPTER *pAd, UCHAR QueIdx, USHORT TxIdx)
 {
 	/* DO nothing for USB.*/
 }
-
+#endif
 
 /*
 	When can do bulk-out:
@@ -910,10 +891,7 @@ VOID RtmpUSBDataLastTxIdx(
 			Check if the CurWriting flag is FALSE, if it's FALSE, we can do kick out.
 
 */
-VOID RtmpUSBDataKickOut(
-	IN RTMP_ADAPTER *pAd,
-	IN TX_BLK *pTxBlk,
-	IN UCHAR QueIdx)
+void RtmpUSBDataKickOut(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk, UCHAR QueIdx)
 {
 	RTUSB_SET_BULK_FLAG(pAd, (fRTUSB_BULK_OUT_DATA_NORMAL << QueIdx));
 	RTUSBKickBulkOut(pAd);
@@ -980,7 +958,7 @@ int RtmpUSBMgmtKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx, PNDIS_PACKET pPacket,
 #ifdef RT_CFG80211_P2P_SUPPORT
 	if (RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
 #else
-		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
+	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 #endif /* RT_CFG80211_P2P_SUPPORT */
 		{
 		if (RTMP_GET_PACKET_QOS_NULL(pPacket) != 0x00)
@@ -1013,8 +991,8 @@ int RtmpUSBMgmtKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx, PNDIS_PACKET pPacket,
 }
 
 
-VOID RtmpUSBNullFrameKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx,
-	UCHAR *pNullFrame, UINT32 frameLen)
+void RtmpUSBNullFrameKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx, UCHAR *pNullFrame,
+	UINT32 frameLen)
 {
 	if (pAd->NullContext.InUse == FALSE) {
 		PTX_CONTEXT pNullContext;
@@ -1030,7 +1008,7 @@ VOID RtmpUSBNullFrameKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx,
 
 		RTMPZeroMemory(&pWirelessPkt[0], 100);
 		pTxInfo = (TXINFO_STRUC *)&pWirelessPkt[0];
-		rlt_usb_write_txinfo(pAd, pTxInfo, (USHORT)(frameLen + TXWISize + TSO_SIZE), 
+		rlt_usb_write_txinfo(pAd, pTxInfo, (USHORT)(frameLen + TXWISize + TSO_SIZE),
 					TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
 		pTxWI = (TXWI_STRUC *)&pWirelessPkt[TXINFO_SIZE];
 		RTMPWriteTxWI(pAd, pTxWI, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, 0, BSSID_WCID, frameLen,
@@ -1046,7 +1024,9 @@ VOID RtmpUSBNullFrameKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx,
 		pAd->NullContext.BulkOutSize =  TXINFO_SIZE + TXWISize + TSO_SIZE + frameLen + 4;
 		pAd->NullContext.BulkOutSize = ( pAd->NullContext.BulkOutSize + 3) & (~3);
 
-		DBGPRINT(RT_DEBUG_TRACE, ("%s - Send NULL Frame @%d Mbps...\n", __FUNCTION__, RateIdToMbps[pAd->CommonCfg.TxRate]));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("%s - Send NULL Frame @%d Mbps...\n",
+				__FUNCTION__, RateIdToMbps[pAd->CommonCfg.TxRate]));
 		RTUSB_SET_BULK_FLAG(pAd, fRTUSB_BULK_OUT_DATA_NULL);
 
 		pAd->Sequence = (pAd->Sequence+1) & MAXSEQ;
@@ -1063,10 +1043,10 @@ Routine Description:
 	Get a received packet.
 
 Arguments:
-	pAd					device control block
-	pSaveRxD			receive descriptor information
-	*pbReschedule		need reschedule flag
-	*pRxPending			pending received packet flag
+	pAd		device control block
+	pSaveRxD	receive descriptor information
+	*pbReschedule	need reschedule flag
+	*pRxPending	pending received packet flag
 
 Return Value:
 	the recieved packet
@@ -1110,21 +1090,27 @@ PNDIS_PACKET GetPacketFromRxRing(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
 	/* The RXDMA field is 4 bytes, now just use the first 2 bytes. The Length including the (RXWI + MSDU + Padding) */
 	ThisFrameLen = *pData + (*(pData+1)<<8);
 	if (ThisFrameLen == 0) {
-		DBGPRINT(RT_DEBUG_TRACE, ("BIRIdx(%d): RXDMALen is zero.[%ld], BulkInBufLen = %ld)\n",
-								pAd->NextRxBulkInReadIndex, ThisFrameLen, pRxContext->BulkInOffset));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("BIRIdx(%d): RXDMALen is zero.[%ld], BulkInBufLen = %ld)\n",
+				pAd->NextRxBulkInReadIndex, ThisFrameLen,
+				pRxContext->BulkInOffset));
 		goto label_null;
 	}
 	if ((ThisFrameLen & 0x3) != 0) {
-		DBGPRINT(RT_DEBUG_ERROR, ("BIRIdx(%d): RXDMALen not multiple of 4.[%ld], BulkInBufLen = %ld)\n",
-								pAd->NextRxBulkInReadIndex, ThisFrameLen, pRxContext->BulkInOffset));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("BIRIdx(%d): RXDMALen not multiple of 4.[%ld], BulkInBufLen = %ld)\n",
+				pAd->NextRxBulkInReadIndex, ThisFrameLen,
+				pRxContext->BulkInOffset));
 		goto label_null;
 	}
 
 	if ((ThisFrameLen + 8) > RxBufferLength) {
 		/* 8 for (RXDMA_FIELD_SIZE + sizeof(RXINFO_STRUC))*/
-		DBGPRINT(RT_DEBUG_TRACE,("BIRIdx(%d):FrameLen(0x%lx) outranges. BulkInLen=0x%lx, remaining RxBufLen=0x%lx, ReadPos=0x%lx\n",
-				pAd->NextRxBulkInReadIndex, ThisFrameLen, 
-				pRxContext->BulkInOffset, RxBufferLength, pAd->ReadPosition));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("BIRIdx(%d):FrameLen(0x%lx) outranges. BulkInLen=0x%lx, remaining RxBufLen=0x%lx, ReadPos=0x%lx\n",
+				pAd->NextRxBulkInReadIndex, ThisFrameLen,
+				pRxContext->BulkInOffset, RxBufferLength,
+				pAd->ReadPosition));
 
 		/* error frame. finish this loop*/
 		goto label_null;
@@ -1224,7 +1210,7 @@ PNDIS_PACKET GetPacketFromRxRing(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT) {
-		NdisMoveMemory((VOID *)&pRxBlk->hw_rx_info[0], (VOID *)pRxFceInfo, sizeof(RXFCE_INFO));
+		NdisMoveMemory((void *)&pRxBlk->hw_rx_info[0], (void *)pRxFceInfo, sizeof(RXFCE_INFO));
 		pRxBlk->pRxFceInfo = (RXFCE_INFO *)&pRxBlk->hw_rx_info[0];
 	}
 #endif /* RLT_MAC */
@@ -1248,7 +1234,7 @@ label_null:
 
 
 #ifdef CONFIG_STA_SUPPORT
-VOID RtmpUsbStaAsicForceWakeupTimeout(PVOID SystemSpecific1, 
+void RtmpUsbStaAsicForceWakeupTimeout(PVOID SystemSpecific1,
 	PVOID FunctionContext, PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)FunctionContext;
@@ -1262,7 +1248,7 @@ VOID RtmpUsbStaAsicForceWakeupTimeout(PVOID SystemSpecific1,
 }
 
 
-VOID RT28xxUsbStaAsicForceWakeup(RTMP_ADAPTER *pAd, BOOLEAN bFromTx)
+void RT28xxUsbStaAsicForceWakeup(RTMP_ADAPTER *pAd, BOOLEAN bFromTx)
 {
 	BOOLEAN	Canceled;
 
@@ -1276,7 +1262,7 @@ VOID RT28xxUsbStaAsicForceWakeup(RTMP_ADAPTER *pAd, BOOLEAN bFromTx)
 }
 
 
-VOID RT28xxUsbStaAsicSleepThenAutoWakeup(PRTMP_ADAPTER pAd, 
+void RT28xxUsbStaAsicSleepThenAutoWakeup(PRTMP_ADAPTER pAd,
 	USHORT TbttNumToNextWakeUp)
 {
 	/* Not going to sleep if in the Count Down Time*/
