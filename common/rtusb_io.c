@@ -2040,7 +2040,7 @@ void RTUSBWatchDog(RTMP_ADAPTER *pAd)
 				if (pUrb) {
 					DBGPRINT(RT_DEBUG_TRACE, ("Unlink the pending URB!\n"));
 					/* unlink it now*/
-					RTUSB_UNLINK_URB(pUrb);
+					usb_kill_urb(pUrb);
 					/* Sleep 200 microseconds to give cancellation time to work*/
 					RtmpusecDelay(200);
 					needDumpSeq = TRUE;
