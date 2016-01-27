@@ -1014,7 +1014,7 @@ typedef struct _MLME_QUEUE {
 	ULONG Num;
 	ULONG Head;
 	ULONG Tail;
-	NDIS_SPIN_LOCK Lock;
+	spinlock_t Lock;
 	MLME_QUEUE_ELEM Entry[MAX_LEN_OF_MLME_QUEUE];
 } MLME_QUEUE, *PMLME_QUEUE;
 
