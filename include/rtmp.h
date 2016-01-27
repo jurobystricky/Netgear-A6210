@@ -1030,7 +1030,7 @@ typedef struct _MLME_STRUCT {
 	ULONG Now32;		/* latch the value of NdisGetSystemUpTime() */
 	ULONG LastSendNULLpsmTime;
 	BOOLEAN bRunning;
-	NDIS_SPIN_LOCK TaskLock;
+	spinlock_t TaskLock;
 	MLME_QUEUE Queue;
 	UINT ShiftReg;
 	RALINK_TIMER_STRUCT PeriodicTimer;
@@ -1070,7 +1070,7 @@ struct reordering_list {
 
 struct reordering_mpdu_pool {
 	PVOID mem;
-	NDIS_SPIN_LOCK lock;
+	spinlock_t lock;
 	struct reordering_list freelist;
 };
 
@@ -1119,7 +1119,7 @@ typedef struct _BA_REC_ENTRY {
 /*	UCHAR RxBufIdxUsed; */
 	/* corresponding virtual address for RX reordering packet storage. */
 	/*RTMP_REORDERDMABUF MAP_RXBuf[MAX_RX_REORDERBUF]; */
-	NDIS_SPIN_LOCK RxReRingLock;	/* Rx Ring spinlock */
+	spinlock_t RxReRingLock;	/* Rx Ring spinlock */
 /*	struct _BA_REC_ENTRY *pNext; */
 	PVOID pAdapter;
 	struct reordering_list list;
@@ -1807,9 +1807,9 @@ typedef struct _COMMON_CONFIG {
 	UINT32 BeaconRemain;
 #endif /* RTMP_MAC_USB */
 
-	NDIS_SPIN_LOCK MeasureReqTabLock;
+	spinlock_t MeasureReqTabLock;
 	PMEASURE_REQ_TAB pMeasureReqTab;
-	NDIS_SPIN_LOCK TpcReqTabLock;
+	spinlock_t TpcReqTabLock;
 	PTPC_REQ_TAB pTpcReqTab;
 
 	/* transmit phy mode, trasmit rate for Multicast. */
@@ -1956,7 +1956,7 @@ typedef struct _STA_CONNECT_INFO {
 	UINT WpaPassPhraseLen; // the length of WPA PSK pass phrase
 	UINT8 WpaState;
 	CIPHER_KEY SharedKey[1][4]; // STA always use SharedKey[BSS0][0..3]
-	NDIS_SPIN_LOCK Lock;
+	spinlock_t Lock;
 } STA_CONNECT_INFO, *P_STA_CONNECT_INFO;
 #endif /* CREDENTIAL_STORE */
 
@@ -2289,7 +2289,7 @@ typedef struct _MAC_TABLE_ENTRY {
 
 #ifdef DROP_MASK_SUPPORT
 	BOOLEAN tx_fail_drop_mask_enabled;
-	NDIS_SPIN_LOCK	drop_mask_lock;
+	spinlock_t	drop_mask_lock;
 	BOOLEAN ps_drop_mask_enabled;
 	RALINK_TIMER_STRUCT	dropmask_timer;
 #endif /* DROP_MASK_SUPPORT */
@@ -2431,7 +2431,7 @@ typedef struct _MAC_TABLE_ENTRY {
 	BOOLEAN isMfbChanged;	/* purpose: true when mfb has changed but the new mfb is not adopted for Tx */
 	struct _RTMP_RA_LEGACY_TB *LegalMfbRS;
 	BOOLEAN fLastChangeAccordingMfb;
-	NDIS_SPIN_LOCK fLastChangeAccordingMfbLock;
+	spinlock_t fLastChangeAccordingMfbLock;
 /* Tx MRQ */
 	BOOLEAN toTxMrq;
 	UCHAR msiToTx, mrqCnt;	/*mrqCnt is used to count down the inverted-BF mrq to be sent */
@@ -2444,7 +2444,7 @@ typedef struct _MAC_TABLE_ENTRY {
 #endif	/* MFB_SUPPORT */
 #ifdef TXBF_SUPPORT
 	UCHAR		TxSndgType;
-	NDIS_SPIN_LOCK	TxSndgLock;
+	spinlock_t	TxSndgLock;
 
 /* ETxBF */
 	UCHAR bfState;
@@ -3432,11 +3432,11 @@ typedef struct rtmp_phy_ctrl{
 struct _RTMP_ADAPTER {
 	VOID *OS_Cookie;	/* save specific structure relative to OS */
 	PNET_DEV net_dev;
-	NDIS_SPIN_LOCK irq_lock;
+	spinlock_t irq_lock;
 
 	/*======Cmd Thread in PCI/RBUS/USB */
 	CmdQ CmdQ;
-	NDIS_SPIN_LOCK CmdQLock;	/* CmdQLock spinlock */
+	spinlock_t CmdQLock;	/* CmdQLock spinlock */
 	RTMP_OS_TASK cmdQTask;
 
 #ifdef RTMP_MAC_USB
@@ -3467,13 +3467,13 @@ struct _RTMP_ADAPTER {
 
 #ifdef RALINK_ATE
 	/* lock for ATE */
-	NDIS_SPIN_LOCK GenericLock;	/* ATE Tx/Rx generic spinlock */
+	spinlock_t GenericLock;	/* ATE Tx/Rx generic spinlock */
 #endif
 
 #endif /* RTMP_MAC_USB */
 
 	/* resource for software backlog queues */
-	NDIS_SPIN_LOCK page_lock;	/* for nat speedup by bruce */
+	spinlock_t page_lock;	/* for nat speedup by bruce */
 
 /*********************************************************/
 /*      Both PCI/USB related parameters                  */
@@ -3491,7 +3491,7 @@ struct _RTMP_ADAPTER {
 #ifdef RTMP_TIMER_TASK_SUPPORT
 	/* If you want use timer task to handle the timer related jobs, enable this. */
 	RTMP_TIMER_TASK_QUEUE TimerQ;
-	NDIS_SPIN_LOCK TimerQLock;
+	spinlock_t TimerQLock;
 	RTMP_OS_TASK timerTask;
 #endif /* RTMP_TIMER_TASK_SUPPORT */
 
@@ -3499,15 +3499,15 @@ struct _RTMP_ADAPTER {
 /*      Tx related parameters                            */
 /*********************************************************/
 	BOOLEAN DeQueueRunning[NUM_OF_TX_RING];	/* for ensuring RTUSBDeQueuePacket get call once */
-	NDIS_SPIN_LOCK DeQueueLock[NUM_OF_TX_RING];
+	spinlock_t DeQueueLock[NUM_OF_TX_RING];
 
 #ifdef RTMP_MAC_USB
 	/* Data related context and AC specified, 4 AC supported */
-	NDIS_SPIN_LOCK BulkOutLock[6];	/* BulkOut spinlock for 4 ACs */
-	NDIS_SPIN_LOCK MLMEBulkOutLock;	/* MLME BulkOut lock */
+	spinlock_t BulkOutLock[6];	/* BulkOut spinlock for 4 ACs */
+	spinlock_t MLMEBulkOutLock;	/* MLME BulkOut lock */
 
 	HT_TX_CONTEXT TxContext[NUM_OF_TX_RING];
-	NDIS_SPIN_LOCK TxContextQueueLock[NUM_OF_TX_RING];	/* TxContextQueue spinlock */
+	spinlock_t TxContextQueueLock[NUM_OF_TX_RING];	/* TxContextQueue spinlock */
 
 	/* 4 sets of Bulk Out index and pending flag */
 	/*
@@ -3536,13 +3536,13 @@ struct _RTMP_ADAPTER {
 
 	/* resource for software backlog queues */
 	QUEUE_HEADER TxSwQueue[NUM_OF_TX_RING];	/* 4 AC + 1 HCCA */
-	NDIS_SPIN_LOCK TxSwQueueLock[NUM_OF_TX_RING];	/* TxSwQueue spinlock */
+	spinlock_t TxSwQueueLock[NUM_OF_TX_RING];	/* TxSwQueue spinlock */
 
 	/* Maximum allowed tx software Queue length */
 	UINT32 TxSwQMaxLen;
 	RTMP_DMABUF MgmtDescRing;	/* Shared memory for MGMT descriptors */
 	RTMP_MGMT_RING MgmtRing;
-	NDIS_SPIN_LOCK MgmtRingLock;	/* Prio Ring spinlock */
+	spinlock_t MgmtRingLock;	/* Prio Ring spinlock */
 	UCHAR LastMCUCmd;
 
 /*********************************************************/
@@ -3551,8 +3551,8 @@ struct _RTMP_ADAPTER {
 
 #ifdef RTMP_MAC_USB
 	RX_CONTEXT RxContext[RX_RING_SIZE];	/* 1 for redundant multiple IRP bulk in. */
-	NDIS_SPIN_LOCK BulkInLock;	/* BulkIn spinlock for 4 ACs */
-	NDIS_SPIN_LOCK CmdRspLock;
+	spinlock_t BulkInLock;	/* BulkIn spinlock for 4 ACs */
+	spinlock_t CmdRspLock;
 	UCHAR PendingRx;	/* The Maximum pending Rx value should be       RX_RING_SIZE. */
 	UCHAR NextRxBulkInIndex;	/* Indicate the current RxContext Index which hold by Host controller. */
 	UCHAR NextRxBulkInReadIndex;	/* Indicate the current RxContext Index which driver can read & process it. */
@@ -3734,7 +3734,7 @@ struct _RTMP_ADAPTER {
 #endif /* RTMP_MAC_USB */
 
 #ifdef UAPSD_SUPPORT
-	NDIS_SPIN_LOCK UAPSDEOSPLock;	/* EOSP frame access lock use */
+	spinlock_t UAPSDEOSPLock;	/* EOSP frame access lock use */
 	BOOLEAN bAPSDFlagSPSuspend;	/* 1: SP is suspended; 0: SP is not */
 #endif /* UAPSD_SUPPORT */
 
@@ -3819,11 +3819,11 @@ struct _RTMP_ADAPTER {
 
 	/*About MacTab, the sta driver will use #0 and #1 for multicast and AP. */
 	MAC_TABLE MacTab;	/* ASIC on-chip WCID entry table.  At TX, ASIC always use key according to this on-chip table. */
-	NDIS_SPIN_LOCK MacTabLock;
+	spinlock_t MacTabLock;
 
 #ifdef DOT11_N_SUPPORT
 	BA_TABLE BATable;
-	NDIS_SPIN_LOCK BATabLock;
+	spinlock_t BATabLock;
 	RALINK_TIMER_STRUCT RECBATimer;
 
 	BOOLEAN HTCEnable;
@@ -6943,12 +6943,12 @@ VOID RTUSBInitHTTxDesc(RTMP_ADAPTER *pAd, PHT_TX_CONTEXT pTxContext,
 VOID RTUSBInitRxDesc(RTMP_ADAPTER *pAd, RX_CONTEXT *pRxContext);
 VOID RTUSBCleanUpDataBulkOutQueue(RTMP_ADAPTER *pAd);
 VOID RTUSBCancelPendingBulkOutIRP(RTMP_ADAPTER *pAd);
-VOID RTUSBBulkOutDataPacket(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId, UCHAR Index);
-VOID RTUSBBulkOutNullFrame(RTMP_ADAPTER *pAd);
-VOID RTUSBBulkOutRTSFrame(RTMP_ADAPTER *pAd);
+//VOID RTUSBBulkOutDataPacket(RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId, UCHAR Index);
+//VOID RTUSBBulkOutNullFrame(RTMP_ADAPTER *pAd);
+//VOID RTUSBBulkOutRTSFrame(RTMP_ADAPTER *pAd);
 VOID RTUSBCancelPendingBulkInIRP(RTMP_ADAPTER *pAd);
 VOID RTUSBCancelPendingIRPs(RTMP_ADAPTER *pAd);
-VOID RTUSBCleanUpMLMEBulkOutQueue(RTMP_ADAPTER *pAd);
+//VOID RTUSBCleanUpMLMEBulkOutQueue(RTMP_ADAPTER *pAd);
 VOID RTUSBKickBulkOut(RTMP_ADAPTER *pAd);
 VOID RTUSBBulkReceive(RTMP_ADAPTER *pAd);
 VOID RTUSBBulkCmdRspEventReceive(RTMP_ADAPTER *pAd);
