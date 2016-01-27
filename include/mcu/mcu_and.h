@@ -116,17 +116,17 @@ struct MCU_CTRL {
 #else
 	struct tasklet_struct cmd_msg_task;
 #endif
-	NDIS_SPIN_LOCK txq_lock;
+	spinlock_t txq_lock;
 	DL_LIST txq;
-	NDIS_SPIN_LOCK rxq_lock;
+	spinlock_t rxq_lock;
 	DL_LIST rxq;
-	NDIS_SPIN_LOCK ackq_lock;
+	spinlock_t ackq_lock;
 	DL_LIST ackq;
-	NDIS_SPIN_LOCK kickq_lock;
+	spinlock_t kickq_lock;
 	DL_LIST kickq;
-	NDIS_SPIN_LOCK tx_doneq_lock;
+	spinlock_t tx_doneq_lock;
 	DL_LIST tx_doneq;
-	NDIS_SPIN_LOCK rx_doneq_lock;
+	spinlock_t rx_doneq_lock;
 	DL_LIST rx_doneq;
 	unsigned long tx_kickout_fail_count;
 	unsigned long tx_timeout_fail_count;
