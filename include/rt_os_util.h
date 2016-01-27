@@ -323,16 +323,16 @@ extern UINT8 newRateGetAntenna(UINT8 MCS);
 
 INT32  RtPrivIoctlSetVal(void);
 
-void OS_SPIN_LOCK(NDIS_SPIN_LOCK *lock);
-void OS_SPIN_UNLOCK(NDIS_SPIN_LOCK *lock);
-void OS_SPIN_LOCK_IRQSAVE(NDIS_SPIN_LOCK *lock, unsigned long *flags);
-void OS_SPIN_UNLOCK_IRQRESTORE(NDIS_SPIN_LOCK *lock, unsigned long *flags);
-void OS_SPIN_LOCK_IRQ(NDIS_SPIN_LOCK *lock);
-void OS_SPIN_UNLOCK_IRQ(NDIS_SPIN_LOCK *lock);
-void RtmpOsSpinLockIrqSave(NDIS_SPIN_LOCK *lock, unsigned long *flags);
-void RtmpOsSpinUnlockIrqRestore(NDIS_SPIN_LOCK *lock, unsigned long *flags);
-void RtmpOsSpinLockIrq(NDIS_SPIN_LOCK *lock);
-void RtmpOsSpinUnlockIrq(NDIS_SPIN_LOCK *lock);
+void OS_SPIN_LOCK(spinlock_t *lock);
+void OS_SPIN_UNLOCK(spinlock_t *lock);
+void OS_SPIN_LOCK_IRQSAVE(spinlock_t *lock, unsigned long *flags);
+void OS_SPIN_UNLOCK_IRQRESTORE(spinlock_t *lock, unsigned long *flags);
+void OS_SPIN_LOCK_IRQ(spinlock_t *lock);
+void OS_SPIN_UNLOCK_IRQ(spinlock_t *lock);
+void RtmpOsSpinLockIrqSave(spinlock_t *lock, unsigned long *flags);
+void RtmpOsSpinUnlockIrqRestore(spinlock_t *lock, unsigned long *flags);
+void RtmpOsSpinLockIrq(spinlock_t *lock);
+void RtmpOsSpinUnlockIrq(spinlock_t *lock);
 int  OS_TEST_BIT(int bit, unsigned long *flags);
 void OS_SET_BIT(int bit, unsigned long *flags);
 void OS_CLEAR_BIT(int bit, unsigned long *flags);
