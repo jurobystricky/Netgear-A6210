@@ -1,42 +1,28 @@
 /*
  ***************************************************************************
  * Ralink Tech Inc.
- * 4F, No. 2 Technology	5th	Rd.
- * Science-based Industrial	Park
+ * 4F, No. 2 Technology 5th Rd.
+ * Science-based Industrial Park
  * Hsin-chu, Taiwan, R.O.C.
  *
  * (c) Copyright 2002-2010, Ralink Technology, Inc.
  *
- * All rights reserved.	Ralink's source	code is	an unpublished work	and	the
- * use of a	copyright notice does not imply	otherwise. This	source code
- * contains	confidential trade secret material of Ralink Tech. Any attemp
- * or participation	in deciphering,	decoding, reverse engineering or in	any
- * way altering	the	source code	is stricitly prohibited, unless	the	prior
+ * All rights reserved. Ralink's source code is an unpublished work and the
+ * use of a copyright notice does not imply otherwise. This source code
+ * contains confidential trade secret material of Ralink Tech. Any attemp
+ * or participation in deciphering, decoding, reverse engineering or in any
+ * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
- 	Module Name:
+	Module Name:
 	rt_ate.c
 
-	Abstract:
-
-	Revision History:
-	Who			When	    What
-	--------	----------  ----------------------------------------------
-	Name		Date	    Modification logs
 */
 #include "rt_config.h"
 
 #define ATE_BBP_REG_NUM	168
-//jb removed 
-//static UCHAR restore_BBP[ATE_BBP_REG_NUM]={0};
 
-/* 802.11 MAC Header, Type:Data, Length:24bytes + 6 bytes QOS/HTC + 2 bytes padding */
-UCHAR TemplateFrame[32] = {
-	0x08,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0x00,0xAA,0xBB,0x12,0x34,0x56,
-	0x00,0x11,0x22,0xAA,0xBB,0xCC,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 
 extern FREQUENCY_ITEM *FreqItems3020;
 extern UCHAR NUM_OF_3020_CHNL;
@@ -1047,7 +1033,7 @@ static NDIS_STATUS ATESTART(PRTMP_ADAPTER pAd)
 	RTMPCancelTimer(&pAd->MlmeAux.ScanTimer,       &Cancelled);
 #endif /* CONFIG_STA_SUPPORT */
 
-	RTUSBCleanUpMLMEBulkOutQueue(pAd);
+//JB does nothing 	RTUSBCleanUpMLMEBulkOutQueue(pAd);
 
 	/* Disable Rx */
 	ATE_MAC_RX_DISABLE(pAd, MAC_SYS_CTRL, &MacData);
@@ -2066,7 +2052,7 @@ static NDIS_STATUS RXFRAME(PRTMP_ADAPTER pAd)
 		pRxContext->Readable = FALSE;
 
 		/* Get the URB from kernel(i.e., host control driver) back to driver. */
-		RTUSB_UNLINK_URB(pRxContext->pUrb);
+		usb_kill_urb(pRxContext->pUrb);
 
 		/* Sleep 200 microsecs to give cancellation time to work. */
 		RtmpusecDelay(200);
