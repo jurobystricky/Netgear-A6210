@@ -99,7 +99,6 @@ typedef struct _OS_RSTRUC  {
  *	OS semaphore related data structure and definitions
  ******************************************************************************/
 
-#define NDIS_SPIN_LOCK			OS_NDIS_SPIN_LOCK
 #define NdisAllocateSpinLock(__pReserved, __pLock)	OS_NdisAllocateSpinLock(__pLock)
 #define NdisFreeSpinLock		OS_NdisFreeSpinLock
 #define RTMP_SEM_LOCK			OS_SEM_LOCK
