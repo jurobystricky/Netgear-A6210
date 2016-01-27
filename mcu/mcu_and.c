@@ -249,17 +249,17 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 	}
 
 #ifdef DBG
-	DBGPRINT(RT_DEBUG_TRACE, ("\nplatform = \n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("\nplatform = "));
 
 	for (i = 0; i < 4; i++)
 		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + 16 + i)));
 
-	DBGPRINT(RT_DEBUG_TRACE, ("\nhw/sw version = \n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("\nhw/sw version = "));
 
 	for (i = 0; i < 4; i++)
 		DBGPRINT(RT_DEBUG_TRACE, ("0x%2x ", *(cap->rom_patch + 20 + i)));
 
-	DBGPRINT(RT_DEBUG_TRACE, ("\npatch version = \n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("\npatch version = "));
 
 	for (i = 0; i < 4; i++)
 		DBGPRINT(RT_DEBUG_TRACE, ("%c", *(cap->rom_patch + 24 + i)));
@@ -298,7 +298,7 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 		goto error1;
 	}
 
-	DBGPRINT(RT_DEBUG_TRACE, ("loading rom patch"));
+	DBGPRINT(RT_DEBUG_TRACE, ("loading rom patch\n"));
 
 	init_completion(&load_rom_patch_done);
 	cur_len = 0x00;
@@ -395,12 +395,12 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 			}
 
 			DBGPRINT(RT_DEBUG_INFO,
-				("%s: submit urb, sent_len = %d, patch_ilm = %d, cur_len = %d\n",
-				__FUNCTION__, sent_len, patch_len, cur_len));
+					("%s: submit urb, sent_len = %d, patch_ilm = %d, cur_len = %d\n",
+					__FUNCTION__, sent_len, patch_len, cur_len));
 
 			if (!wait_for_completion_timeout(&load_rom_patch_done, 
 				msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
-				RTUSB_UNLINK_URB(urb);
+				usb_kill_urb(urb);
 				ret = NDIS_STATUS_FAILURE;
 				DBGPRINT(RT_DEBUG_ERROR, 
 						("%s: upload fw timeout\n",
@@ -485,7 +485,7 @@ error2:
 
 error1:
 	/* Free URB */
-	RTUSB_FREE_URB(urb);
+	usb_free_urb(urb);
 
 error0:
 	if (cap->rom_code_protect)
@@ -792,7 +792,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 					__FUNCTION__, sent_len, ilm_len, cur_len));
 
 			if (!wait_for_completion_timeout(&load_fw_done, msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
-				RTUSB_UNLINK_URB(urb);
+				usb_kill_urb(urb);
 				ret = NDIS_STATUS_FAILURE;
 				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: upload fw timeout(%dms)\n",
@@ -921,7 +921,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 					__FUNCTION__, sent_len, dlm_len, cur_len));
 
 			if (!wait_for_completion_timeout(&load_fw_done, msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
-				RTUSB_UNLINK_URB(urb);
+				usb_kill_urb(urb);
 				ret = NDIS_STATUS_FAILURE;
 				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: upload fw timeout(%dms)\n",
@@ -975,7 +975,7 @@ error2:
 
 error1:
 	/* Free URB */
-	RTUSB_FREE_URB(urb);
+	usb_free_urb(urb);
 
 error0:
 	if (cap->ram_code_protect)
@@ -1115,7 +1115,7 @@ static void andes_free_cmd_msg(struct cmd_msg *msg)
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 
 #ifdef RTMP_USB_SUPPORT
-	RTUSB_FREE_URB(msg->urb);
+	usb_free_urb(msg->urb);
 #endif
 
 	os_free_mem(NULL, msg);
@@ -1151,9 +1151,9 @@ static inline void andes_inc_error_count(struct MCU_CTRL *ctl,
 	}
 }
 
-static NDIS_SPIN_LOCK *andes_get_spin_lock(struct MCU_CTRL *ctl, DL_LIST *list)
+static spinlock_t *andes_get_spin_lock(struct MCU_CTRL *ctl, DL_LIST *list)
 {
-	NDIS_SPIN_LOCK *lock = NULL;
+	spinlock_t *lock = NULL;
 
 	if (list == &ctl->txq)
 		lock = &ctl->txq_lock;
@@ -1204,7 +1204,7 @@ static void andes_queue_tail_cmd_msg(DL_LIST *list, struct cmd_msg *msg,
 	enum cmd_msg_state state)
 {
 	unsigned long flags;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 	RTMP_ADAPTER *ad = (RTMP_ADAPTER *)msg->priv;
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 
@@ -1226,7 +1226,7 @@ static void andes_queue_head_cmd_msg(DL_LIST *list, struct cmd_msg *msg,
 	enum cmd_msg_state state)
 {
 	unsigned long flags;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 	RTMP_ADAPTER *ad = (RTMP_ADAPTER *)msg->priv;
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 
@@ -1241,7 +1241,7 @@ static u32 andes_queue_len(struct MCU_CTRL *ctl, DL_LIST *list)
 {
 	u32 qlen;
 	unsigned long flags;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 
 	lock = andes_get_spin_lock(ctl, list);
 
@@ -1257,7 +1257,7 @@ static int andes_queue_empty(struct MCU_CTRL *ctl, DL_LIST *list)
 {
 	unsigned long flags;
 	int is_empty;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 
 	lock = andes_get_spin_lock(ctl, list);
 
@@ -1273,7 +1273,7 @@ static void andes_queue_init(struct MCU_CTRL *ctl, DL_LIST *list)
 {
 
 	unsigned long flags;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 
 	lock = andes_get_spin_lock(ctl, list);
 
@@ -1293,7 +1293,7 @@ static void _andes_unlink_cmd_msg(struct cmd_msg *msg, DL_LIST *list)
 static void andes_unlink_cmd_msg(struct cmd_msg *msg, DL_LIST *list)
 {
 	unsigned long flags;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 	RTMP_ADAPTER *ad = (RTMP_ADAPTER *)msg->priv;
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 
@@ -1318,7 +1318,7 @@ static struct cmd_msg *andes_dequeue_cmd_msg(struct MCU_CTRL *ctl, DL_LIST *list
 {
 	unsigned long flags;
 	struct cmd_msg *msg;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 
 	lock = andes_get_spin_lock(ctl, list);
 
@@ -1438,7 +1438,7 @@ static void usb_rx_cmd_msg_complete(PURB urb)
 
 		net_pkt = msg->net_pkt;
 
-		RTUSB_FILL_BULK_URB(msg->urb, pObj->pUsb_Dev,
+		usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev,
 				usb_rcvbulkpipe(pObj->pUsb_Dev, pChipCap->CommandRspBulkInAddr),
 				GET_OS_PKT_DATAPTR(net_pkt), 512, 
 				usb_rx_cmd_msg_complete, net_pkt);
@@ -1480,7 +1480,7 @@ int usb_rx_cmd_msg_submit(RTMP_ADAPTER *ad)
 
 	net_pkt = msg->net_pkt;
 
-	RTUSB_FILL_BULK_URB(msg->urb, pObj->pUsb_Dev, usb_rcvbulkpipe(pObj->pUsb_Dev,
+	usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev, usb_rcvbulkpipe(pObj->pUsb_Dev,
 			pChipCap->CommandRspBulkInAddr), GET_OS_PKT_DATAPTR(net_pkt), 
 			512, usb_rx_cmd_msg_complete, net_pkt);
 
@@ -1622,7 +1622,7 @@ static int usb_kick_out_cmd_msg(PRTMP_ADAPTER ad, struct cmd_msg *msg)
 		memset(OS_PKT_TAIL_BUF_EXTEND(net_pkt, USB_END_PADDING), 0x00, USB_END_PADDING);
 	}
 
-	RTUSB_FILL_BULK_URB(msg->urb, pObj->pUsb_Dev, usb_sndbulkpipe(pObj->pUsb_Dev, 
+	usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev, usb_sndbulkpipe(pObj->pUsb_Dev, 
 			pChipCap->CommandBulkOutAddr), GET_OS_PKT_DATAPTR(net_pkt), 
 			GET_OS_PKT_LEN(net_pkt), usb_kick_out_cmd_msg_complete, net_pkt);
 
@@ -1657,7 +1657,7 @@ static void andes_usb_unlink_urb(RTMP_ADAPTER *ad, DL_LIST *list)
 {
 	unsigned long flags;
 	struct cmd_msg *msg, *msg_tmp;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 
 	lock = andes_get_spin_lock(ctl, list);
@@ -1669,7 +1669,7 @@ static void andes_usb_unlink_urb(RTMP_ADAPTER *ad, DL_LIST *list)
 			(msg->state == wait_cmd_out) ||
 			(msg->state == tx_start) || (msg->state == rx_start) ||
 			(msg->state == tx_retransmit))
-			RTUSB_UNLINK_URB(msg->urb);
+			usb_kill_urb(msg->urb);
 		RTMP_SPIN_LOCK_IRQSAVE(lock, &flags);
 	}
 	RTMP_SPIN_UNLOCK_IRQRESTORE(lock, &flags);
@@ -1681,7 +1681,7 @@ static void andes_cleanup_cmd_msg(RTMP_ADAPTER *ad, DL_LIST *list)
 {
 	unsigned long flags;
 	struct cmd_msg *msg, *msg_tmp;
-	NDIS_SPIN_LOCK *lock;
+	spinlock_t *lock;
 	struct MCU_CTRL *ctl = &ad->MCUCtrl;
 
 	lock = andes_get_spin_lock(ctl, list);
@@ -1908,7 +1908,7 @@ retransmit:
 			if (OS_TEST_BIT(MCU_INIT, &ctl->flags)) {
 				if (msg->state == wait_cmd_out_and_ack) {
 #ifdef RTMP_USB_SUPPORT
-					RTUSB_UNLINK_URB(msg->urb);
+					usb_kill_urb(msg->urb);
 #endif
 				} else if (msg->state == wait_ack) {
 					andes_unlink_cmd_msg(msg, &ctl->ackq);
