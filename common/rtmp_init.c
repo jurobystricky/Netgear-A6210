@@ -37,7 +37,7 @@ static void AntCfgInit(RTMP_ADAPTER *pAd);
 	Or when the structure is cleared, we maybe get NULL for pAd and can not lock.
 	Maybe we can put pAd in RTMPSetTimer/ RTMPModTimer/ RTMPCancelTimer.
 */
-NDIS_SPIN_LOCK TimerSemLock;
+spinlock_t TimerSemLock;
 
 
 /*
