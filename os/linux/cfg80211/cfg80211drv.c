@@ -55,8 +55,7 @@ int CFG80211_setStaMgmtDefaultKey(void *pAdCB, UINT Data);
 
 extern struct notifier_block cfg80211_netdev_notifier;
 
-int CFG80211DRV_IoctlHandle(void *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq,
-	int cmd, USHORT subcmd, void *pData, ULONG Data)
+int CFG80211DRV_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 
