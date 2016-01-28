@@ -187,8 +187,7 @@ int CFG80211_setPowerMgmt(void *pAdCB, UINT Enable);
 
 BOOLEAN CFG80211DRV_OpsChgVirtualInf(RTMP_ADAPTER *pAd, void *pData);
 
-int CFG80211DRV_IoctlHandle(void *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq, int cmd,
-	USHORT subcmd, void *pData, ULONG Data);
+int CFG80211DRV_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data);
 
 UCHAR CFG80211_getCenCh(RTMP_ADAPTER *pAd, UCHAR prim_ch);
 void CFG80211_RegHint(void *pAdCB, UCHAR *pCountryIe, ULONG CountryIeLen);
