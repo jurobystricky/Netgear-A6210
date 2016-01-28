@@ -7326,7 +7326,7 @@ INT RTMP_STA_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *pRequest,
 
 	default:
 		/* for IOCTL that also can be used in AP mode */
-		Status = RTMP_COM_IoctlHandle(pAd, pRequest, Command, Subcmd, pData, Data);
+		Status = RTMP_COM_IoctlHandle(pAd, Command, pData, Data);
 		break;
 	}
 
