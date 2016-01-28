@@ -29,13 +29,14 @@
 #include "rt_config.h"
 
 #ifdef CONFIG_STA_SUPPORT
-VOID CFG80211DRV_OpsScanInLinkDownAction(VOID *pAdOrg)
+void CFG80211DRV_OpsScanInLinkDownAction(void *pAdOrg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	BOOLEAN Cancelled;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("---> CFG80211_MLME Disconnect in Scaning, ORI ==> %lu\n",
-	  								pAd->Mlme.CntlMachine.CurrState));
+	DBGPRINT(RT_DEBUG_TRACE, 
+			("---> CFG80211_MLME Disconnect in Scaning, ORI ==> %lu\n",
+			pAd->Mlme.CntlMachine.CurrState));
 
 	RTMPCancelTimer(&pAd->MlmeAux.ScanTimer, &Cancelled);
 	pAd->MlmeAux.Channel = 0;
@@ -44,11 +45,12 @@ VOID CFG80211DRV_OpsScanInLinkDownAction(VOID *pAdOrg)
 	CFG80211OS_ScanEnd(pAd->pCfg80211_CB, TRUE);
 
 	ScanNextChannel(pAd, OPMODE_STA);
-	DBGPRINT(RT_DEBUG_TRACE, ("<--- CFG80211_MLME Disconnect in Scan END, ORI ==> %lu\n",
-									pAd->Mlme.CntlMachine.CurrState));
+	DBGPRINT(RT_DEBUG_TRACE, 
+			("<--- CFG80211_MLME Disconnect in Scan END, ORI ==> %lu\n",
+			pAd->Mlme.CntlMachine.CurrState));
 }
 
-BOOLEAN CFG80211DRV_OpsScanRunning(VOID *pAdOrg)
+BOOLEAN CFG80211DRV_OpsScanRunning(void *pAdOrg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	return pAd->cfg80211_ctrl.FlgCfg80211Scanning;
@@ -57,7 +59,7 @@ BOOLEAN CFG80211DRV_OpsScanRunning(VOID *pAdOrg)
 
 
 /* Refine on 2013/04/30 for two functin into one */
-INT CFG80211DRV_OpsScanGetNextChannel(VOID *pAdOrg)
+int CFG80211DRV_OpsScanGetNextChannel(void *pAdOrg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	PCFG80211_CTRL cfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -77,7 +79,7 @@ INT CFG80211DRV_OpsScanGetNextChannel(VOID *pAdOrg)
 	return 0;
 }
 
-BOOLEAN CFG80211DRV_OpsScanSetSpecifyChannel(VOID *pAdOrg, VOID *pData, UINT8 dataLen)
+BOOLEAN CFG80211DRV_OpsScanSetSpecifyChannel(void *pAdOrg, void *pData, UINT8 dataLen)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	PCFG80211_CTRL cfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -87,9 +89,11 @@ BOOLEAN CFG80211DRV_OpsScanSetSpecifyChannel(VOID *pAdOrg, VOID *pData, UINT8 da
 		if (cfg80211_ctrl->pCfg80211ChanList != NULL)
 			os_free_mem(NULL, cfg80211_ctrl->pCfg80211ChanList);
 
-		os_alloc_mem(NULL, (UCHAR **)&cfg80211_ctrl->pCfg80211ChanList, sizeof(UINT32 *) * dataLen);
+		os_alloc_mem(NULL, (UCHAR **)&cfg80211_ctrl->pCfg80211ChanList, 
+				sizeof(UINT32 *) * dataLen);
 		if (cfg80211_ctrl->pCfg80211ChanList != NULL) {
-			NdisCopyMemory(cfg80211_ctrl->pCfg80211ChanList, pChanList, sizeof(UINT32 *) * dataLen);
+			NdisCopyMemory(cfg80211_ctrl->pCfg80211ChanList, 
+					pChanList, sizeof(UINT32 *) * dataLen);
 			cfg80211_ctrl->Cfg80211ChanListLen = dataLen;
 			cfg80211_ctrl->Cfg80211CurChanIndex = 0 ; /* Start from index 0 */
 			return NDIS_STATUS_SUCCESS;
@@ -101,16 +105,15 @@ BOOLEAN CFG80211DRV_OpsScanSetSpecifyChannel(VOID *pAdOrg, VOID *pData, UINT8 da
 	return NDIS_STATUS_FAILURE;
 }
 
-BOOLEAN CFG80211DRV_OpsScanCheckStatus(
-	VOID						*pAdOrg,
-	UINT8						 IfType)
+BOOLEAN CFG80211DRV_OpsScanCheckStatus(void *pAdOrg, UINT8 IfType)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 
  	/* CFG_TODO */
 	if (CFG80211DRV_OpsScanRunning(pAd)) {
-		CFG80211DBG(RT_DEBUG_ERROR, ("SCAN_FAIL: CFG80211 Internal SCAN Flag On\n"));
+		CFG80211DBG(RT_DEBUG_ERROR,
+				("SCAN_FAIL: CFG80211 Internal SCAN Flag On\n"));
 		return FALSE;
 	}
 
@@ -121,7 +124,8 @@ BOOLEAN CFG80211DRV_OpsScanCheckStatus(
 
 	/* To avoid the scan cmd come-in during driver init */
 	if (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_START_UP)) {
-		DBGPRINT(RT_DEBUG_TRACE, ("SCAN_FAIL: Scan cmd before Startup finish\n"));
+		DBGPRINT(RT_DEBUG_TRACE, 
+				("SCAN_FAIL: Scan cmd before Startup finish\n"));
 		return FALSE;
 	}
 
@@ -129,7 +133,8 @@ BOOLEAN CFG80211DRV_OpsScanCheckStatus(
 	if (RTMP_CFG80211_VIF_P2P_CLI_ON(pAd) &&
 		(pAd->cfg80211_ctrl.FlgCfg80211Connecting == TRUE) &&
 		(IfType == RT_CMD_80211_IFTYPE_STATION)) {
-		DBGPRINT(RT_DEBUG_ERROR,("SCAN_FAIL: P2P_CLIENT In Connecting & Canncel Scan with Infra Side\n"));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("SCAN_FAIL: P2P_CLIENT In Connecting & Canncel Scan with Infra Side\n"));
 		return FALSE;
 	}
 #endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
@@ -148,7 +153,7 @@ BOOLEAN CFG80211DRV_OpsScanCheckStatus(
 	return TRUE;
 }
 
-BOOLEAN CFG80211DRV_OpsScanExtraIesSet(VOID *pAdOrg)
+BOOLEAN CFG80211DRV_OpsScanExtraIesSet(void *pAdOrg)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CFG80211_CB *pCfg80211_CB = pAd->pCfg80211_CB;
@@ -158,10 +163,11 @@ BOOLEAN CFG80211DRV_OpsScanExtraIesSet(VOID *pAdOrg)
 	if (pCfg80211_CB->pCfg80211_ScanReq)
 		ie_len = pCfg80211_CB->pCfg80211_ScanReq->ie_len;
 
-	CFG80211DBG(RT_DEBUG_INFO, ("80211> CFG80211DRV_OpsExtraIesSet ==> %d\n", ie_len));
+	CFG80211DBG(RT_DEBUG_INFO, 
+			("80211> CFG80211DRV_OpsExtraIesSet ==> %d\n", ie_len));
 #ifdef CONFIG_STA_SUPPORT
 	CFG80211DBG(RT_DEBUG_INFO, ("80211> is_wpa_supplicant_up ==> %d\n",
-									pAd->StaCfg.wpa_supplicant_info.WpaSupplicantUP));
+			pAd->StaCfg.wpa_supplicant_info.WpaSupplicantUP));
 #endif /*CONFIG_STA_SUPPORT*/
 	if (ie_len == 0)
 		return FALSE;
@@ -179,7 +185,8 @@ BOOLEAN CFG80211DRV_OpsScanExtraIesSet(VOID *pAdOrg)
 		cfg80211_ctrl->ExtraIeLen = ie_len;
 		hex_dump("CFG8021_SCAN_EXTRAIE", cfg80211_ctrl->pExtraIe, cfg80211_ctrl->ExtraIeLen);
 	} else {
-		CFG80211DBG(RT_DEBUG_ERROR, ("80211> CFG80211DRV_OpsExtraIesSet ==> allocate fail. \n"));
+		CFG80211DBG(RT_DEBUG_ERROR, 
+				("80211> CFG80211DRV_OpsExtraIesSet ==> allocate fail. \n"));
 		return FALSE;
 	}
 
@@ -207,7 +214,7 @@ static void CFG80211_CalBssAvgRssi(IN BSS_ENTRY *pBssEntry)
 	pBssEntry->AvgRssi = pBssEntry->AvgRssiX8 >> 3;
 }
 
-static void CFG80211_UpdateBssTableRssi(IN VOID *pAdCB)
+static void CFG80211_UpdateBssTableRssi(IN void *pAdCB)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	CFG80211_CB *pCfg80211_CB  = (CFG80211_CB *)pAd->pCfg80211_CB;
@@ -230,9 +237,9 @@ static void CFG80211_UpdateBssTableRssi(IN VOID *pAdCB)
 		CenFreq = ieee80211_channel_to_frequency(pAd->ScanTab.BssEntry[index].Channel);
 #endif
 		chan = ieee80211_get_channel(pWiphy, CenFreq);
-		bss = cfg80211_get_bss(pWiphy, chan,
-						pBssEntry->Bssid, pBssEntry->Ssid, pBssEntry->SsidLen,
-						WLAN_CAPABILITY_ESS, WLAN_CAPABILITY_ESS);
+		bss = cfg80211_get_bss(pWiphy, chan, pBssEntry->Bssid, 
+				pBssEntry->Ssid, pBssEntry->SsidLen,
+				WLAN_CAPABILITY_ESS, WLAN_CAPABILITY_ESS);
 		if (bss == NULL) {
 			/* ScanTable Entry not exist in kernel buffer */
 		} else {
@@ -255,7 +262,7 @@ Routine Description:
 	Inform us that a scan is got.
 
 Arguments:
-	pAdCB				- WLAN control block pointer
+	pAdCB		- WLAN control block pointer
 
 Return Value:
 	NONE
@@ -264,17 +271,12 @@ Note:
 	Call RT_CFG80211_SCANNING_INFORM, not CFG80211_Scaning
 ========================================================================
 */
-VOID CFG80211_Scaning(
-	IN VOID		*pAdCB,
-	IN UINT32	BssIdx,
-	IN UINT32	ChanId,
-	IN UCHAR	*pFrame,
-	IN UINT32	FrameLen,
-	IN INT32	RSSI)
+void CFG80211_Scaning(void *pAdCB, UINT32 BssIdx, UINT32 ChanId, UCHAR *pFrame,
+	UINT32 FrameLen, INT32 RSSI)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
-	VOID *pCfg80211_CB = pAd->pCfg80211_CB;
+	void *pCfg80211_CB = pAd->pCfg80211_CB;
 	BOOLEAN FlgIsNMode;
 	UINT8 BW;
 
@@ -304,13 +306,8 @@ VOID CFG80211_Scaning(
 	else
 		BW = 1;
 
-	CFG80211OS_Scaning(pCfg80211_CB,
-						ChanId,
-						pFrame,
-						FrameLen,
-						RSSI,
-						FlgIsNMode,
-						BW);
+	CFG80211OS_Scaning(pCfg80211_CB, ChanId, pFrame, FrameLen, RSSI,
+			FlgIsNMode, BW);
 #endif /* CONFIG_STA_SUPPORT */
 }
 
@@ -321,7 +318,7 @@ Routine Description:
 	Inform us that scan ends.
 
 Arguments:
-	pAdCB			- WLAN control block pointer
+	pAdCB		- WLAN control block pointer
 	FlgIsAborted	- 1: scan is aborted
 
 Return Value:
@@ -330,7 +327,7 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID CFG80211_ScanEnd(IN VOID *pAdCB, IN BOOLEAN FlgIsAborted)
+void CFG80211_ScanEnd(void *pAdCB, BOOLEAN FlgIsAborted)
 {
 #ifdef CONFIG_STA_SUPPORT
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
@@ -359,7 +356,7 @@ VOID CFG80211_ScanEnd(IN VOID *pAdCB, IN BOOLEAN FlgIsAborted)
 #endif /* CONFIG_STA_SUPPORT */
 }
 
-VOID CFG80211_ScanStatusLockInit(IN VOID *pAdCB, IN UINT init)
+void CFG80211_ScanStatusLockInit(void *pAdCB, UINT init)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdCB;
 	CFG80211_CB *pCfg80211_CB  = (CFG80211_CB *)pAd->pCfg80211_CB;
