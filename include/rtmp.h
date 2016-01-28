@@ -7041,8 +7041,7 @@ void RTMP_IndicateMediaState(RTMP_ADAPTER *pAd, NDIS_MEDIA_STATE media_state);
 VOID RTMP_TxEvmCalibration(RTMP_ADAPTER *pAd);
 #endif
 
-INT RTMP_COM_IoctlHandle(VOID *pAdSrc, RTMP_IOCTL_INPUT_STRUCT *wrq, INT cmd,
-	USHORT subcmd, VOID *pData, ULONG Data);
+INT RTMP_COM_IoctlHandle(VOID *pAdSrc, INT cmd, VOID *pData, ULONG Data);
 
 #ifdef CONFIG_AP_SUPPORT
 INT RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, VOID *pCB);
