@@ -2053,7 +2053,7 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		/*
 			ATE is always controlled by ra0
 		*/
-		RTMP_COM_IoctlHandle(pAd, wrq, CMD_RTPRIV_IOCTL_ATE, 0, wrqin->ifr_name, 0);
+		RTMP_COM_IoctlHandle(pAd, CMD_RTPRIV_IOCTL_ATE, wrqin->ifr_name, 0);
 		break;
 
 	case SIOCGIFHWADDR:
