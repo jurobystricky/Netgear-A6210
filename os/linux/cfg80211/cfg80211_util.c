@@ -18,7 +18,6 @@
 
 	All related CFG80211 function body.
 
-	History:
 
 ***************************************************************************/
 #ifdef RT_CFG80211_SUPPORT
@@ -145,9 +144,10 @@ static const UINT32 CipherSuites[] = {
 
 static BOOLEAN IsRadarChannel(UCHAR ch)
 {
-	UINT idx = 0;
-	for (idx = 0; idx < sizeof(Cfg80211_RadarChan); idx++) {
-		if (Cfg80211_RadarChan[idx] == ch)
+	int i;
+
+	for (i = 0; i < sizeof(Cfg80211_RadarChan); i++) {
+		if (Cfg80211_RadarChan[i] == ch)
 			return TRUE;
 	}
 
@@ -304,14 +304,17 @@ BOOLEAN CFG80211_SupBandInit(void *pCB, CFG80211_BAND *pDriverBandInfo,
 		if (IdLoop >= 14) {
 			pChannels[IdLoop].band = IEEE80211_BAND_5GHZ;
 			pChannels[IdLoop].center_freq = \
-				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop], IEEE80211_BAND_5GHZ);
+				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop],
+						IEEE80211_BAND_5GHZ);
 		} else {
 			pChannels[IdLoop].band = IEEE80211_BAND_2GHZ;
-		    pChannels[IdLoop].center_freq = \
-				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop], IEEE80211_BAND_2GHZ);
+			pChannels[IdLoop].center_freq = \
+				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop],
+						IEEE80211_BAND_2GHZ);
 		}
 #else
-		pChannels[IdLoop].center_freq = ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop]);
+		pChannels[IdLoop].center_freq =
+				ieee80211_channel_to_frequency(Cfg80211_Chan[IdLoop]);
 #endif
 		pChannels[IdLoop].hw_value = IdLoop;
 
@@ -349,7 +352,7 @@ BOOLEAN CFG80211_SupBandInit(void *pCB, CFG80211_BAND *pDriverBandInfo,
 	}
 
 	/* 6. init rate */
-	for (IdLoop=0; IdLoop<NumOfRate; IdLoop++)
+	for (IdLoop = 0; IdLoop < NumOfRate; IdLoop++)
 		memcpy(&pRates[IdLoop], &Cfg80211_SupRate[IdLoop], sizeof(*pRates));
 
 /*		CFG_TODO:
@@ -775,7 +778,7 @@ void CFG80211OS_Scaning(void *pCB, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen
 	/* get channel information */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	if (ChanId > 14)
-	    CenFreq = ieee80211_channel_to_frequency(ChanId, IEEE80211_BAND_5GHZ);
+		CenFreq = ieee80211_channel_to_frequency(ChanId, IEEE80211_BAND_5GHZ);
 	else
 		CenFreq = ieee80211_channel_to_frequency(ChanId, IEEE80211_BAND_2GHZ);
 #else
@@ -795,7 +798,8 @@ void CFG80211OS_Scaning(void *pCB, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen
 	}
 
 	if (IdChan >= pBand->n_channels) {
-		DBGPRINT(RT_DEBUG_ERROR, ("80211> Can not find any chan info! ==> %d[%d],[%d] \n",
+		DBGPRINT(RT_DEBUG_ERROR, 
+			("80211> Can not find any chan info! ==> %d[%d],[%d] \n",
 			ChanId, CenFreq, pBand->n_channels));
 		return;
 	}
@@ -972,10 +976,9 @@ void CFG80211OS_TxStatus(PNET_DEV pNetDev, INT32 cookie, PUCHAR frame,
 #endif /*2.6.34*/
 #endif /*2.6.37*/
 #endif /* LINUX_VERSION_CODE: 3.6.0 */
-
 }
 
-
+#ifdef WPA_SUPPLICANT_SUPPORT
 void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr,
 	BOOLEAN unicast, int key_id, const PUCHAR tsc)
 {
@@ -983,6 +986,6 @@ void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr,
 		(unicast ? NL80211_KEYTYPE_PAIRWISE : NL80211_KEYTYPE_GROUP),
 		key_id, tsc, GFP_ATOMIC);
 }
-
+#endif
 
 #endif /* RT_CFG80211_SUPPORT */
