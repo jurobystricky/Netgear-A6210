@@ -5,6 +5,13 @@
 
 extern UCHAR EpToQueue[6];
 
+// TODO: shiang-usw, fine tune BULKAGGRE_SIZE, origianl is 60
+#ifdef INF_AMAZON_SE
+#define BULKAGGRE_SIZE 	30
+#else
+#define BULKAGGRE_SIZE 	100
+#endif
+
 #define RXBULKAGGRE_SIZE		12
 #define MAX_TXBULK_LIMIT		(LOCAL_TXBUF_SIZE*(BULKAGGRE_SIZE-1))
 #define MAX_TXBULK_SIZE			(LOCAL_TXBUF_SIZE*BULKAGGRE_SIZE)
@@ -109,7 +116,7 @@ void RTUSBBssBeaconInit(struct _RTMP_ADAPTER *pAd);
 NDIS_STATUS RTUSBFreeDescRequest(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId, UINT32 req_cnt);
 BOOLEAN	RTUSBNeedQueueBackForAgg(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId);
 
-USHORT RtmpUSB_WriteSubTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, BOOLEAN bIsLast, USHORT *freeCnt);
+//USHORT RtmpUSB_WriteSubTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, BOOLEAN bIsLast, USHORT *freeCnt);
 USHORT RtmpUSB_WriteSingleTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, BOOLEAN bIsLast, USHORT *freeCnt);
 USHORT RtmpUSB_WriteFragTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR fragNum, USHORT *freeCnt);
 USHORT RtmpUSB_WriteMultiTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR frmNum, USHORT *freeCnt);
