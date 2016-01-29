@@ -3014,7 +3014,7 @@ int iCalcCalibration(PRTMP_ADAPTER pAd, int calParams[2], int profileNum)
 
 #ifdef TIMESTAMP_CALC_CALIBRATION
 	do_gettimeofday(&tval2);
-	ATEDBGPRINT(RT_DEBUG_WARN, ("iCalcCal = %ld usec\n", tval2.tv_usec - tval1.tv_usec));
+	DBGPRINT(RT_DEBUG_WARN, ("iCalcCal = %ld usec\n", tval2.tv_usec - tval1.tv_usec));
 #endif
 
 exitCalcCal:
