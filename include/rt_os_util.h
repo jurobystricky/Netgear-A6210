@@ -299,8 +299,10 @@ BOOLEAN CFG80211OS_RxMgmt(PNET_DEV pNetDev, INT32 freq, PUCHAR frame, UINT32 len
 void CFG80211OS_TxStatus(PNET_DEV pNetDev, INT32 cookie, PUCHAR frame,
 	UINT32 len, BOOLEAN ack);
 
+#ifdef WPA_SUPPLICANT_SUPPORT
 void CFG80211OS_MICFailReport(PNET_DEV pNetDev, const PUCHAR src_addr,
 	BOOLEAN unicast, int key_id, const PUCHAR tsc);
+#endif
 
 #endif /* RT_CFG80211_SUPPORT */
 
