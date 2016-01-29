@@ -51,10 +51,7 @@
 #include <asm/uaccess.h>
 #include <asm/types.h>
 #include <asm/unaligned.h>	/* for get_unaligned() */
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
 #include <linux/pid.h>
-#endif
 
 #ifdef RT_CFG80211_SUPPORT
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,28))
@@ -63,7 +60,6 @@
 #undef RT_CFG80211_SUPPORT
 #endif /* LINUX_VERSION_CODE */
 #endif /* RT_CFG80211_SUPPORT */
-
 
 /* must put the definition before include "os/rt_linux_cmm.h" */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29)
@@ -249,8 +245,6 @@ struct os_lock  {
 	unsigned long  	flags;
 };
 
-typedef spinlock_t	OS_NDIS_SPIN_LOCK;
-
 /* */
 /*  spin_lock enhanced for Nested spin lock */
 /* */
@@ -265,7 +259,7 @@ typedef spinlock_t	OS_NDIS_SPIN_LOCK;
 
 #define OS_SEM_LOCK(__lock)				\
 {							\
-			spin_lock_bh((__lock));		\
+	spin_lock_bh((__lock));				\
 }
 
 #define OS_SEM_UNLOCK(__lock)				\
@@ -311,9 +305,6 @@ typedef spinlock_t	OS_NDIS_SPIN_LOCK;
 }
 
 
-#define OS_NdisAcquireSpinLock	OS_SEM_LOCK
-#define OS_NdisReleaseSpinLock	OS_SEM_UNLOCK
-
 /*
 	Following lock/unlock definition used for BBP/RF register read/write.
 	Currently we don't use it to protect MAC register access.
@@ -328,15 +319,15 @@ typedef spinlock_t	OS_NDIS_SPIN_LOCK;
 			in thread/tasklet/timer/inteerupt, so we use interrupt_disable to protect
 			the access.
 */
-#define RTMP_MCU_RW_LOCK(_pAd, _irqflags)	\
+#define RTMP_MCU_RW_LOCK(_pAd, _irqflags)				\
 	do{								\
-		if (_pAd->infType == RTMP_DEV_INF_USB)	\
-		{\
+		if (_pAd->infType == RTMP_DEV_INF_USB)			\
+		{							\
 			RTMP_SEM_EVENT_WAIT(&_pAd->McuCmdSem, _irqflags);\
-		}\
-		else\
-		{\
-			RTMP_SEM_LOCK(&_pAd->McuCmdLock, _irqflags);\
+		}							\
+		else							\
+		{							\
+			RTMP_SEM_LOCK(&_pAd->McuCmdLock, _irqflags);	\
 		}\
 	}while(0)
 
@@ -441,9 +432,9 @@ do { \
 /***********************************************************************************
  *	OS task related data structure and definitions
  ***********************************************************************************/
-#define RTMP_OS_MGMT_TASK_FLAGS	CLONE_VM
+#define RTMP_OS_MGMT_TASK_FLAGS		CLONE_VM
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)
+#ifndef KTHREAD_SUPPORT
 #define	THREAD_PID_INIT_VALUE		NULL
 /* TODO: Use this IOCTL carefully when linux kernel version larger than 2.6.27, because the PID only correct when the user space task do this ioctl itself. */
 /*#define RTMP_GET_OS_PID(_x, _y)    _x = get_task_pid(current, PIDTYPE_PID); */
@@ -452,16 +443,7 @@ do { \
 #define	GET_PID_NUMBER(_v)		pid_nr((_v))
 #define CHECK_PID_LEGALITY(_pid)	if (pid_nr((_pid)) > 0)
 #define KILL_THREAD_PID(_A, _B, _C)	kill_pid((_A), (_B), (_C))
-
-#else
-
-#define	THREAD_PID_INIT_VALUE	-1
-#define RT_GET_OS_PID(_x, _pid)		_x = _pid
-#define RTMP_GET_OS_PID(_x, _pid)	_x = _pid
-#define	GET_PID_NUMBER(_v)		(_v)
-#define CHECK_PID_LEGALITY(_pid)	if ((_pid) >= 0)
-#define KILL_THREAD_PID(_A, _B, _C)	kill_proc((_A), (_B), (_C))
-#endif
+#endif /* KTHREAD_SUPPORT */
 
 typedef int (*cast_fn)(void *);
 typedef int (*RTMP_OS_TASK_CALLBACK)(ULONG);
@@ -588,7 +570,6 @@ struct os_cookie {
 typedef struct os_cookie * POS_COOKIE;
 
 
-
 /***********************************************************************************
  *	OS debugging and printing related definitions and data structure
  ***********************************************************************************/
@@ -626,26 +607,20 @@ do {						\
 #define DBGPRINT_ERR(Fmt)
 #endif
 
-#undef  ASSERT
+#undef ASSERT
 #ifdef DBG
-#define ASSERT(x)                                                               \
-{                                                                               \
-	if (!(x))                                                                   \
-	{                                                                           \
-		printk(KERN_WARNING __FILE__ ":%d assert " #x "failed\n", __LINE__);    \
-	}                                                                           \
+#define ASSERT(x) \
+{											\
+	if (!(x))									\
+	{										\
+		printk(KERN_WARNING __FILE__ ":%d assert " #x "failed\n", __LINE__); 	\
+	}										\
 }
 #else
 #define ASSERT(x)
 #endif /* DBG */
 
 void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
-
-
-/*********************************************************************************************************
-	The following code are not revised, temporary put it here.
-*********************************************************************************************************/
-
 
 /***********************************************************************************
  * Device DMA Access related definitions and data structures.
@@ -666,8 +641,9 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 
 #define RTMP_IO_FORCE_WRITE32(_A, _R, _V)	\
 	do {\
-		/*if ((_R) != 0x404)*/ /* TODO:shiang-6590, depends on sw porting guide, don't acccess it now */\
-			RTUSBWriteMACRegister((_A), (_R), (UINT32) (_V), FALSE);		\
+		/*if ((_R) != 0x404)*/ 		\
+		/* TODO:shiang-6590, depends on sw porting guide, don't acccess it now */\
+		RTUSBWriteMACRegister((_A), (_R), (UINT32) (_V), FALSE);\
 	} while(0)
 
 
@@ -688,8 +664,6 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 	RTUSBSingleWrite((_A), (_R), (USHORT) (_V), FALSE);		\
 }
 
-#define RTMP_SYS_IO_READ32
-#define RTMP_SYS_IO_WRITE32
 #endif /* RTMP_MAC_USB */
 
 #define RTMP_USB_URB_DATA_GET(__pUrb)	((purbb_t)__pUrb)->context
@@ -790,7 +764,7 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 #define OS_HTONL(_Val) (htonl((_Val)))
 
 #define CB_OFF  10
-#define GET_OS_PKT_CB(_p)		(RTPKT_TO_OSPKT(_p)->cb)
+#define GET_OS_PKT_CB(_p)	(RTPKT_TO_OSPKT(_p)->cb)
 #define PACKET_CB(_p, _offset)	((RTPKT_TO_OSPKT(_p)->cb[CB_OFF + (_offset)]))
 
 /***********************************************************************************
@@ -832,13 +806,6 @@ extern int ra_mtd_read(int num, loff_t from, size_t len, u_char *buf);
 
 typedef struct usb_device_id USB_DEVICE_ID;
 
-// TODO: shiang-usw, fine tune BULKAGGRE_SIZE, origianl is 60
-#ifdef INF_AMAZON_SE
-#define BULKAGGRE_SIZE 	30
-#else
-#define BULKAGGRE_SIZE 	100
-#endif
-
 #define RTUSB_ALLOC_URB(iso)		usb_alloc_urb(iso, GFP_ATOMIC)
 #define RTUSB_SUBMIT_URB(pUrb)		usb_submit_urb(pUrb, GFP_ATOMIC)
 
@@ -850,16 +817,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #define RTUSB_URB_FREE_BUFFER(_dev, _size, _addr, _dma)	usb_buffer_free(_dev, _size, _addr, _dma)
 #endif /* LINUX_VERSION_CODE */
 
-#define RTUSB_FILL_BULK_URB(_urb, _dev, _pipe, _buffer, _buffer_len, _complete_fn, _context) usb_fill_bulk_urb(_urb, _dev, _pipe, _buffer, _buffer_len, _complete_fn, _context)
-#define RTUSB_FREE_URB(pUrb)	usb_free_urb(pUrb)
-
-/* unlink urb */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,7)
-#define RTUSB_UNLINK_URB(pUrb)		usb_kill_urb(pUrb)
-#else
-#define RTUSB_UNLINK_URB(pUrb)		usb_unlink_urb(pUrb)
-#endif /* LINUX_VERSION_CODE */
-
 /* Prototypes of completion funuc. */
 #define RtmpUsbBulkOutDataPacketComplete		RTUSBBulkOutDataPacketComplete
 #define RtmpUsbBulkOutMLMEPacketComplete		RTUSBBulkOutMLMEPacketComplete
@@ -869,7 +826,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #define RtmpUsbBulkRxComplete				RTUSBBulkRxComplete
 #define RtmpUsbBulkCmdRspEventComplete			RTUSBBulkCmdRspEventComplete
 
-#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2, 5, 51)) || (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 18)))
 #define RTUSBBulkOutDataPacketComplete(Status, pURB, pt_regs)    RTUSBBulkOutDataPacketComplete(pURB)
 #define RTUSBBulkOutMLMEPacketComplete(Status, pURB, pt_regs)    RTUSBBulkOutMLMEPacketComplete(pURB)
 #define RTUSBBulkOutNullFrameComplete(Status, pURB, pt_regs)     RTUSBBulkOutNullFrameComplete(pURB)
@@ -877,15 +833,6 @@ typedef struct usb_device_id USB_DEVICE_ID;
 #define RTUSBBulkOutPsPollComplete(Status, pURB, pt_regs)        RTUSBBulkOutPsPollComplete(pURB)
 #define RTUSBBulkRxComplete(Status, pURB, pt_regs)               RTUSBBulkRxComplete(pURB)
 #define RTUSBBulkCmdRspEventComplete(Status, pURB, pt_regs)      RTUSBBulkCmdRspEventComplete(pURB)
-#else
-#define RTUSBBulkOutDataPacketComplete(Status, pURB, pt_regs)    RTUSBBulkOutDataPacketComplete(pURB, pt_regs)
-#define RTUSBBulkOutMLMEPacketComplete(Status, pURB, pt_regs)    RTUSBBulkOutMLMEPacketComplete(pURB, pt_regs)
-#define RTUSBBulkOutNullFrameComplete(Status, pURB, pt_regs)     RTUSBBulkOutNullFrameComplete(pURB, pt_regs)
-#define RTUSBBulkOutRTSFrameComplete(Status, pURB, pt_regs)      RTUSBBulkOutRTSFrameComplete(pURB, pt_regs)
-#define RTUSBBulkOutPsPollComplete(Status, pURB, pt_regs)        RTUSBBulkOutPsPollComplete(pURB, pt_regs)
-#define RTUSBBulkRxComplete(Status, pURB, pt_regs)               RTUSBBulkRxComplete(pURB, pt_regs)
-#define RTUSBBulkCmdRspEventComplete(Status, pURB, pt_regs)      RTUSBBulkCmdRspEventComplete(pURB, pt_regs)
-#endif
 
 /*extern void dump_urb(struct urb *purb); */
 
@@ -981,7 +928,6 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 
 ******************************************************************************/
 #define ate_print printk
-#define ATEDBGPRINT DBGPRINT
 
 #ifdef RTMP_MAC_USB
 
@@ -995,20 +941,6 @@ USBHST_STATUS RTUSBBulkCmdRspEventComplete(URBCompleteStatus Status, purbb_t pUR
 #endif
 
 #endif /* RTMP_MAC_USB */
-
-#ifdef RTMP_USB_SUPPORT
-
-#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2, 5, 51)) || (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 18)))
-/* Prototypes of completion funuc. */
-#define ATE_RTUSBBulkOutDataPacketComplete(Status, pURB, pt_regs)    ATE_RTUSBBulkOutDataPacketComplete(pURB)
-#else
-#define ATE_RTUSBBulkOutDataPacketComplete(Status, pURB, pt_regs)    ATE_RTUSBBulkOutDataPacketComplete(pURB, pt_regs)
-#endif /* LINUX_VERSION_CODE */
-
-USBHST_STATUS ATE_RTUSBBulkOutDataPacketComplete(URBCompleteStatus Status, purbb_t pURB, pregs *pt_regs);
-
-#endif /* RTMP_USB_SUPPORT */
-
 #endif /* RALINK_ATE */
 
 #include "os/rt_os.h"
