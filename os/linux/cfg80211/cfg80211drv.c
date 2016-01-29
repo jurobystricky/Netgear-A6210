@@ -18,7 +18,6 @@
 
 	All related CFG80211 function body.
 
-	History:
 
 ***************************************************************************/
 #define RTMP_MODULE_OS
@@ -43,13 +42,12 @@ static void CFG80211DRV_SurveyGet(void *pAdOrg, void *pData);
 static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev);
 static int CFG80211_reSetToDefault(void *pAdCB);
 
-
 #ifdef CONFIG_STA_SUPPORT
 static int CFG80211_setStaDefaultKey(void *pAdCB, UINT Data);
 
 #ifdef DOT11W_PMF_SUPPORT
 int CFG80211_setStaMgmtDefaultKey(void *pAdCB, UINT Data);
-#endif /* DOT11W_PMF_SUPPORT */
+#endif
 
 #endif /*CONFIG_STA_SUPPORT*/
 
@@ -288,7 +286,7 @@ int CFG80211DRV_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 	case CMD_RTPRIV_IOCTL_80211_P2PCLI_ASSSOC_IE_SET:
 		CFG80211DRV_SetP2pCliAssocIe(pAd, pData, Data);
 		break;
-#endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
+#endif
 
 	case CMD_RTPRIV_IOCTL_80211_VIF_ADD:
 		if (CFG80211DRV_OpsVifAdd(pAd, pData) != TRUE)
@@ -303,13 +301,13 @@ int CFG80211DRV_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 	case CMD_RTPRIV_IOCTL_80211_ANDROID_PRIV_CMD:
 		//rt_android_private_command_entry(pAd, );
 		break;
-#endif /* RT_CFG80211_ANDROID_PRIV_LIB_SUPPORT */
+#endif
 
 #ifdef RT_P2P_SPECIFIC_WIRELESS_EVENT
 	case CMD_RTPRIV_IOCTL_80211_SEND_WIRELESS_EVENT:
 		CFG80211_SendWirelessEvent(pAd, pData);
 		break;
-#endif /* RT_P2P_SPECIFIC_WIRELESS_EVENT */
+#endif
 
 #ifdef RFKILL_HW_SUPPORT
 	case CMD_RTPRIV_IOCTL_80211_RFKILL:
@@ -327,8 +325,7 @@ int CFG80211DRV_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 			*(UINT8 *)pData = 1;
 		}
 		break;
-#endif /* RFKILL_HW_SUPPORT */
-
+#endif
 	default:
 		return NDIS_STATUS_FAILURE;
 	}
@@ -408,7 +405,8 @@ static void CFG80211DRV_OpsMgmtFrameActionRegister(void *pAdOrg, void *pData, BO
 	pListEntry = pCacheList->pHead;
 	pDevEntry = (PCFG80211_VIF_DEV)pListEntry;
 	while (pDevEntry != NULL) {
-		if (RTMPEqualMemory(pDevEntry->net_dev->dev_addr, pNewNetDev->dev_addr, MAC_ADDR_LEN))
+		if (RTMPEqualMemory(pDevEntry->net_dev->dev_addr, pNewNetDev->dev_addr,
+				MAC_ADDR_LEN))
 			break;
 
 		pListEntry = pListEntry->pNext;
@@ -499,7 +497,7 @@ static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, void *pData)
 	UINT8 ChanId, IfType, ChannelType;
 #ifdef DOT11_N_SUPPORT
 	BOOLEAN FlgIsChanged;
-#endif /* DOT11_N_SUPPORT */
+#endif
 
 /*
  *  enum nl80211_channel_type {
@@ -540,7 +538,8 @@ static BOOLEAN CFG80211DRV_OpsSetChannel(RTMP_ADAPTER *pAd, void *pData)
 			pAd->CommonCfg.HT_Disable = 1;
 		}
 
-		CFG80211DBG(RT_DEBUG_TRACE, ("80211> HT Disable = %d\n", pAd->CommonCfg.HT_Disable));
+		CFG80211DBG(RT_DEBUG_TRACE, ("80211> HT Disable = %d\n",
+				pAd->CommonCfg.HT_Disable));
 	} else {
 		/* for monitor mode */
 		FlgIsChanged = TRUE;
@@ -733,8 +732,8 @@ static BOOLEAN CFG80211DRV_StaGet(void *pAdOrg, void *pData)
 
 	//getRate(PhyInfo, &DataRate);
 	RtmpDrvRateGet(pAd, PhyInfo.field.MODE, PhyInfo.field.ShortGI,
-				 PhyInfo.field.BW,PhyInfo.field.MCS,
-				 newRateGetAntenna(PhyInfo.field.MCS),&DataRate);
+			PhyInfo.field.BW,PhyInfo.field.MCS,
+			newRateGetAntenna(PhyInfo.field.MCS),&DataRate);
 	DataRate /= 500000;
 	DataRate /= 2;
 
@@ -771,15 +770,18 @@ static BOOLEAN CFG80211DRV_StaKeyAdd(void *pAdOrg, void *pData)
 #ifdef DOT11W_PMF_SUPPORT
 	if (pKeyInfo->KeyType == RT_CMD_80211_KEY_AES_CMAC) {
 		PPMF_CFG pPmfCfg = pPmfCfg = &pAd->StaCfg.PmfCfg;
-		hex_dump("PMF IGTK pKeyInfo->KeyBuf=", (UINT8 *)pKeyInfo->KeyBuf, pKeyInfo->KeyLen);
+		hex_dump("PMF IGTK pKeyInfo->KeyBuf=", (UINT8 *)pKeyInfo->KeyBuf,
+				pKeyInfo->KeyLen);
 		DBGPRINT(RT_DEBUG_ERROR, ("PMF IGTK pKeyInfo->KeyId=%d\n",
 				pKeyInfo->KeyId));
 
 		//only 4 or 5, no other case!
 		if (pKeyInfo->KeyId == 4 || pKeyInfo->KeyId == 5) {
 			// no PN is passed, PN is useless in PMF_CalculateBIPMIC()
-			NdisZeroMemory(&pPmfCfg->IPN[pKeyInfo->KeyId -4][0], LEN_WPA_TSC);
-			NdisMoveMemory(&pPmfCfg->IGTK[pKeyInfo->KeyId -4][0], pKeyInfo->KeyBuf, pKeyInfo->KeyLen);
+			NdisZeroMemory(&pPmfCfg->IPN[pKeyInfo->KeyId -4][0],
+					LEN_WPA_TSC);
+			NdisMoveMemory(&pPmfCfg->IGTK[pKeyInfo->KeyId -4][0],
+					pKeyInfo->KeyBuf, pKeyInfo->KeyLen);
 		} else {
 			DBGPRINT(RT_DEBUG_ERROR,
 					("ERROR !! pKeyInfo->KeyId=%d \n",
@@ -808,7 +810,7 @@ static BOOLEAN CFG80211DRV_StaKeyAdd(void *pAdOrg, void *pData)
 			IoctlSec.Alg = RT_CMD_STA_IOCTL_SECURITY_ALG_CCMP;
 		IoctlSec.flags = RT_CMD_STA_IOCTL_SECURITY_ENABLED;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-		if (pKeyInfo->bPairwise == FALSE )
+		if (pKeyInfo->bPairwise == FALSE)
 #else
 		if (pKeyInfo->KeyId > 0)
 #endif
@@ -831,8 +833,8 @@ static BOOLEAN CFG80211DRV_StaKeyAdd(void *pAdOrg, void *pData)
 		}
 
 		/*Set_GroupKey_Proc(pAd, &IoctlSec) */
-		RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWENCODEEXT, 0,
-							  &IoctlSec, 0, INT_MAIN);
+		RTMP_STA_IoctlHandle(pAd, NULL, CMD_RTPRIV_IOCTL_STA_SIOCSIWENCODEEXT,
+				0, &IoctlSec, 0, INT_MAIN);
 	}
 #endif /* CONFIG_STA_SUPPORT */
 
@@ -849,8 +851,9 @@ static BOOLEAN CFG80211DRV_Connect(void *pAdOrg, void *pData)
 	RT_CMD_STA_IOCTL_SECURITY_ADV IoctlWpa;
 
 	if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_INFRA_ON) &&
-			OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED)) {
-		DBGPRINT(RT_DEBUG_TRACE, ("CFG80211: Connected, disconnect first !\n"));
+		OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED)) {
+		DBGPRINT(RT_DEBUG_TRACE,
+				("CFG80211: Connected, disconnect first !\n"));
 	} else {
 		DBGPRINT(RT_DEBUG_TRACE, ("CFG80211: No Connection\n"));
 	}
@@ -1018,7 +1021,7 @@ static void CFG80211DRV_SurveyGet(void *pAdOrg, void *pData)
 #ifdef AP_QLOAD_SUPPORT
 	pSurveyInfo->ChannelTimeBusy = pAd->phy_ctrl.QloadLatestChannelBusyTimePri;
 	pSurveyInfo->ChannelTimeExtBusy = pAd->phy_ctrl.QloadLatestChannelBusyTimeSec;
-#endif /* AP_QLOAD_SUPPORT */
+#endif
 }
 
 
@@ -1037,7 +1040,7 @@ static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev)
 	unregister_netdevice_notifier(&cfg80211_netdev_notifier);
 
 	/* Reset CFG80211 Global Setting Here */
-	DBGPRINT(RT_DEBUG_TRACE, 
+	DBGPRINT(RT_DEBUG_TRACE,
 		("==========> TYPE Reset CFG80211 Global Setting Here <==========\n"));
 	pCfg80211_ctrl->cfg80211MainDev.Cfg80211RegisterActionFrame = FALSE,
 	pCfg80211_ctrl->cfg80211MainDev.Cfg80211ActionCount = 0;
@@ -1065,8 +1068,7 @@ static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev)
 
 /*
 CFG_TODO
-	 if (pAd->pTxStatusBuf != NULL)
-	 {
+	 if (pAd->pTxStatusBuf != NULL) {
 		 os_free_mem(NULL, pAd->pTxStatusBuf);
 		 pAd->pTxStatusBuf = NULL;
 	 }
@@ -1113,7 +1115,7 @@ void CFG80211_BeaconCountryRegionParse(void *pAdCB, NDIS_802_11_VARIABLE_IEs *pV
 			/* send command to do regulation hint only when associated */
 			 RT_CFG80211_CRDA_REG_HINT11D(pAd, pVIE->data, pVIE->Length);
 			//RTEnqueueInternalCmd(pAd, CMDTHREAD_REG_HINT_11D,
-			//					pVIE->data, pVIE->Length);
+			//		pVIE->data, pVIE->Length);
 			break;
 		}
 
@@ -1392,8 +1394,8 @@ void CFG80211_ConnectResultInform(void *pAdCB, UCHAR *pBSSID, UCHAR *pReqIe,
 
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> CFG80211_ConnectResultInform ==>\n"));
 
-	CFG80211OS_ConnectResultInform(pAd->pCfg80211_CB, pBSSID, pReqIe, ReqIeLen, pRspIe,
-			RspIeLen, FlgIsSuccess);
+	CFG80211OS_ConnectResultInform(pAd->pCfg80211_CB, pBSSID, pReqIe,
+			ReqIeLen, pRspIe, RspIeLen, FlgIsSuccess);
 
 	pAd->cfg80211_ctrl.FlgCfg80211Connecting = FALSE;
 }
