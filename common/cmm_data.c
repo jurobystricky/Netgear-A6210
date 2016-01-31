@@ -2022,13 +2022,12 @@ UINT deaggregate_AMSDU_announce(
 		{
 			MLME_QUEUE_ELEM *Elem;
 
-			os_alloc_mem(pAd, (UCHAR **)&Elem, sizeof(MLME_QUEUE_ELEM));
-			if (Elem != NULL)
-			{
+			Elem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
+			if (Elem != NULL) {
 				memmove(Elem->Msg+(LENGTH_802_11 + LENGTH_802_1_H), pPayload, PayloadSize);
 				Elem->MsgLen = LENGTH_802_11 + LENGTH_802_1_H + PayloadSize;
 				REPORT_MGMT_FRAME_TO_MLME(pAd, BSSID_WCID, Elem->Msg, Elem->MsgLen, 0, 0, 0, 0, OPMODE_STA);
-				os_free_mem(NULL, Elem);
+				os_free_mem(Elem);
 				Elem = NULL;
 			}
 		}
@@ -2044,9 +2043,8 @@ UINT deaggregate_AMSDU_announce(
 			{
 				APCLI_STRUCT *apcli_entry;
 				apcli_entry = &pAd->ApCfg.ApCliTab[0];
-				os_alloc_mem(pAd, (UCHAR **)&Elem, sizeof(MLME_QUEUE_ELEM));
-				if (Elem != NULL)
-				{
+				Elem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
+				if (Elem != NULL) {
 					if (pRxBlk != NULL)
 					{
 						memmove(Elem->Msg, pRxBlk->pHeader, LENGTH_802_11);
@@ -2054,7 +2052,7 @@ UINT deaggregate_AMSDU_announce(
 						Elem->MsgLen = LENGTH_802_11 + LENGTH_802_1_H + PayloadSize;
 						REPORT_MGMT_FRAME_TO_MLME(pAd, apcli_entry->MacTabWCID, Elem->Msg, Elem->MsgLen, 0, 0, 0, 0, OPMODE_AP);
 					}
-					os_free_mem(NULL, Elem);
+					os_free_mem(Elem);
 				}
 			}
 			/* A-MSDU has padding to multiple of 4 including subframe header.*/
@@ -3284,16 +3282,16 @@ VOID RtmpEnqueueNullFrame(
 	IN BOOLEAN bEOSP,
 	IN UCHAR OldUP)
 {
-	NDIS_STATUS NState;
+//	NDIS_STATUS NState;
 	HEADER_802_11 *pNullFr;
 	UCHAR *pFrame;
 	UINT frm_len;
 	MAC_TABLE_ENTRY *pEntry;
 
-	NState = MlmeAllocateMemory(pAd, (UCHAR **)&pFrame);
+	pFrame = MlmeAllocateMemory();
 	pNullFr = (PHEADER_802_11) pFrame;
 
-	if (NState == NDIS_STATUS_SUCCESS)
+	if (pFrame)
 	{
 		frm_len = sizeof(HEADER_802_11);
 
@@ -3342,7 +3340,7 @@ body:
 		DBGPRINT(RT_DEBUG_INFO, ("send NULL Frame @%d Mbps to AID#%d...\n", RateIdToMbps[TxRate], AID & 0x3f));
 		MiniportMMRequest(pAd, WMM_UP2AC_MAP[7], (PUCHAR)pNullFr, frm_len);
 
-		MlmeFreeMemory(pAd, pFrame);
+		MlmeFreeMemory(pFrame);
 	}
 }
 
@@ -3361,19 +3359,20 @@ VOID RtmpPrepareHwNullFrame(
 	UINT8 TXWISize = pAd->chipCap.TXWISize;
 	TXWI_STRUC *pTxWI = &pAd->NullTxWI;
 	PUCHAR pNullFrame;
-	NDIS_STATUS NState;
+//	NDIS_STATUS NState;
 	HEADER_802_11 *pNullFr;
 	ULONG Length;
 	UCHAR *ptr;
 	UINT i;
 	UINT32 longValue;
 
-	NState = MlmeAllocateMemory(pAd, (PUCHAR *)&pNullFrame);
+	pNullFrame = MlmeAllocateMemory();
+//	NState = MlmeAllocateMemory(pAd, (PUCHAR *)&pNullFrame);
 
 	NdisZeroMemory(pNullFrame, 48);
 	NdisZeroMemory(pTxWI, TXWISize);
 
-	if (NState == NDIS_STATUS_SUCCESS)
+	if (pNullFrame)
 	{
 		pNullFr = (PHEADER_802_11) pNullFrame;
 		Length = sizeof(HEADER_802_11);
@@ -3501,7 +3500,7 @@ VOID RtmpPrepareHwNullFrame(
 	}
 
 	if (pNullFrame)
-		MlmeFreeMemory(pAd, pNullFrame);
+		MlmeFreeMemory(pNullFrame);
 
 }
 
