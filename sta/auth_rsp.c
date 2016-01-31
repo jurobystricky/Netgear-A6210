@@ -76,7 +76,6 @@ VOID PeerAuthSimpleRspGenAndSend(
 	HEADER_802_11 AuthHdr;
 	ULONG FrameLen = 0;
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
 
 	if (Reason != MLME_SUCCESS) {
 		DBGPRINT(RT_DEBUG_TRACE, ("Peer AUTH fail...\n"));
@@ -84,8 +83,8 @@ VOID PeerAuthSimpleRspGenAndSend(
 	}
 
 	/*Get an unused nonpaged memory */
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
-	if (NStatus != NDIS_STATUS_SUCCESS)
+	pOutBuffer = MlmeAllocateMemory();
+	if (!pOutBuffer)
 		return;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("Send AUTH response (seq#2)...\n"));
@@ -95,7 +94,7 @@ VOID PeerAuthSimpleRspGenAndSend(
 	MakeOutgoingFrame(pOutBuffer, &FrameLen, sizeof (HEADER_802_11),
 			  &AuthHdr, 2, &Alg, 2, &Seq, 2, &Reason, END_OF_ARGS);
 	MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 }
 
 /*
