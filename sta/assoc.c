@@ -174,7 +174,6 @@ VOID MlmeAssocReqAction(
 	USHORT CapabilityInfo;
 	BOOLEAN TimerCancelled;
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
 	ULONG FrameLen = 0;
 	ULONG tmp;
 	USHORT VarIesOffset = 0;
@@ -201,8 +200,8 @@ VOID MlmeAssocReqAction(
 		COPY_MAC_ADDR(pAd->MlmeAux.Bssid, ApAddr);
 
 		/* Get an unused nonpaged memory */
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
-		if (NStatus != NDIS_STATUS_SUCCESS) {
+		pOutBuffer = MlmeAllocateMemory();
+		if (!pOutBuffer) {
 			DBGPRINT(RT_DEBUG_TRACE,
 				 ("ASSOC - MlmeAssocReqAction() allocate memory failed \n"));
 			pAd->Mlme.AssocMachine.CurrState = ASSOC_IDLE;
@@ -569,7 +568,7 @@ VOID MlmeAssocReqAction(
 
 
 		MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 
 		RTMPSetTimer(&pAd->MlmeAux.AssocTimer, Timeout);
 		pAd->Mlme.AssocMachine.CurrState = ASSOC_WAIT_RSP;
@@ -613,7 +612,6 @@ VOID MlmeReassocReqAction(
 	ULONG Timeout;
 	ULONG FrameLen = 0;
 	BOOLEAN TimerCancelled;
-	NDIS_STATUS NStatus;
 	ULONG tmp;
 	PUCHAR pOutBuffer = NULL;
 	USHORT Status;
@@ -634,8 +632,8 @@ VOID MlmeReassocReqAction(
 
 		RTMPCancelTimer(&pAd->MlmeAux.ReassocTimer, &TimerCancelled);
 
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);	/*Get an unused nonpaged memory */
-		if (NStatus != NDIS_STATUS_SUCCESS) {
+		pOutBuffer = MlmeAllocateMemory();	/*Get an unused nonpaged memory */
+		if (!pOutBuffer) {
 			DBGPRINT(RT_DEBUG_TRACE,
 				 ("ASSOC - MlmeReassocReqAction() allocate memory failed \n"));
 			pAd->Mlme.AssocMachine.CurrState = ASSOC_IDLE;
@@ -806,7 +804,7 @@ VOID MlmeReassocReqAction(
 		}
 
 		MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 
 		RTMPSetTimer(&pAd->MlmeAux.ReassocTimer, Timeout * 2);	/* in mSec */
 		pAd->Mlme.AssocMachine.CurrState = REASSOC_WAIT_RSP;
@@ -840,19 +838,15 @@ VOID MlmeDisassocReqAction(
 	PHEADER_802_11 pDisassocHdr;
 	PUCHAR pOutBuffer = NULL;
 	ULONG FrameLen = 0;
-	NDIS_STATUS NStatus;
 	BOOLEAN TimerCancelled;
 	ULONG Timeout = 500;
 	USHORT Status;
 
-
-
-
 	/* skip sanity check */
 	pDisassocReq = (PMLME_DISASSOC_REQ_STRUCT) (Elem->Msg);
 
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);	/*Get an unused nonpaged memory */
-	if (NStatus != NDIS_STATUS_SUCCESS) {
+	pOutBuffer = MlmeAllocateMemory();	/*Get an unused nonpaged memory */
+	if (!pOutBuffer) {
 		DBGPRINT(RT_DEBUG_TRACE,
 			 ("ASSOC - MlmeDisassocReqAction() allocate memory failed\n"));
 		pAd->Mlme.AssocMachine.CurrState = ASSOC_IDLE;
@@ -883,7 +877,7 @@ VOID MlmeDisassocReqAction(
 	pDisassocHdr->FC.SubType = SUBTYPE_DEAUTH;
 	MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
 
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 
 	pAd->StaCfg.DisassocReason = REASON_DISASSOC_STA_LEAVING;
 	COPY_MAC_ADDR(pAd->StaCfg.DisassocSta, pDisassocReq->Addr);
@@ -939,10 +933,8 @@ VOID PeerAssocRspAction(
 	MAC_TABLE_ENTRY *pEntry;
 	IE_LISTS *ie_list = NULL;
 
-
-	os_alloc_mem(pAd, (UCHAR **)&ie_list, sizeof(IE_LISTS));
+	ie_list = os_alloc_mem(sizeof(IE_LISTS));
 	if (ie_list == NULL) {
-		DBGPRINT(RT_DEBUG_OFF, ("%s():mem alloc failed!\n", __FUNCTION__));
 		return;
 	}
 	NdisZeroMemory((UCHAR *)ie_list, sizeof(IE_LISTS));
@@ -1056,7 +1048,7 @@ VOID PeerAssocRspAction(
 	}
 
 	if (ie_list != NULL)
-		os_free_mem(NULL, ie_list);
+		os_free_mem(ie_list);
 }
 
 
@@ -1092,9 +1084,8 @@ VOID PeerReassocRspAction(
 	EXT_CAP_INFO_ELEMENT ExtCapInfo;
 	IE_LISTS *ie_list = NULL;
 
-	os_alloc_mem(pAd, (UCHAR **)&ie_list, sizeof(IE_LISTS));
+	ie_list = os_alloc_mem(sizeof(IE_LISTS));
 	if (ie_list == NULL) {
-		DBGPRINT(RT_DEBUG_OFF, ("%s():mem alloc failed!\n", __FUNCTION__));
 		return;
 	}
 	NdisZeroMemory((UCHAR *)ie_list, sizeof(IE_LISTS));
@@ -1203,7 +1194,7 @@ VOID PeerReassocRspAction(
 	}
 
 	if (ie_list)
-		os_free_mem(pAd, ie_list);
+		os_free_mem(ie_list);
 
 }
 
@@ -1543,11 +1534,10 @@ VOID Cls3errAction(RTMP_ADAPTER *pAd, UCHAR *pAddr)
 	PHEADER_802_11 pDisassocHdr;
 	PUCHAR pOutBuffer = NULL;
 	ULONG FrameLen = 0;
-	NDIS_STATUS NStatus;
 	USHORT Reason = REASON_CLS3ERR;
 
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);	/*Get an unused nonpaged memory */
-	if (NStatus != NDIS_STATUS_SUCCESS)
+	pOutBuffer = MlmeAllocateMemory();	/*Get an unused nonpaged memory */
+	if (!pOutBuffer)
 		return;
 
 	DBGPRINT(RT_DEBUG_TRACE,
@@ -1567,7 +1557,7 @@ VOID Cls3errAction(RTMP_ADAPTER *pAd, UCHAR *pAddr)
 	pDisassocHdr->FC.SubType = SUBTYPE_DEAUTH;
 	MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
 
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 
 	pAd->StaCfg.DisassocReason = REASON_CLS3ERR;
 	COPY_MAC_ADDR(pAd->StaCfg.DisassocSta, pAddr);
