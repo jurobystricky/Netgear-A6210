@@ -15,19 +15,12 @@
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
-	Module Name:
-
-	Abstract:
-
-	Revision History:
-	Who 		When			What
-	--------	----------		----------------------------------------------
 */
 
 #include "rt_config.h"
 
 #ifdef SCAN_SUPPORT
-static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
+static BOOLEAN scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 {
 #ifdef CONFIG_STA_SUPPORT
 	USHORT Status;
@@ -38,7 +31,7 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	UCHAR  ScanType = pAd->MlmeAux.ScanType;
 #endif /*APCLI_CERT_SUPPORT*/
 #endif /*APCLI_SUPPORT*/
-		
+
 #ifdef DOT11_VHT_AC
 	if (WMODE_CAP(pAd->CommonCfg.PhyMode, WMODE_AC) &&
 		(pAd->CommonCfg.Channel > 14) &&
@@ -53,7 +46,7 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	else
 #endif /* DOT11_VHT_AC */
 		pAd->hw_cfg.cent_ch = pAd->CommonCfg.CentralChannel;
-		
+
 	if (pAd->CommonCfg.BBPCurrentBW != pAd->hw_cfg.bbp_bw)
 		bbp_set_bw(pAd, pAd->hw_cfg.bbp_bw);
 
@@ -80,13 +73,13 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	}
 	DBGPRINT(RT_DEBUG_TRACE, ("SYNC - End of SCAN, restore to %dMHz channel %d, Total BSS[%02d]\n",
 				bw, ch, pAd->ScanTab.BssNr));
-		
+
 #ifdef CONFIG_STA_SUPPORT
 	if (OpMode == OPMODE_STA)
 	{
 		/*
 		If all peer Ad-hoc clients leave, driver would do LinkDown and LinkUp.
-		In LinkUp, CommonCfg.Ssid would copy SSID from MlmeAux. 
+		In LinkUp, CommonCfg.Ssid would copy SSID from MlmeAux.
 		To prevent SSID is zero or wrong in Beacon, need to recover MlmeAux.SSID here.
 		*/
 		if (ADHOC_ON(pAd))
@@ -99,25 +92,25 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 		/*
 		To prevent data lost.
 		Send an NULL data with turned PSM bit on to current associated AP before SCAN progress.
-		Now, we need to send an NULL data with turned PSM bit off to AP, when scan progress done 
+		Now, we need to send an NULL data with turned PSM bit off to AP, when scan progress done
 		*/
 		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED) && (INFRA_ON(pAd)))
 		{
-			RTMPSendNullFrame(pAd, 
-								pAd->CommonCfg.TxRate, 
+			RTMPSendNullFrame(pAd,
+								pAd->CommonCfg.TxRate,
 								(OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
 								pAd->CommonCfg.bAPSDForcePowerSave ? PWR_SAVE : pAd->StaCfg.Psm);
 			DBGPRINT(RT_DEBUG_TRACE, ("%s -- Send null frame\n", __FUNCTION__));
 		}
 
-#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE                               
+#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
         if (pAd->ApCfg.ApCliTab[MAIN_MBSSID].Valid && RTMP_CFG80211_VIF_P2P_CLI_ON(pAd))
         {
                 DBGPRINT(RT_DEBUG_TRACE, ("CFG80211_NULL: PWR_ACTIVE SCAN_END\n"));
                 RT_CFG80211_P2P_CLI_SEND_NULL_FRAME(pAd, PWR_ACTIVE);
         }
 #endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
-		
+
 		/* keep the latest scan channel, could be 0 for scan complete, or other channel*/
 		pAd->StaCfg.LastScanChannel = pAd->MlmeAux.Channel;
 
@@ -162,7 +155,7 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 				{
 					DBGPRINT(RT_DEBUG_ERROR, ("Error in  %s\n", __FUNCTION__));
 				}
-			}			
+			}
 #endif /* APCLI_AUTO_CONNECT_SUPPORT */
 #endif /* APCLI_SUPPORT */
 		pAd->Mlme.ApSyncMachine.CurrState = AP_SYNC_IDLE;
@@ -217,21 +210,20 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 		{
 			UCHAR Status=1;
 			DBGPRINT(RT_DEBUG_TRACE, ("@(%s)  Scan Done ScanType=%d\n", __FUNCTION__, ScanType));
-			MlmeEnqueue(pAd, APCLI_CTRL_STATE_MACHINE, APCLI_CTRL_SCAN_DONE, 2, &Status, 0);			
+			MlmeEnqueue(pAd, APCLI_CTRL_STATE_MACHINE, APCLI_CTRL_SCAN_DONE, 2, &Status, 0);
 		}
 #endif /* DOT11N_DRAFT3 */
 #endif /* DOT11_N_SUPPORT */
-#endif /* APCLI_CERT_SUPPORT */		
-#endif /* APCLI_SUPPORT */	
+#endif /* APCLI_CERT_SUPPORT */
+#endif /* APCLI_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
-
 
 	return TRUE;
 }
 
 
 
-static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
+static BOOLEAN scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 {
 	UCHAR *frm_buf = NULL;
 	HEADER_802_11 Hdr80211;
@@ -241,10 +233,9 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 	USHORT Status;
 #endif /* CONFIG_STA_SUPPORT */
 
-
-	if (MlmeAllocateMemory(pAd, &frm_buf) != NDIS_STATUS_SUCCESS)
+	frm_buf = MlmeAllocateMemory();
+	if (!frm_buf)
 	{
-		DBGPRINT(RT_DEBUG_TRACE, ("SYNC - ScanNextChannel() allocate memory fail\n"));
 #ifdef CONFIG_STA_SUPPORT
 		if (OpMode == OPMODE_STA)
 		{
@@ -269,7 +260,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 	}
 #endif /* DOT11N_DRAFT3 */
 #endif /* DOT11_N_SUPPORT */
-	
+
 	/* There is no need to send broadcast probe request if active scan is in effect.*/
 	SsidLen = 0;
 #ifndef APCLI_CONNECTION_TRIAL
@@ -284,7 +275,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 		if (OpMode == OPMODE_AP)
 		{
 #ifdef APCLI_SUPPORT
-#endif /* APCLI_SUPPORT */		
+#endif /* APCLI_SUPPORT */
 			MgtMacHeaderInitExt(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR,
 								pAd->ApCfg.MBSSID[0].wdev.bssid,
 								BROADCAST_ADDR);
@@ -294,7 +285,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 		/*IF_DEV_CONFIG_OPMODE_ON_STA(pAd) */
 		if (OpMode == OPMODE_STA)
 		{
-			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, 
+			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR,
 								pAd->CurrentAddress,
 								BROADCAST_ADDR);
 		}
@@ -307,7 +298,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 						  SsidLen,			        pAd->MlmeAux.Ssid,
 						  1,                        &SupRateIe,
 						  1,                        &pAd->CommonCfg.SupRateLen,
-						  pAd->CommonCfg.SupRateLen,  pAd->CommonCfg.SupRate, 
+						  pAd->CommonCfg.SupRateLen,  pAd->CommonCfg.SupRate,
 						  END_OF_ARGS);
 
 		if (pAd->CommonCfg.ExtRateLen)
@@ -316,7 +307,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 			MakeOutgoingFrame(frm_buf + FrameLen,            &Tmp,
 							  1,                                &ExtRateIe,
 							  1,                                &pAd->CommonCfg.ExtRateLen,
-							  pAd->CommonCfg.ExtRateLen,          pAd->CommonCfg.ExtRate, 
+							  pAd->CommonCfg.ExtRateLen,          pAd->CommonCfg.ExtRate,
 							  END_OF_ARGS);
 			FrameLen += Tmp;
 		}
@@ -342,9 +333,9 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 
 				NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
 				*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
-				NdisMoveMemory((PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));		
+				NdisMoveMemory((PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));
 			}
-#else				
+#else
 			*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = cpu2le16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
 #endif /* UNALIGNMENT_SUPPORT */
 
@@ -352,18 +343,18 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 							1,                                &WpaIe,
 							1,                                &HtLen,
 							4,                                &BROADCOM[0],
-							pAd->MlmeAux.HtCapabilityLen,     &HtCapabilityTmp, 
+							pAd->MlmeAux.HtCapabilityLen,     &HtCapabilityTmp,
 							END_OF_ARGS);
 #else
 			MakeOutgoingFrame(frm_buf + FrameLen,          &Tmp,
 							1,                                &WpaIe,
 							1,                                &HtLen,
 							4,                                &BROADCOM[0],
-							pAd->MlmeAux.HtCapabilityLen,     &pAd->MlmeAux.HtCapability, 
+							pAd->MlmeAux.HtCapabilityLen,     &pAd->MlmeAux.HtCapability,
 							END_OF_ARGS);
 #endif /* RT_BIG_ENDIAN */
 		}
-		else				
+		else
 		{
 			HtLen = sizeof(HT_CAPABILITY_IE);
 #ifdef RT_BIG_ENDIAN
@@ -375,22 +366,22 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 
 				NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
 				*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
-				NdisMoveMemory((PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));		
+				NdisMoveMemory((PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));
 			}
-#else				
+#else
 			*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = cpu2le16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
 #endif /* UNALIGNMENT_SUPPORT */
 
 			MakeOutgoingFrame(frm_buf + FrameLen,          &Tmp,
 							1,                                &HtCapIe,
 							1,                                &HtLen,
-							HtLen,                            &HtCapabilityTmp, 
+							HtLen,                            &HtCapabilityTmp,
 							END_OF_ARGS);
 #else
 			MakeOutgoingFrame(frm_buf + FrameLen,          &Tmp,
 							1,                                &HtCapIe,
 							1,                                &HtLen,
-							HtLen,                            &pAd->CommonCfg.HtCapability, 
+							HtLen,                            &pAd->CommonCfg.HtCapability,
 							END_OF_ARGS);
 #endif /* RT_BIG_ENDIAN */
 		}
@@ -404,7 +395,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 			MakeOutgoingFrame(frm_buf + FrameLen,            &Tmp,
 							  1,					&ExtHtCapIe,
 							  1,					&HtLen,
-							  1,          			&pAd->CommonCfg.BSSCoexist2040.word, 
+							  1,          			&pAd->CommonCfg.BSSCoexist2040.word,
 							  END_OF_ARGS);
 
 			FrameLen += Tmp;
@@ -418,7 +409,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 
 #ifdef DOT11_VHT_AC
 	if (WMODE_CAP_AC(pAd->CommonCfg.PhyMode) &&
-		(pAd->MlmeAux.Channel > 14)) {		
+		(pAd->MlmeAux.Channel > 14)) {
 		FrameLen += build_vht_ies(pAd, (UCHAR *)(frm_buf + FrameLen), SUBTYPE_PROBE_REQ);
 	}
 #endif /* DOT11_VHT_AC */
@@ -431,7 +422,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 		(pAd->StaCfg.wpa_supplicant_info.WpsProbeReqIeLen != 0))
 	{
 		ULONG 		WpsTmpLen = 0;
-		
+
 		MakeOutgoingFrame(frm_buf + FrameLen,              &WpsTmpLen,
 						pAd->StaCfg.wpa_supplicant_info.WpsProbeReqIeLen,
 						pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe,
@@ -446,12 +437,12 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 		CFG80211DRV_OpsScanRunning(pAd))
 	{
 		ULONG 		ExtraIeTmpLen = 0;
-		
+
 		MakeOutgoingFrame(frm_buf + FrameLen,              &ExtraIeTmpLen,
 						pAd->cfg80211_ctrl.ExtraIeLen,	pAd->cfg80211_ctrl.pExtraIe,
 						END_OF_ARGS);
 
-		FrameLen += ExtraIeTmpLen;	
+		FrameLen += ExtraIeTmpLen;
 	}
 #endif /* RT_CFG80211_SUPPORT */
 #endif /*CONFIG_STA_SUPPORT*/
@@ -467,12 +458,12 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 			Send an NULL data with turned PSM bit on to current associated AP when SCAN in the channel where
 			associated AP located.
 		*/
-		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED) && 
+		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED) &&
 			(INFRA_ON(pAd)) &&
 			(pAd->CommonCfg.Channel == pAd->MlmeAux.Channel))
 		{
-			RTMPSendNullFrame(pAd, 
-						  pAd->CommonCfg.TxRate, 
+			RTMPSendNullFrame(pAd,
+						  pAd->CommonCfg.TxRate,
 						  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
 						  PWR_SAVE);
 			DBGPRINT(RT_DEBUG_TRACE, ("ScanNextChannel():Send PWA NullData frame to notify the associated AP!\n"));
@@ -480,7 +471,7 @@ static INT scan_active(RTMP_ADAPTER *pAd, UCHAR OpMode, UCHAR ScanType)
 	}
 #endif /* CONFIG_STA_SUPPORT */
 
-	MlmeFreeMemory(pAd, frm_buf);
+	MlmeFreeMemory(frm_buf);
 
 	return TRUE;
 }
@@ -524,10 +515,10 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 		pAd->MlmeAux.Channel = CFG80211DRV_OpsScanGetNextChannel(pAd);
 #endif /* RT_CFG80211_SUPPORT */
 #endif /* CONFIG_STA_SUPPORT */
-	if ((pAd->MlmeAux.Channel == 0) || ScanPending) 
+	if ((pAd->MlmeAux.Channel == 0) || ScanPending)
 	{
 		scan_ch_restore(pAd, OpMode);
-	} 
+	}
 #ifdef RTMP_MAC_USB
 #ifdef CONFIG_STA_SUPPORT
 	else if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) &&
@@ -535,10 +526,10 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	{
 		pAd->Mlme.SyncMachine.CurrState = SYNC_IDLE;
 		MlmeCntlConfirm(pAd, MT2_SCAN_CONF, MLME_FAIL_NO_RESOURCE);
-	}	
+	}
 #endif /* CONFIG_STA_SUPPORT */
 #endif /* RTMP_MAC_USB */
-	else 
+	else
 	{
 #ifdef CONFIG_STA_SUPPORT
 		if (OpMode == OPMODE_STA)
@@ -585,7 +576,7 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 			sc_timer = &pAd->MlmeAux.APScanTimer;
 		else
 			sc_timer = &pAd->MlmeAux.ScanTimer;
-			
+
 		/* We need to shorten active scan time in order for WZC connect issue */
 		/* Chnage the channel scan time for CISCO stuff based on its IAPP announcement */
 		if (ScanType == FAST_SCAN_ACTIVE)
@@ -612,9 +603,9 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 			else
 				stay_time = MAX_CHANNEL_TIME;
 		}
-				
+
 		RTMPSetTimer(sc_timer, stay_time);
-			
+
 		if (SCAN_MODE_ACT(ScanType))
 		{
 			if (scan_active(pAd, OpMode, ScanType) == FALSE)
@@ -637,14 +628,14 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 					/* 1. backup the original MlmeAux */
 					backSsidLen = pAd->MlmeAux.SsidLen;
 					NdisCopyMemory(backSsid, pAd->MlmeAux.Ssid, backSsidLen);
-					
+
 					/* 2. fill the desried ssid into SM */
 					pAd->MlmeAux.SsidLen = desiredSsidLen;
 					NdisCopyMemory(pAd->MlmeAux.Ssid, pAd->ApCfg.ApCliTab[0].CfgSsid, desiredSsidLen);
 
 					/* 3. scan action */
 					scan_active(pAd, OpMode, ScanType);
-			
+
 					/* 4. restore to MlmeAux */
 					pAd->MlmeAux.SsidLen = backSsidLen;
 					NdisCopyMemory(pAd->MlmeAux.Ssid, backSsid, backSsidLen);
@@ -656,7 +647,7 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 		}
 
 		/* For SCAN_CISCO_PASSIVE, do nothing and silently wait for beacon or other probe reponse*/
-		
+
 #ifdef CONFIG_STA_SUPPORT
 		if (OpMode == OPMODE_STA)
 			pAd->Mlme.SyncMachine.CurrState = SCAN_LISTEN;
@@ -694,29 +685,27 @@ BOOLEAN ScanRunning(RTMP_ADAPTER *pAd)
 #if defined(CONFIG_STA_SUPPORT) || defined(APCLI_SUPPORT)
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-VOID BuildEffectedChannelList(
-	IN PRTMP_ADAPTER pAd)
+VOID BuildEffectedChannelList(PRTMP_ADAPTER pAd)
 {
-	UCHAR		EChannel[11];
-	UCHAR		i, j, k;
-	UCHAR		UpperChannel = 0, LowerChannel = 0;
-	
+	UCHAR EChannel[11];
+	UCHAR i, j, k;
+	UCHAR UpperChannel = 0, LowerChannel = 0;
+
 	RTMPZeroMemory(EChannel, 11);
-	DBGPRINT(RT_DEBUG_TRACE, ("BuildEffectedChannelList:CtrlCh=%d,CentCh=%d,AuxCtrlCh=%d,AuxExtCh=%d\n", 
-								pAd->CommonCfg.Channel, pAd->CommonCfg.CentralChannel, 
-								pAd->MlmeAux.AddHtInfo.ControlChan, 
-								pAd->MlmeAux.AddHtInfo.AddHtInfo.ExtChanOffset));
+	DBGPRINT(RT_DEBUG_TRACE, 
+			("BuildEffectedChannelList:CtrlCh=%d,CentCh=%d,AuxCtrlCh=%d,AuxExtCh=%d\n",
+			pAd->CommonCfg.Channel, pAd->CommonCfg.CentralChannel,
+			pAd->MlmeAux.AddHtInfo.ControlChan,
+			pAd->MlmeAux.AddHtInfo.AddHtInfo.ExtChanOffset));
 
 	/* 802.11n D4 11.14.3.3: If no secondary channel has been selected, all channels in the frequency band shall be scanned. */
+	for (k = 0;k < pAd->ChannelListNum;k++)
 	{
-		for (k = 0;k < pAd->ChannelListNum;k++)
-		{
-			if (pAd->ChannelList[k].Channel <=14 )
-			pAd->ChannelList[k].bEffectedChannel = TRUE;
-		}
-		return;
-	}	
-	
+		if (pAd->ChannelList[k].Channel <=14 )
+		pAd->ChannelList[k].bEffectedChannel = TRUE;
+	}
+	return;
+//JB WTF?
 	i = 0;
 	/* Find upper and lower channel according to 40MHz current operation. */
 	if (pAd->CommonCfg.CentralChannel < pAd->CommonCfg.Channel)
@@ -736,7 +725,7 @@ VOID BuildEffectedChannelList(
 		return;
 	}
 
-	DeleteEffectedChannelList(pAd);	
+	DeleteEffectedChannelList(pAd);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("BuildEffectedChannelList!LowerChannel ~ UpperChannel; %d ~ %d \n", LowerChannel, UpperChannel));
 
@@ -778,8 +767,8 @@ VOID BuildEffectedChannelList(
 			}
 		}
 	}
-	/* 
-	    Total i channels are effected channels. 
+	/*
+	    Total i channels are effected channels.
 	    Now find corresponding channel in ChannelList array.  Then set its bEffectedChannel= TRUE
 	*/
 	for (j = 0;j < i;j++)
@@ -797,15 +786,13 @@ VOID BuildEffectedChannelList(
 }
 
 
-VOID DeleteEffectedChannelList(
-	IN PRTMP_ADAPTER pAd)
+VOID DeleteEffectedChannelList(PRTMP_ADAPTER pAd)
 {
-	UCHAR		i;
+	UCHAR i;
 	/*Clear all bEffectedChannel in ChannelList array. */
- 	for (i = 0; i < pAd->ChannelListNum; i++)		
-	{
+ 	for (i = 0; i < pAd->ChannelListNum; i++) {
 		pAd->ChannelList[i].bEffectedChannel = FALSE;
-	}	
+	}
 }
 #endif /* DOT11N_DRAFT3 */
 #endif /* DOT11_N_SUPPORT */
