@@ -292,7 +292,7 @@ void RtmpTimerQExit(RTMP_ADAPTER *pAd)
 		/* remove the timeQ*/
 	}
 	pAd->TimerQ.pQPollFreeList = NULL;
-	os_free_mem(pAd, pAd->TimerQ.pTimerQPoll);
+	os_free_mem(pAd->TimerQ.pTimerQPoll);
 	pAd->TimerQ.pQTail = NULL;
 	pAd->TimerQ.pQHead = NULL;
 /*#ifndef KTHREAD_SUPPORT*/
@@ -313,7 +313,7 @@ void RtmpTimerQInit(RTMP_ADAPTER *pAd)
 
 	NdisZeroMemory(&pAd->TimerQ, sizeof(pAd->TimerQ));
 
-	os_alloc_mem(pAd, &pAd->TimerQ.pTimerQPoll, sizeof(RTMP_TIMER_TASK_ENTRY) * TIMER_QUEUE_SIZE_MAX);
+	pAd->TimerQ.pTimerQPoll = os_alloc_mem(sizeof(RTMP_TIMER_TASK_ENTRY) * TIMER_QUEUE_SIZE_MAX);
 	if (pAd->TimerQ.pTimerQPoll) {
 		pEntry = NULL;
 		pQNode = (RTMP_TIMER_TASK_ENTRY *)pAd->TimerQ.pTimerQPoll;
