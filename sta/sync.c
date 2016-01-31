@@ -169,7 +169,6 @@ VOID MlmeForceJoinReqAction(
 {
 	BOOLEAN        TimerCancelled;
 	HEADER_802_11 Hdr80211;
-	NDIS_STATUS   NStatus;
 	ULONG         FrameLen = 0;
 	PUCHAR        pOutBuffer = NULL;
 	PUCHAR        pSupRate = NULL;
@@ -247,8 +246,8 @@ VOID MlmeForceJoinReqAction(
 		/*
 	    send probe request
 	*/
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
-	if (NStatus == NDIS_STATUS_SUCCESS)
+	pOutBuffer = MlmeAllocateMemory();
+	if (pOutBuffer)
 	{
 		if (pAd->MlmeAux.Channel <= 14)
 		{
@@ -333,7 +332,7 @@ VOID MlmeForceJoinReqAction(
 #endif /* WPA_SUPPLICANT_SUPPORT */
 
 		MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 	}
     } while (FALSE);
 
@@ -631,7 +630,6 @@ VOID MlmeJoinReqAction(
 	BSS_ENTRY    *pBss;
 	BOOLEAN       TimerCancelled;
 	HEADER_802_11 Hdr80211;
-	NDIS_STATUS   NStatus;
 	ULONG         FrameLen = 0;
 	PUCHAR        pOutBuffer = NULL;
 	PUCHAR        pSupRate = NULL;
@@ -754,8 +752,8 @@ VOID MlmeJoinReqAction(
 		/*
 		    send probe request
 		*/
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
-		if (NStatus == NDIS_STATUS_SUCCESS)
+		pOutBuffer = MlmeAllocateMemory();
+		if (pOutBuffer)
 		{
 			if (pAd->MlmeAux.Channel <= 14)
 			{
@@ -837,7 +835,7 @@ VOID MlmeJoinReqAction(
 
 
 			MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-			MlmeFreeMemory(pAd, pOutBuffer);
+			MlmeFreeMemory(pOutBuffer);
 		}
 	} while (FALSE);
 
@@ -865,12 +863,9 @@ VOID MlmeStartReqAction(
 	BOOLEAN Privacy;
 	USHORT Status;
 
-
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
-	if (VarIE == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+	VarIE = os_alloc_mem(MAX_VIE_LEN);
+	if (VarIE == NULL) {
 		return;
 	}
 
@@ -965,7 +960,7 @@ VOID MlmeStartReqAction(
 	}
 
 	if (VarIE != NULL)
-		os_free_mem(NULL, VarIE);
+		os_free_mem(VarIE);
 }
 
 #if 0 //JB removed
@@ -1001,13 +996,13 @@ VOID rtmp_dbg_sanity_diff(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	BOOLEAN sanity_new, sanity_old;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&Ssid, MAX_LEN_OF_SSID);
+	Ssid = os_alloc_mem(MAX_LEN_OF_SSID);
 	if (Ssid == NULL)
 		goto LabelErr;
-	os_alloc_mem(NULL, (UCHAR **)&pHtCapability, sizeof(HT_CAPABILITY_IE));
+	pHtCapability = os_alloc_mem(sizeof(HT_CAPABILITY_IE));
 	if (pHtCapability == NULL)
 		goto LabelErr;
-	os_alloc_mem(NULL, (UCHAR **)&pAddHtInfo, sizeof(ADD_HT_INFO_IE));
+	pAddHtInfo = os_alloc_mem(sizeof(ADD_HT_INFO_IE));
 	if (pAddHtInfo == NULL)
 		goto LabelErr;
 
@@ -1019,12 +1014,11 @@ VOID rtmp_dbg_sanity_diff(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 
 	NdisZeroMemory(Ssid, MAX_LEN_OF_SSID);
 
-	os_alloc_mem(NULL, (UCHAR **)&ie_list, sizeof(BCN_IE_LIST));
+	ie_list = os_alloc_mem(sizeof(BCN_IE_LIST));
 	if (ie_list == NULL)
 		goto LabelErr;
+
 	NdisZeroMemory(ie_list, sizeof(BCN_IE_LIST));
-
-
 	sanity_new = PeerBeaconAndProbeRspSanity(pAd,
 						&Elem->Msg[0], Elem->MsgLen,
 						Elem->Channel,
@@ -1283,16 +1277,15 @@ LabelErr:
 
 LabelOK:
 	if (Ssid != NULL)
-		os_free_mem(NULL, Ssid);
+		os_free_mem(Ssid);
 	if (VarIE != NULL)
-		os_free_mem(NULL, VarIE);
+		os_free_mem(VarIE);
 	if (pHtCapability != NULL)
-		os_free_mem(NULL, pHtCapability);
+		os_free_mem(pHtCapability);
 	if (pAddHtInfo != NULL)
-		os_free_mem(NULL, pAddHtInfo);
-
+		os_free_mem(pAddHtInfo);
 	if (ie_list != NULL)
-		os_free_mem(NULL, ie_list);
+		os_free_mem(ie_list);
 
 }
 //---Add by shiang to check correctness of new sanity function
@@ -1315,23 +1308,20 @@ VOID PeerBeaconAtScanAction(
 	BCN_IE_LIST *ie_list = NULL;
 
 
-	os_alloc_mem(NULL, (UCHAR **)&ie_list, sizeof(BCN_IE_LIST));
+	ie_list = os_alloc_mem(sizeof(BCN_IE_LIST));
 	if (!ie_list) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():Alloc ie_list failed!\n", __FUNCTION__));
 		return;
 	}
 	NdisZeroMemory((UCHAR *)ie_list, sizeof(BCN_IE_LIST));
 
 	/* Init Variable IE structure */
-	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	VarIE = os_alloc_mem(MAX_VIE_LEN);
 	if (VarIE == NULL)
 		goto LabelErr;
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
 
-
 	pFrame = (PFRAME_802_11) Elem->Msg;
-
 
 	if (PeerBeaconAndProbeRspSanity(pAd,
 						&Elem->Msg[0], Elem->MsgLen,
@@ -1436,9 +1426,9 @@ LabelErr:
 
 LabelOK:
 	if (VarIE != NULL)
-		os_free_mem(NULL, VarIE);
+		os_free_mem(VarIE);
 	if (ie_list != NULL)
-		os_free_mem(NULL, ie_list);
+		os_free_mem(ie_list);
 	return;
 }
 
@@ -1469,18 +1459,17 @@ VOID PeerBeaconAtJoinAction(
 
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&ie_list, sizeof(BCN_IE_LIST));
+	ie_list = os_alloc_mem(sizeof(BCN_IE_LIST));
 	if (ie_list == NULL)
 		goto LabelErr;
 	NdisZeroMemory(ie_list, sizeof(BCN_IE_LIST));
 
-	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	VarIE = os_alloc_mem(MAX_VIE_LEN);
 	if (VarIE == NULL)
 		goto LabelErr;
 	/* Init Variable IE structure */
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
-
 
 	if (PeerBeaconAndProbeRspSanity(pAd,
 								Elem->Msg,
@@ -1819,9 +1808,9 @@ LabelErr:
 
 LabelOK:
 	if (ie_list != NULL)
-		os_free_mem(NULL, ie_list);
+		os_free_mem(ie_list);
 	if (VarIE != NULL)
-		os_free_mem(NULL, VarIE);
+		os_free_mem(VarIE);
 
 	return;
 }
@@ -1852,17 +1841,16 @@ VOID PeerBeacon(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 		return;
 #endif /* RALINK_ATE */
 
-	if (!(INFRA_ON(pAd) || ADHOC_ON(pAd)
-		))
+	if (!(INFRA_ON(pAd) || ADHOC_ON(pAd)))
 		return;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&bcn_ie_list, sizeof(BCN_IE_LIST));
+	bcn_ie_list = os_alloc_mem(sizeof(BCN_IE_LIST));
 	if (bcn_ie_list == NULL)
 		goto LabelErr;
 	NdisZeroMemory(bcn_ie_list, sizeof(BCN_IE_LIST));
 
-	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	VarIE = os_alloc_mem(MAX_VIE_LEN);
 	if (VarIE == NULL)
 		goto LabelErr;
 	/* Init Variable IE structure */
@@ -2188,7 +2176,7 @@ VOID PeerBeacon(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 					BOOLEAN result;
 					IE_LISTS *ielist;
 
-					os_alloc_mem(NULL, (UCHAR **)&ielist, sizeof(IE_LISTS));
+					ielist = os_alloc_mem(sizeof(IE_LISTS));
 					if (!ielist)
 						goto LabelOK;
 					NdisZeroMemory((UCHAR *)ielist, sizeof(IE_LISTS));
@@ -2210,8 +2198,8 @@ VOID PeerBeacon(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 											ielist,
 											bcn_ie_list->CapabilityInfo);
 
-					os_free_mem(NULL, ielist);
-					if ( result== FALSE)
+					os_free_mem(ielist);
+					if (result== FALSE)
 					{
 						DBGPRINT(RT_DEBUG_TRACE, ("ADHOC - Add Entry failed.\n"));
 						goto LabelOK;
@@ -2568,9 +2556,9 @@ LabelErr:
 
 LabelOK:
 	if (VarIE != NULL)
-		os_free_mem(NULL, VarIE);
+		os_free_mem(VarIE);
 	if (bcn_ie_list != NULL)
-		os_free_mem(NULL, bcn_ie_list);
+		os_free_mem(bcn_ie_list);
 
 	return;
 }
@@ -2590,7 +2578,6 @@ VOID PeerProbeReqAction(
 	UCHAR		  HtLen, AddHtLen, NewExtLen;
 #endif /* DOT11_N_SUPPORT */
 	HEADER_802_11 ProbeRspHdr;
-	NDIS_STATUS   NStatus;
 	PUCHAR        pOutBuffer = NULL;
 	ULONG         FrameLen = 0;
 	LARGE_INTEGER FakeTimestamp;
@@ -2611,8 +2598,8 @@ VOID PeerProbeReqAction(
 			SSID_EQUAL(ProbeReqParam.Ssid, ProbeReqParam.SsidLen, pAd->CommonCfg.Ssid, pAd->CommonCfg.SsidLen))
 		{
 			/* allocate and send out ProbeRsp frame */
-			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /* Get an unused nonpaged memory */
-			if (NStatus != NDIS_STATUS_SUCCESS)
+			pOutBuffer = MlmeAllocateMemory();  /* Get an unused nonpaged memory */
+			if (!pOutBuffer)
 				return;
 
 			MgtMacHeaderInit(pAd, &ProbeRspHdr, SUBTYPE_PROBE_RSP,
@@ -2710,7 +2697,7 @@ VOID PeerProbeReqAction(
 
 
 			MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-			MlmeFreeMemory(pAd, pOutBuffer);
+			MlmeFreeMemory(pOutBuffer);
 		}
 	}
 }
@@ -2873,15 +2860,14 @@ VOID EnqueuePsPoll(RTMP_ADAPTER *pAd)
  */
 VOID EnqueueProbeRequest(RTMP_ADAPTER *pAd)
 {
-	NDIS_STATUS     NState;
 	PUCHAR          pOutBuffer;
 	ULONG           FrameLen = 0;
 	HEADER_802_11   Hdr80211;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("force out a ProbeRequest ...\n"));
 
-	NState = MlmeAllocateMemory(pAd, &pOutBuffer);  /* Get an unused nonpaged memory */
-	if (NState == NDIS_STATUS_SUCCESS)
+	pOutBuffer = MlmeAllocateMemory();  /* Get an unused nonpaged memory */
+	if (pOutBuffer)
 	{
 		MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR,
 							pAd->CurrentAddress,
@@ -2898,9 +2884,8 @@ VOID EnqueueProbeRequest(RTMP_ADAPTER *pAd)
 						  pAd->StaActive.SupRateLen,      pAd->StaActive.SupRate,
 						  END_OF_ARGS);
 		MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 	}
-
 }
 
 
