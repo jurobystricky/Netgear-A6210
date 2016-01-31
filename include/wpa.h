@@ -288,7 +288,7 @@ BOOLEAN RTMPSoftDecryptWEP(
  	function prototype in cmm_tkip.c
  =====================================
 */
-BOOLEAN RTMPSoftDecryptTKIP(
+NDIS_STATUS RTMPSoftDecryptTKIP(
 	IN PRTMP_ADAPTER pAd,
 	IN PUCHAR pHdr,
 	IN UCHAR UserPriority,
