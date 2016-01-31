@@ -94,14 +94,12 @@ VOID ActionStateMachineInit(
 
 }
 
-
 #ifdef DOT11_N_SUPPORT
 VOID MlmeADDBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem) 
 {
 	MLME_ADDBA_REQ_STRUCT *pInfo;
 	UCHAR Addr[6];
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
 	ULONG Idx;
 	FRAME_ADDBA_REQ Frame;
 	ULONG FrameLen;
@@ -115,10 +113,8 @@ VOID MlmeADDBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	if(MlmeAddBAReqSanity(pAd, Elem->Msg, Elem->MsgLen, Addr) &&
 		VALID_WCID(pInfo->Wcid)) 
 	{
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /* Get an unused nonpaged memory*/
-		if(NStatus != NDIS_STATUS_SUCCESS) 
-		{
-			DBGPRINT(RT_DEBUG_TRACE,("BA - MlmeADDBAAction() allocate memory failed \n"));
+		pOutBuffer = MlmeAllocateMemory();  /* Get an unused nonpaged memory*/
+		if (!pOutBuffer) {
 			return;
 		}
 		/* 1. find entry */
@@ -129,7 +125,7 @@ VOID MlmeADDBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 		Idx = pEntry->BAOriWcidArray[pInfo->TID];
 		if (Idx == 0)
 		{
-			MlmeFreeMemory(pAd, pOutBuffer);
+			MlmeFreeMemory(pOutBuffer);
 			DBGPRINT(RT_DEBUG_ERROR,("BA - MlmeADDBAAction() can't find BAOriEntry \n"));
 			return;
 		} 
@@ -178,7 +174,7 @@ VOID MlmeADDBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 
 		MiniportMMRequest(pAd, (MGMT_USE_QUEUE_FLAG | WMM_UP2AC_MAP[pInfo->TID]), pOutBuffer, FrameLen);
 
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 		
 		DBGPRINT(RT_DEBUG_TRACE,
 					("BA - Send ADDBA request. StartSeq = %x,  FrameLen = %ld. BufSize = %d\n",
@@ -218,16 +214,14 @@ VOID MlmeDELBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	if(MlmeDelBAReqSanity(pAd, Elem->Msg, Elem->MsgLen) &&
 		VALID_WCID(pInfo->Wcid))
 	{
-		if(MlmeAllocateMemory(pAd, &pOutBuffer) != NDIS_STATUS_SUCCESS)
-		{
-			DBGPRINT(RT_DEBUG_ERROR,("BA - MlmeDELBAAction() allocate memory failed 1. \n"));
+		pOutBuffer = MlmeAllocateMemory();
+		if (!pOutBuffer) {
 			return;
 		}
 
-		if(MlmeAllocateMemory(pAd, &pOutBuffer2) != NDIS_STATUS_SUCCESS)
-		{
-			MlmeFreeMemory(pAd, pOutBuffer);
-			DBGPRINT(RT_DEBUG_ERROR, ("BA - MlmeDELBAAction() allocate memory failed 2. \n"));
+		pOutBuffer2 = MlmeAllocateMemory();
+		if (!pOutBuffer2) {
+			MlmeFreeMemory(pOutBuffer);
 			return;
 		}
 
@@ -236,8 +230,8 @@ VOID MlmeDELBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 		if (!pEntry->wdev)
 		{
 			DBGPRINT(RT_DEBUG_ERROR, ("%s():No binding wdev for wcid(%d)\n", __FUNCTION__, pInfo->Wcid));
-			MlmeFreeMemory(pAd, pOutBuffer);
-			MlmeFreeMemory(pAd, pOutBuffer2);
+			MlmeFreeMemory(pOutBuffer);
+			MlmeFreeMemory(pOutBuffer2);
 			return;
 		}
 
@@ -258,7 +252,7 @@ VOID MlmeDELBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 					  sizeof(FRAME_BAR), &FrameBar,
 					  END_OF_ARGS);
 		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer2, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer2);
+		MlmeFreeMemory(pOutBuffer2);
 		DBGPRINT(RT_DEBUG_TRACE,("BA - MlmeDELBAAction() . Send BAR to refresh peer reordering buffer \n"));
 
 		/* SEND DELBA FRAME*/
@@ -298,7 +292,7 @@ VOID MlmeDELBAAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 		              sizeof(FRAME_DELBA_REQ), &Frame,
 		              END_OF_ARGS);
 		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 		DBGPRINT(RT_DEBUG_TRACE, ("BA - MlmeDELBAAction() . 3 DELBA sent. Initiator(%d)\n", pInfo->Initiator));
     	}
 }
@@ -396,10 +390,8 @@ VOID SendBSS2040CoexistMgmtAction(
 	BssIntolerantInfo.Len = 1;
 	BssIntolerantInfo.RegulatoryClass = get_regulatory_class(pAd);
 
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory*/
-	if(NStatus != NDIS_STATUS_SUCCESS) 
-	{
-		DBGPRINT(RT_DEBUG_ERROR,("ACT - SendBSS2040CoexistMgmtAction() allocate memory failed \n"));
+	pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
 
@@ -421,7 +413,7 @@ VOID SendBSS2040CoexistMgmtAction(
 				  	END_OF_ARGS);
 	
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 	
 	DBGPRINT(RT_DEBUG_ERROR,("ACT - SendBSS2040CoexistMgmtAction(BSSCoexist2040=0x%x)\n", BssCoexistInfo.BssCoexistIe.word));
 	
@@ -635,7 +627,6 @@ VOID Send2040CoexistAction(
 	IN BOOLEAN bAddIntolerantCha) 
 {
 	UCHAR *pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
 	FRAME_ACTION_HDR Frame;
 	ULONG FrameLen;
 	UINT32 IntolerantChaRepLen;
@@ -644,10 +635,9 @@ VOID Send2040CoexistAction(
         UCHAR apidx;
 #endif /* APCLI_SUPPORT */ 
 	IntolerantChaRepLen = 0;
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory*/
-	if(NStatus != NDIS_STATUS_SUCCESS) 
-	{
-		DBGPRINT(RT_DEBUG_ERROR,("ACT - Send2040CoexistAction() allocate memory failed \n"));
+
+	pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
 
@@ -684,7 +674,7 @@ VOID Send2040CoexistAction(
 	if (!((IntolerantChaRepLen == 0) && (pAd->CommonCfg.BSSCoexist2040.word == 0)))
 		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen + IntolerantChaRepLen);
 		
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 	
 	DBGPRINT(RT_DEBUG_TRACE,("ACT - Send2040CoexistAction( BSSCoexist2040 = 0x%x )  \n", pAd->CommonCfg.BSSCoexist2040.word));
 }
@@ -1012,11 +1002,8 @@ VOID SendNotifyBWActionFrame(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR apidx)
 	ULONG FrameLen;
 	struct wifi_dev *wdev;
 
-
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /* Get an unused nonpaged memory */
-	if(NStatus != NDIS_STATUS_SUCCESS) 
-	{
-		DBGPRINT(RT_DEBUG_ERROR,("ACT - SendNotifyBWAction() allocate memory failed \n"));
+	pOutBuffer = MlmeAllocateMemory();  /* Get an unused nonpaged memory */
+	if (!pOutBuffer) {
 		return;
 	}
 
@@ -1037,7 +1024,7 @@ VOID SendNotifyBWActionFrame(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR apidx)
 	FrameLen++;
 
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 	DBGPRINT(RT_DEBUG_TRACE,("ACT - SendNotifyBWAction(NotifyBW= %d)!\n", pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth));
 
 }
@@ -1193,7 +1180,6 @@ VOID SendRefreshBAR(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry)
 {
 	FRAME_BAR FrameBar;
 	ULONG FrameLen;
-	NDIS_STATUS NStatus;
 	UCHAR *pOutBuffer = NULL, i, TID;
 	USHORT Sequence, idx;
 	BA_ORI_ENTRY *pBAEntry;
@@ -1212,10 +1198,8 @@ VOID SendRefreshBAR(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry)
 
 			ASSERT(pBAEntry->Wcid < MAX_LEN_OF_MAC_TABLE);
 
-			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory*/
-			if(NStatus != NDIS_STATUS_SUCCESS) 
-			{
-				DBGPRINT(RT_DEBUG_ERROR,("BA - MlmeADDBAAction() allocate memory failed \n"));
+			pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+			if (!pOutBuffer) {
 				return;
 			}
 
@@ -1233,7 +1217,7 @@ VOID SendRefreshBAR(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry)
 							  END_OF_ARGS);
 			MiniportMMRequest(pAd, (MGMT_USE_QUEUE_FLAG | WMM_UP2AC_MAP[TID]), pOutBuffer, FrameLen);
 
-			MlmeFreeMemory(pAd, pOutBuffer);
+			MlmeFreeMemory(pOutBuffer);
 		}
 	}
 }
