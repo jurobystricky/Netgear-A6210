@@ -132,19 +132,16 @@ VOID	WpaMicFailureReportFrame(
 	MAKE_802_3_HEADER(Header802_3, pAd->CommonCfg.Bssid, pAd->CurrentAddress, EAPOL);	
 
 	/* Allocate memory for output */
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
-	if (mpool == NULL)
-    {
-        DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
-        return;
-    }
+	mpool = os_alloc_mem(TX_EAPOL_BUFFER);
+	if (mpool == NULL) {
+		return;
+	}
 
 	pPacket = (PEAPOL_PACKET)mpool;
 	NdisZeroMemory(pPacket, TX_EAPOL_BUFFER);
 	
 	pPacket->ProVer	= EAPOL_VER;
 	pPacket->ProType	= EAPOLKey;
-	
 	pPacket->KeyDesc.Type = WPA1_KEY_DESC;
 
     /* Request field presented */
@@ -173,11 +170,9 @@ VOID	WpaMicFailureReportFrame(
 	/* Convert to little-endian format. */
 	*((USHORT *)&pPacket->KeyDesc.KeyInfo) = cpu2le16(*((USHORT *)&pPacket->KeyDesc.KeyInfo));
 
-
-	MlmeAllocateMemory(pAd, (PUCHAR *)&pOutBuffer);  /* allocate memory */
-	if(pOutBuffer == NULL)
-	{
-		os_free_mem(NULL, mpool);
+	pOutBuffer = MlmeAllocateMemory();  /* allocate memory */
+	if (pOutBuffer == NULL) {
+		os_free_mem(mpool);
 		return;
 	}
     
@@ -209,9 +204,9 @@ VOID	WpaMicFailureReportFrame(
 					  (PUCHAR)pPacket, 
 					  CONV_ARRARY_TO_UINT16(pPacket->Body_Len) + 4, FALSE);
 
-	MlmeFreeMemory(pAd, (PUCHAR)pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("WpaMicFailureReportFrame <-----\n"));
 }
