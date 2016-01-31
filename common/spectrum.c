@@ -28,9 +28,9 @@
 #include "rt_config.h"
 #include "action.h"
 
-
+#if 0 //JB removed
 /* The regulatory information in the USA (US) */
-DOT11_REGULATORY_INFORMATION USARegulatoryInfo[] =
+static DOT11_REGULATORY_INFORMATION USARegulatoryInfo[] =
 {
 /*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
 	{0,	                {0,                   0,           {0}}}, /* Invlid entry*/
@@ -48,10 +48,11 @@ DOT11_REGULATORY_INFORMATION USARegulatoryInfo[] =
 	{12,                {11,                  30,            {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}}}
 };
 #define USA_REGULATORY_INFO_SIZE (sizeof(USARegulatoryInfo) / sizeof(DOT11_REGULATORY_INFORMATION))
+#endif //0
 
-
+#if 0 //JB removed
 /* The regulatory information in Europe */
-DOT11_REGULATORY_INFORMATION EuropeRegulatoryInfo[] =
+static DOT11_REGULATORY_INFORMATION EuropeRegulatoryInfo[] =
 {
 /*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
 	{0,                 {0,                   0,           {0}}}, /* Invalid entry*/
@@ -61,10 +62,11 @@ DOT11_REGULATORY_INFORMATION EuropeRegulatoryInfo[] =
 	{4,                 {13,                  20,           {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}}
 };
 #define EU_REGULATORY_INFO_SIZE (sizeof(EuropeRegulatoryInfo) / sizeof(DOT11_REGULATORY_INFORMATION))
-
+#endif //0
 
 /* The regulatory information in Japan */
-DOT11_REGULATORY_INFORMATION JapanRegulatoryInfo[] =
+#if 0 //JB removed
+static DOT11_REGULATORY_INFORMATION JapanRegulatoryInfo[] =
 {
 /*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
 	{0,                 {0,                   0,           {0}}}, /* Invalid entry*/
@@ -102,11 +104,10 @@ DOT11_REGULATORY_INFORMATION JapanRegulatoryInfo[] =
 	{32,                {4,                   22,           {52, 56, 60, 64}}}
 };
 #define JP_REGULATORY_INFO_SIZE (sizeof(JapanRegulatoryInfo) / sizeof(DOT11_REGULATORY_INFORMATION))
+#endif //0
 
-
-UINT8 GetRegulatoryMaxTxPwr(
-	IN PRTMP_ADAPTER pAd,
-	IN UINT8 channel)
+#if 0 //JB removed
+static UINT8 GetRegulatoryMaxTxPwr(PRTMP_ADAPTER pAd, UINT8 channel)
 {
 	ULONG RegulatoryClassLoop, ChIdx;
 	UINT8 RegulatoryClass;
@@ -158,6 +159,7 @@ UINT8 GetRegulatoryMaxTxPwr(
 
 	return 0xff;
 }
+#endif //0
 
 typedef struct __TX_PWR_CFG
 {
@@ -168,8 +170,9 @@ typedef struct __TX_PWR_CFG
 	UINT32 BitMask;
 } TX_PWR_CFG;
 
+#if 0
 /* Note: the size of TxPwrCfg is too large, do not put it to function */
-TX_PWR_CFG TxPwrCfg[] = {
+static TX_PWR_CFG TxPwrCfg[] = {
 	{MODE_CCK, 0, 0, 4, 0x000000f0},
 	{MODE_CCK, 1, 0, 0, 0x0000000f},
 	{MODE_CCK, 2, 0, 12, 0x0000f000},
@@ -203,19 +206,18 @@ TX_PWR_CFG TxPwrCfg[] = {
 #endif /* DOT11_N_SUPPORT */
 };
 #define MAX_TXPWR_TAB_SIZE (sizeof(TxPwrCfg) / sizeof(TX_PWR_CFG))
+#endif //0
 
-CHAR RTMP_GetTxPwr(
-	IN PRTMP_ADAPTER pAd,
-	IN HTTRANSMIT_SETTING HTTxMode)
+#if 0 //JB removed
+static CHAR RTMP_GetTxPwr(PRTMP_ADAPTER pAd, HTTRANSMIT_SETTING HTTxMode)
 {
 	UINT32 Value;
-	INT Idx;
+	int Idx;
 	UINT8 PhyMode;
 	CHAR CurTxPwr;
 	UINT8 TxPwrRef = 0;
 	CHAR DaltaPwr;
 	ULONG TxPwr[5];
-
 
 #ifdef SINGLE_SKU
 	CurTxPwr = pAd->CommonCfg.DefineMaxTxPwr;
@@ -325,44 +327,38 @@ CHAR RTMP_GetTxPwr(
 
 	return CurTxPwr;
 }
+#endif //0
 
 
-NDIS_STATUS	MeasureReqTabInit(
-	IN PRTMP_ADAPTER pAd)
+NDIS_STATUS MeasureReqTabInit(PRTMP_ADAPTER pAd)
 {
-	NDIS_STATUS     Status = NDIS_STATUS_SUCCESS;
+	NDIS_STATUS Status = NDIS_STATUS_SUCCESS;
 
 	NdisAllocateSpinLock(pAd, &pAd->CommonCfg.MeasureReqTabLock);
 
 /*	pAd->CommonCfg.pMeasureReqTab = kmalloc(sizeof(MEASURE_REQ_TAB), GFP_ATOMIC);*/
-	os_alloc_mem(pAd, (UCHAR **)&(pAd->CommonCfg.pMeasureReqTab), sizeof(MEASURE_REQ_TAB));
-	if (pAd->CommonCfg.pMeasureReqTab)
+	pAd->CommonCfg.pMeasureReqTab = os_alloc_mem(sizeof(MEASURE_REQ_TAB));
+	if (pAd->CommonCfg.pMeasureReqTab) {
 		NdisZeroMemory(pAd->CommonCfg.pMeasureReqTab, sizeof(MEASURE_REQ_TAB));
-	else
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s Fail to alloc memory for pAd->CommonCfg.pMeasureReqTab.\n", __FUNCTION__));
+	} else {
 		Status = NDIS_STATUS_FAILURE;
 	}
 
 	return Status;
 }
 
-VOID MeasureReqTabExit(
-	IN PRTMP_ADAPTER pAd)
+void MeasureReqTabExit(PRTMP_ADAPTER pAd)
 {
 	NdisFreeSpinLock(&pAd->CommonCfg.MeasureReqTabLock);
 
 	if (pAd->CommonCfg.pMeasureReqTab)
 /*		kfree(pAd->CommonCfg.pMeasureReqTab);*/
-		os_free_mem(NULL, pAd->CommonCfg.pMeasureReqTab);
-	pAd->CommonCfg.pMeasureReqTab = NULL;
+		os_free_mem(pAd->CommonCfg.pMeasureReqTab);
 
-	return;
+	pAd->CommonCfg.pMeasureReqTab = NULL;
 }
 
-PMEASURE_REQ_ENTRY MeasureReqLookUp(
-	IN PRTMP_ADAPTER	pAd,
-	IN UINT8			DialogToken)
+static PMEASURE_REQ_ENTRY MeasureReqLookUp(PRTMP_ADAPTER pAd, UINT8 DialogToken)
 {
 	UINT HashIdx;
 	PMEASURE_REQ_TAB pTab = pAd->CommonCfg.pMeasureReqTab;
@@ -396,11 +392,10 @@ PMEASURE_REQ_ENTRY MeasureReqLookUp(
 	return pEntry;
 }
 
-PMEASURE_REQ_ENTRY MeasureReqInsert(
-	IN PRTMP_ADAPTER	pAd,
-	IN UINT8			DialogToken)
+#if 0 //JB removed
+static PMEASURE_REQ_ENTRY MeasureReqInsert(PRTMP_ADAPTER pAd, UINT8 DialogToken)
 {
-	INT i;
+	int i;
 	ULONG HashIdx;
 	PMEASURE_REQ_TAB pTab = pAd->CommonCfg.pMeasureReqTab;
 	PMEASURE_REQ_ENTRY pEntry = NULL, pCurrEntry;
@@ -494,15 +489,14 @@ PMEASURE_REQ_ENTRY MeasureReqInsert(
 
 	return pEntry;
 }
+#endif //0
 
-VOID MeasureReqDelete(
-	IN PRTMP_ADAPTER	pAd,
-	IN UINT8			DialogToken)
+static void MeasureReqDelete(PRTMP_ADAPTER pAd, UINT8 DialogToken)
 {
 	PMEASURE_REQ_TAB pTab = pAd->CommonCfg.pMeasureReqTab;
 	PMEASURE_REQ_ENTRY pEntry = NULL;
 
-	if(pTab == NULL)
+	if (pTab == NULL)
 	{
 		DBGPRINT(RT_DEBUG_ERROR, ("%s: pMeasureReqTab doesn't exist.\n", __FUNCTION__));
 		return;
@@ -552,37 +546,31 @@ VOID MeasureReqDelete(
 	return;
 }
 
-NDIS_STATUS	TpcReqTabInit(
-	IN PRTMP_ADAPTER pAd)
+NDIS_STATUS TpcReqTabInit(PRTMP_ADAPTER pAd)
 {
-	NDIS_STATUS     Status = NDIS_STATUS_SUCCESS;
+	NDIS_STATUS Status = NDIS_STATUS_SUCCESS;
 
 	NdisAllocateSpinLock(pAd, &pAd->CommonCfg.TpcReqTabLock);
 
 /*	pAd->CommonCfg.pTpcReqTab = kmalloc(sizeof(TPC_REQ_TAB), GFP_ATOMIC);*/
-	os_alloc_mem(pAd, (UCHAR **)&(pAd->CommonCfg.pTpcReqTab), sizeof(TPC_REQ_TAB));
-	if (pAd->CommonCfg.pTpcReqTab)
+	pAd->CommonCfg.pTpcReqTab = os_alloc_mem(sizeof(TPC_REQ_TAB));
+	if (pAd->CommonCfg.pTpcReqTab) {
 		NdisZeroMemory(pAd->CommonCfg.pTpcReqTab, sizeof(TPC_REQ_TAB));
-	else
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s Fail to alloc memory for pAd->CommonCfg.pTpcReqTab.\n", __FUNCTION__));
+	} else {
 		Status = NDIS_STATUS_FAILURE;
 	}
 
 	return Status;
 }
 
-VOID TpcReqTabExit(
-	IN PRTMP_ADAPTER pAd)
+void TpcReqTabExit(PRTMP_ADAPTER pAd)
 {
 	NdisFreeSpinLock(&pAd->CommonCfg.TpcReqTabLock);
 
 	if (pAd->CommonCfg.pTpcReqTab)
 /*		kfree(pAd->CommonCfg.pTpcReqTab);*/
-		os_free_mem(NULL, pAd->CommonCfg.pTpcReqTab);
+		os_free_mem(pAd->CommonCfg.pTpcReqTab);
 	pAd->CommonCfg.pTpcReqTab = NULL;
-
-	return;
 }
 
 static PTPC_REQ_ENTRY TpcReqLookUp(
@@ -621,12 +609,10 @@ static PTPC_REQ_ENTRY TpcReqLookUp(
 	return pEntry;
 }
 
-
-static PTPC_REQ_ENTRY TpcReqInsert(
-	IN PRTMP_ADAPTER	pAd,
-	IN UINT8			DialogToken)
+#if 0 //JB removed
+static PTPC_REQ_ENTRY TpcReqInsert(PRTMP_ADAPTER pAd, UINT8 DialogToken)
 {
-	INT i;
+	int i;
 	ULONG HashIdx;
 	PTPC_REQ_TAB pTab = pAd->CommonCfg.pTpcReqTab;
 	PTPC_REQ_ENTRY pEntry = NULL, pCurrEntry;
@@ -720,30 +706,26 @@ static PTPC_REQ_ENTRY TpcReqInsert(
 
 	return pEntry;
 }
+#endif //0
 
-static VOID TpcReqDelete(
-	IN PRTMP_ADAPTER	pAd,
-	IN UINT8			DialogToken)
+static void TpcReqDelete(PRTMP_ADAPTER pAd, UINT8 DialogToken)
 {
 	PTPC_REQ_TAB pTab = pAd->CommonCfg.pTpcReqTab;
 	PTPC_REQ_ENTRY pEntry = NULL;
 
-	if(pTab == NULL)
-	{
+	if (pTab == NULL) {
 		DBGPRINT(RT_DEBUG_ERROR, ("%s: pTpcReqTab doesn't exist.\n", __FUNCTION__));
 		return;
 	}
 
 	/* if empty, return*/
-	if (pTab->Size == 0)
-	{
+	if (pTab->Size == 0) {
 		DBGPRINT(RT_DEBUG_ERROR, ("pTpcReqTab empty.\n"));
 		return;
 	}
 
 	pEntry = TpcReqLookUp(pAd, DialogToken);
-	if (pEntry != NULL)
-	{
+	if (pEntry != NULL) {
 		PTPC_REQ_ENTRY pPrevEntry = NULL;
 		ULONG HashIdx = TPC_DIALOGTOKEN_HASH_INDEX(pEntry->DialogToken);
 		PTPC_REQ_ENTRY pProbeEntry = pTab->Hash[HashIdx];
@@ -788,12 +770,13 @@ static VOID TpcReqDelete(
 	Return	: Current Time Stamp.
 	==========================================================================
  */
-static UINT64 GetCurrentTimeStamp(
-	IN PRTMP_ADAPTER pAd)
+#if 0 //JB removed
+static UINT64 GetCurrentTimeStamp(PRTMP_ADAPTER pAd)
 {
 	/* get current time stamp.*/
 	return 0;
 }
+#endif
 
 /*
 	==========================================================================
@@ -822,7 +805,8 @@ static UINT8 GetCurTxPwr(
 	Return	: Current Time Stamp.
 	==========================================================================
  */
-VOID InsertChannelRepIE(
+ #if 0 //JB removed
+static void InsertChannelRepIE(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pFrameBuf,
 	OUT PULONG pFrameLen,
@@ -888,6 +872,7 @@ VOID InsertChannelRepIE(
 	}
 	return;
 }
+#endif //0
 
 /*
 	==========================================================================
@@ -902,20 +887,13 @@ VOID InsertChannelRepIE(
 	Return	: None.
 	==========================================================================
  */
-VOID InsertDialogToken(
-	IN PRTMP_ADAPTER pAd,
-	OUT PUCHAR pFrameBuf,
-	OUT PULONG pFrameLen,
-	IN UINT8 DialogToken)
+static void InsertDialogToken(PRTMP_ADAPTER pAd, PUCHAR pFrameBuf, 
+	PULONG pFrameLen, UINT8 DialogToken)
 {
 	ULONG TempLen;
-	MakeOutgoingFrame(pFrameBuf,	&TempLen,
-					1,				&DialogToken,
-					END_OF_ARGS);
+	MakeOutgoingFrame(pFrameBuf, &TempLen, 1, &DialogToken, END_OF_ARGS);
 
 	*pFrameLen = *pFrameLen + TempLen;
-
-	return;
 }
 
 /*
@@ -930,24 +908,19 @@ VOID InsertDialogToken(
 	Return	: None.
 	==========================================================================
  */
- static VOID InsertTpcReqIE(
-	IN PRTMP_ADAPTER pAd,
-	OUT PUCHAR pFrameBuf,
-	OUT PULONG pFrameLen)
+ #if 0 //JB removed
+ static void InsertTpcReqIE(PRTMP_ADAPTER pAd, PUCHAR pFrameBuf, PULONG pFrameLen)
 {
 	ULONG TempLen;
 	UINT8 Len = 0;
 	UINT8 ElementID = IE_TPC_REQUEST;
 
-	MakeOutgoingFrame(pFrameBuf,					&TempLen,
-						1,							&ElementID,
-						1,							&Len,
-						END_OF_ARGS);
+	MakeOutgoingFrame(pFrameBuf, &TempLen, 1, &ElementID, 1, &Len, END_OF_ARGS);
 
 	*pFrameLen = *pFrameLen + TempLen;
 
-	return;
 }
+#endif
 
 /*
 	==========================================================================
@@ -963,12 +936,8 @@ VOID InsertDialogToken(
 	Return	: None.
 	==========================================================================
  */
-VOID InsertTpcReportIE(
-	IN PRTMP_ADAPTER pAd,
-	OUT PUCHAR pFrameBuf,
-	OUT PULONG pFrameLen,
-	IN UINT8 TxPwr,
-	IN UINT8 LinkMargin)
+static void InsertTpcReportIE(PRTMP_ADAPTER pAd, PUCHAR pFrameBuf, PULONG pFrameLen,
+	UINT8 TxPwr, UINT8 LinkMargin)
 {
 	ULONG TempLen;
 	UINT8 Len = sizeof(TPC_REPORT_INFO);
@@ -978,16 +947,10 @@ VOID InsertTpcReportIE(
 	TpcReportIE.TxPwr = TxPwr;
 	TpcReportIE.LinkMargin = LinkMargin;
 
-	MakeOutgoingFrame(pFrameBuf,					&TempLen,
-						1,							&ElementID,
-						1,							&Len,
-						Len,						&TpcReportIE,
-						END_OF_ARGS);
+	MakeOutgoingFrame(pFrameBuf, &TempLen, 1, &ElementID, 1, &Len, Len,
+			&TpcReportIE, END_OF_ARGS);
 
 	*pFrameLen = *pFrameLen + TempLen;
-
-
-	return;
 }
 
 /*
@@ -1009,27 +972,19 @@ VOID InsertTpcReportIE(
 	Return	: None.
 	==========================================================================
  */
-static VOID InsertMeasureReqIE(
-	IN PRTMP_ADAPTER pAd,
-	OUT PUCHAR pFrameBuf,
-	OUT PULONG pFrameLen,
-	IN UINT8 Len,
-	IN PMEASURE_REQ_INFO pMeasureReqIE)
+#if 0
+static void InsertMeasureReqIE(PRTMP_ADAPTER pAd, PUCHAR pFrameBuf, PULONG pFrameLen,
+	UINT8 Len, PMEASURE_REQ_INFO pMeasureReqIE)
 {
 	ULONG TempLen;
 	UINT8 ElementID = IE_MEASUREMENT_REQUEST;
 
-	MakeOutgoingFrame(pFrameBuf,					&TempLen,
-						1,							&ElementID,
-						1,							&Len,
-						sizeof(MEASURE_REQ_INFO),	pMeasureReqIE,
-						END_OF_ARGS);
+	MakeOutgoingFrame(pFrameBuf, &TempLen, 1, &ElementID, 1, &Len,
+			sizeof(MEASURE_REQ_INFO), pMeasureReqIE, END_OF_ARGS);
 
 	*pFrameLen = *pFrameLen + TempLen;
-
-	return;
 }
-
+#endif
 /*
 	==========================================================================
 	Description:
@@ -1047,13 +1002,9 @@ static VOID InsertMeasureReqIE(
 	Return	: None.
 	==========================================================================
  */
-static VOID InsertMeasureReportIE(
-	IN PRTMP_ADAPTER pAd,
-	OUT PUCHAR pFrameBuf,
-	OUT PULONG pFrameLen,
-	IN PMEASURE_REPORT_INFO pMeasureReportIE,
-	IN UINT8 ReportLnfoLen,
-	IN PUINT8 pReportInfo)
+static void InsertMeasureReportIE(PRTMP_ADAPTER pAd, PUCHAR pFrameBuf,
+	PULONG pFrameLen, PMEASURE_REPORT_INFO pMeasureReportIE,
+	UINT8 ReportLnfoLen, PUINT8 pReportInfo)
 {
 	ULONG TempLen;
 	UINT8 Len;
@@ -1061,23 +1012,17 @@ static VOID InsertMeasureReportIE(
 
 	Len = sizeof(MEASURE_REPORT_INFO) + ReportLnfoLen;
 
-	MakeOutgoingFrame(pFrameBuf,					&TempLen,
-						1,							&ElementID,
-						1,							&Len,
-						Len,						pMeasureReportIE,
-						END_OF_ARGS);
+	MakeOutgoingFrame(pFrameBuf, &TempLen, 1, &ElementID, 1, &Len, Len,
+			pMeasureReportIE, END_OF_ARGS);
 
 	*pFrameLen = *pFrameLen + TempLen;
 
-	if ((ReportLnfoLen > 0) && (pReportInfo != NULL))
-	{
-		MakeOutgoingFrame(pFrameBuf + *pFrameLen,		&TempLen,
-							ReportLnfoLen,				pReportInfo,
-							END_OF_ARGS);
+	if ((ReportLnfoLen > 0) && (pReportInfo != NULL)) {
+		MakeOutgoingFrame(pFrameBuf + *pFrameLen, &TempLen,
+				ReportLnfoLen, pReportInfo, END_OF_ARGS);
 
 		*pFrameLen = *pFrameLen + TempLen;
 	}
-	return;
 }
 
 /*
@@ -1092,7 +1037,8 @@ static VOID InsertMeasureReportIE(
 	Return	: None.
 	==========================================================================
  */
-VOID MakeMeasurementReqFrame(
+#if 0 //JB removed
+static void MakeMeasurementReqFrame(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pOutBuffer,
 	OUT PULONG pFrameLen,
@@ -1113,11 +1059,9 @@ VOID MakeMeasurementReqFrame(
 	InsertDialogToken(pAd, (pOutBuffer + *pFrameLen), pFrameLen, MeasureToken);
 
 	/* fill Number of repetitions. */
-	if (Category == CATEGORY_RM)
-	{
-		MakeOutgoingFrame((pOutBuffer+*pFrameLen),	&TempLen,
-						2,							&NumOfRepetitions,
-						END_OF_ARGS);
+	if (Category == CATEGORY_RM) {
+		MakeOutgoingFrame((pOutBuffer+*pFrameLen), &TempLen,
+				&NumOfRepetitions, END_OF_ARGS);
 
 		*pFrameLen += TempLen;
 	}
@@ -1132,6 +1076,7 @@ VOID MakeMeasurementReqFrame(
 
 	return;
 }
+#endif //0
 
 /*
 	==========================================================================
@@ -1145,7 +1090,7 @@ VOID MakeMeasurementReqFrame(
 	Return	: None.
 	==========================================================================
  */
-VOID EnqueueMeasurementRep(
+static void EnqueueMeasurementRep(
 	IN PRTMP_ADAPTER pAd,
 	IN PUCHAR pDA,
 	IN UINT8 DialogToken,
@@ -1156,7 +1101,7 @@ VOID EnqueueMeasurementRep(
 	IN PUINT8 pReportInfo)
 {
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	ULONG FrameLen;
 	HEADER_802_11 ActHdr;
 	MEASURE_REPORT_INFO MeasureRepIE;
@@ -1166,12 +1111,11 @@ VOID EnqueueMeasurementRep(
 						pAd->CurrentAddress,
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
-	if(NStatus != NDIS_STATUS_SUCCESS)
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
+	pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
+
 	NdisMoveMemory(pOutBuffer, (PCHAR)&ActHdr, sizeof(HEADER_802_11));
 	FrameLen = sizeof(HEADER_802_11);
 
@@ -1188,9 +1132,7 @@ VOID EnqueueMeasurementRep(
 	InsertMeasureReportIE(pAd, (pOutBuffer + FrameLen), &FrameLen, &MeasureRepIE, ReportInfoLen, pReportInfo);
 
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
-
-	return;
+	MlmeFreeMemory(pOutBuffer);
 }
 
 /*
@@ -1205,13 +1147,14 @@ VOID EnqueueMeasurementRep(
 	Return	: None.
 	==========================================================================
  */
-VOID EnqueueTPCReq(
+ #if 0 //JB removed
+static void EnqueueTPCReq(
 	IN PRTMP_ADAPTER pAd,
 	IN PUCHAR pDA,
 	IN UCHAR DialogToken)
 {
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	ULONG FrameLen;
 
 	HEADER_802_11 ActHdr;
@@ -1221,12 +1164,11 @@ VOID EnqueueTPCReq(
 						pAd->CurrentAddress,
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
-	if(NStatus != NDIS_STATUS_SUCCESS)
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
+	pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
+
 	NdisMoveMemory(pOutBuffer, (PCHAR)&ActHdr, sizeof(HEADER_802_11));
 	FrameLen = sizeof(HEADER_802_11);
 
@@ -1239,10 +1181,9 @@ VOID EnqueueTPCReq(
 	InsertTpcReqIE(pAd, (pOutBuffer + FrameLen), &FrameLen);
 
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
-
-	return;
+	MlmeFreeMemory(pOutBuffer);
 }
+#endif
 
 /*
 	==========================================================================
@@ -1256,7 +1197,7 @@ VOID EnqueueTPCReq(
 	Return	: None.
 	==========================================================================
  */
-VOID EnqueueTPCRep(
+static void EnqueueTPCRep(
 	IN PRTMP_ADAPTER pAd,
 	IN PUCHAR pDA,
 	IN UINT8 DialogToken,
@@ -1264,7 +1205,7 @@ VOID EnqueueTPCRep(
 	IN UINT8 LinkMargin)
 {
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	ULONG FrameLen;
 
 	HEADER_802_11 ActHdr;
@@ -1274,12 +1215,11 @@ VOID EnqueueTPCRep(
 						pAd->CurrentAddress,
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
-	if(NStatus != NDIS_STATUS_SUCCESS)
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
+	pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
+
 	NdisMoveMemory(pOutBuffer, (PCHAR)&ActHdr, sizeof(HEADER_802_11));
 	FrameLen = sizeof(HEADER_802_11);
 
@@ -1292,9 +1232,7 @@ VOID EnqueueTPCRep(
 	InsertTpcReportIE(pAd, (pOutBuffer + FrameLen), &FrameLen, TxPwr, LinkMargin);
 
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
-
-	return;
+	MlmeFreeMemory(pOutBuffer);
 }
 
 
@@ -1303,7 +1241,7 @@ static BOOLEAN DfsRequirementCheck(
 	IN UINT8 Channel)
 {
 	BOOLEAN Result = FALSE;
-	INT i;
+	int i;
 
 	do
 	{
@@ -1332,7 +1270,7 @@ static BOOLEAN DfsRequirementCheck(
 	return Result;
 }
 
-VOID NotifyChSwAnnToPeerAPs(
+void NotifyChSwAnnToPeerAPs(
 	IN PRTMP_ADAPTER pAd,
 	IN PUCHAR pRA,
 	IN PUCHAR pTA,
@@ -1341,7 +1279,7 @@ VOID NotifyChSwAnnToPeerAPs(
 {
 }
 
-static VOID StartDFSProcedure(
+static void StartDFSProcedure(
 	IN PRTMP_ADAPTER pAd,
 	IN UCHAR Channel,
 	IN UINT8 ChSwMode)
@@ -1379,7 +1317,7 @@ static VOID StartDFSProcedure(
 */
 static BOOLEAN PeerChSwAnnSanity(
 	IN PRTMP_ADAPTER pAd,
-	IN VOID *pMsg,
+	IN void *pMsg,
 	IN ULONG MsgLen,
 	OUT PCH_SW_ANN_INFO pChSwAnnInfo)
 {
@@ -1435,7 +1373,7 @@ static BOOLEAN PeerChSwAnnSanity(
  */
 static BOOLEAN PeerMeasureReqSanity(
 	IN PRTMP_ADAPTER pAd,
-	IN VOID *pMsg,
+	IN void *pMsg,
 	IN ULONG MsgLen,
 	OUT PUINT8 pDialogToken,
 	OUT PMEASURE_REQ_INFO pMeasureReqInfo,
@@ -1527,7 +1465,7 @@ static BOOLEAN PeerMeasureReqSanity(
 */
 static BOOLEAN PeerMeasureReportSanity(
 	IN PRTMP_ADAPTER pAd,
-	IN VOID *pMsg,
+	IN void *pMsg,
 	IN ULONG MsgLen,
 	OUT PUINT8 pDialogToken,
 	OUT PMEASURE_REPORT_INFO pMeasureReportInfo,
@@ -1618,7 +1556,7 @@ static BOOLEAN PeerMeasureReportSanity(
  */
 static BOOLEAN PeerTpcReqSanity(
 	IN PRTMP_ADAPTER pAd,
-	IN VOID *pMsg,
+	IN void *pMsg,
 	IN ULONG MsgLen,
 	OUT PUINT8 pDialogToken)
 {
@@ -1674,7 +1612,7 @@ static BOOLEAN PeerTpcReqSanity(
  */
 static BOOLEAN PeerTpcRepSanity(
 	IN PRTMP_ADAPTER pAd,
-	IN VOID *pMsg,
+	IN void *pMsg,
 	IN ULONG MsgLen,
 	OUT PUINT8 pDialogToken,
 	OUT PTPC_REPORT_INFO pTpcRepInfo)
@@ -1728,7 +1666,7 @@ static BOOLEAN PeerTpcRepSanity(
 	Return	: None.
 	==========================================================================
  */
-static VOID PeerChSwAnnAction(
+static void PeerChSwAnnAction(
 	IN PRTMP_ADAPTER pAd,
 	IN MLME_QUEUE_ELEM *Elem)
 {
@@ -1819,7 +1757,7 @@ static VOID PeerChSwAnnAction(
 	Return	: None.
 	==========================================================================
  */
-static VOID PeerMeasureReqAction(
+static void PeerMeasureReqAction(
 	IN PRTMP_ADAPTER pAd,
 	IN MLME_QUEUE_ELEM *Elem)
 {
@@ -1850,7 +1788,7 @@ static VOID PeerMeasureReqAction(
 	Return	: None.
 	==========================================================================
  */
-static VOID PeerMeasureReportAction(
+static void PeerMeasureReportAction(
 	IN PRTMP_ADAPTER pAd,
 	IN MLME_QUEUE_ELEM *Elem)
 {
@@ -1862,11 +1800,9 @@ static VOID PeerMeasureReportAction(
 /*	if (pAd->CommonCfg.bIEEE80211H != TRUE)*/
 /*		return;*/
 
-	os_alloc_mem(pAd, (UCHAR **)&pMeasureReportInfo, sizeof(MEASURE_RPI_REPORT));
+	pMeasureReportInfo = os_alloc_mem(sizeof(MEASURE_RPI_REPORT));
 /*	if ((pMeasureReportInfo = kmalloc(sizeof(MEASURE_RPI_REPORT), GFP_ATOMIC)) == NULL)*/
-	if (pMeasureReportInfo == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s unable to alloc memory for measure report buffer (size=%lu).\n", __FUNCTION__, sizeof(MEASURE_RPI_REPORT)));
+	if (pMeasureReportInfo == NULL) {
 		return;
 	}
 
@@ -1902,9 +1838,7 @@ static VOID PeerMeasureReportAction(
 		DBGPRINT(RT_DEBUG_TRACE, ("Invalid Measurement Report Frame.\n"));
 
 /*	kfree(pMeasureReportInfo);*/
-	os_free_mem(NULL, pMeasureReportInfo);
-
-	return;
+	os_free_mem(pMeasureReportInfo);
 }
 
 /*
@@ -1918,7 +1852,7 @@ static VOID PeerMeasureReportAction(
 	Return	: None.
 	==========================================================================
  */
-static VOID PeerTpcReqAction(
+static void PeerTpcReqAction(
 	IN PRTMP_ADAPTER pAd,
 	IN MLME_QUEUE_ELEM *Elem)
 {
@@ -1961,7 +1895,7 @@ static VOID PeerTpcReqAction(
 	Return	: None.
 	==========================================================================
  */
-static VOID PeerTpcRepAction(
+static void PeerTpcRepAction(
 	IN PRTMP_ADAPTER pAd,
 	IN MLME_QUEUE_ELEM *Elem)
 {
@@ -1995,11 +1929,8 @@ static VOID PeerTpcRepAction(
 	Return	: None.
 	==========================================================================
  */
-VOID PeerSpectrumAction(
-	IN PRTMP_ADAPTER pAd,
-	IN MLME_QUEUE_ELEM *Elem)
+void PeerSpectrumAction(PRTMP_ADAPTER pAd, MLME_QUEUE_ELEM *Elem)
 {
-
 	UCHAR	Action = Elem->Msg[LENGTH_802_11+1];
 
 	if (pAd->CommonCfg.bIEEE80211H != TRUE)
@@ -2068,7 +1999,8 @@ VOID PeerSpectrumAction(
 	Return	: None.
 	==========================================================================
  */
-INT Set_MeasureReq_Proc(
+#if 0 //JB removed
+static BOOLEAN Set_MeasureReq_Proc(
 	IN	PRTMP_ADAPTER	pAd,
 	IN	PSTRING			arg)
 {
@@ -2086,13 +2018,11 @@ INT Set_MeasureReq_Proc(
 
 	HEADER_802_11 ActHdr;
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	ULONG FrameLen;
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
-	if(NStatus != NDIS_STATUS_SUCCESS)
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
+	pOutBuffer = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		goto END_OF_MEASURE_REQ;
 	}
 
@@ -2164,14 +2094,14 @@ INT Set_MeasureReq_Proc(
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, (UINT)FrameLen);
 
 END_OF_MEASURE_REQ:
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 
 	return TRUE;
 }
+#endif //0
 
-INT Set_TpcReq_Proc(
-	IN	PRTMP_ADAPTER	pAd,
-	IN	PSTRING			arg)
+#if 0 //jb removed
+static BOOLEAN Set_TpcReq_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	UINT wcid;
 
@@ -2192,11 +2122,10 @@ INT Set_TpcReq_Proc(
 
 	return TRUE;
 }
+#endif //0
 
 #ifdef CONFIG_AP_SUPPORT
-INT Set_PwrConstraint(
-	IN	PRTMP_ADAPTER	pAd,
-	IN	PSTRING			arg)
+static BOOLEAN Set_PwrConstraint(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 
 typedef struct __PWR_CONSTRAIN_CFG
@@ -2217,7 +2146,7 @@ typedef struct __PWR_CONSTRAIN_CFG
 #define PWR_CONSTRAION_TAB_SIZE \
 	(sizeof(PwrConstrainTab)/sizeof(PWR_CONSTRAIN_CFG))
 
-	INT Idx;
+	int Idx;
 	LONG Value;
 	CHAR MaxTxPwr;
 	CHAR CurTxPwr;
@@ -2295,12 +2224,12 @@ static PDOT11_REGULATORY_INFORMATION GetRugClassRegion(
 	return pRugClass;
 }
 
-VOID RguClass_BuildBcnChList(
+static void RguClass_BuildBcnChList(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pBuf,
 	OUT	PULONG pBufLen)
 {
-	INT loop;
+	int loop;
 	ULONG TmpLen;
 	PDOT11_REGULATORY_INFORMATION pRguClassRegion;
 	PDOT11_CHANNEL_SET pChList;
