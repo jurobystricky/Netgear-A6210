@@ -180,7 +180,8 @@ UCHAR *wmode_2_str(UCHAR wmode)
 	int idx, pos, max_len;
 
 	max_len = WMODE_COMP * 3;
-	if (os_alloc_mem(NULL, &str, max_len) == NDIS_STATUS_SUCCESS) {
+	str = os_alloc_mem(max_len);
+	if (str) {
 		NdisZeroMemory(str, max_len);
 		pos = 0;
 		for (idx = 0; idx < WMODE_COMP; idx++) {
@@ -288,9 +289,9 @@ static BOOLEAN wmode_band_equal(UCHAR smode, UCHAR tmode)
 			str1, smode, str2, tmode));
 	}
 	if (str1)
-		os_free_mem(NULL, str1);
+		os_free_mem(str1);
 	if (str2)
-		os_free_mem(NULL, str2);
+		os_free_mem(str2);
 #endif
 	return eq;
 }
@@ -346,7 +347,7 @@ BOOLEAN RT_CfgSetWirelessMode(RTMP_ADAPTER *pAd, PSTRING arg)
 	if (mode_str) {
 		DBGPRINT(RT_DEBUG_TRACE, ("%s(): Set WMODE=%s(0x%x)\n",
 				__FUNCTION__, mode_str, wmode));
-		os_free_mem(NULL, mode_str);
+		os_free_mem(mode_str);
 	}
 #endif
 	return TRUE;
@@ -368,7 +369,7 @@ static UCHAR RT_CfgMbssWirelessModeMaxGet(RTMP_ADAPTER *pAd)
 		if (mode_str) {
 			DBGPRINT(RT_DEBUG_TRACE, ("%s(BSS%d): wmode=%s(0x%x)\n",
 					__FUNCTION__, idx, mode_str, wdev->PhyMode));
-			os_free_mem(pAd, mode_str);
+			os_free_mem(mode_str);
 		}
 		wmode |= wdev->PhyMode;
 	}
@@ -377,7 +378,7 @@ static UCHAR RT_CfgMbssWirelessModeMaxGet(RTMP_ADAPTER *pAd)
 	if (mode_str) {
 		DBGPRINT(RT_DEBUG_TRACE, ("%s(): Combined WirelessMode = %s(0x%x)\n",
 					__FUNCTION__, mode_str, wmode));
-		os_free_mem(pAd, mode_str);
+		os_free_mem(mode_str);
 	}
 
 	return wmode;
@@ -817,7 +818,7 @@ int RTMP_COM_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 			MLME_DISASSOC_REQ_STRUCT DisReq;
 			MLME_QUEUE_ELEM *MsgElem;
 
-			os_alloc_mem(NULL, (UCHAR **)&MsgElem, sizeof(MLME_QUEUE_ELEM));
+			MsgElem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 			if (MsgElem) {
 				COPY_MAC_ADDR(DisReq.Addr, pAd->CommonCfg.Bssid);
 				DisReq.Reason =  REASON_DEAUTH_STA_LEAVING;
@@ -830,7 +831,7 @@ int RTMP_COM_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 				NdisZeroMemory(pAd->MlmeAux.AutoReconnectSsid, pAd->MlmeAux.AutoReconnectSsidLen);
 				pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_DISASSOC;
 				MlmeDisassocReqAction(pAd, MsgElem);
-				os_free_mem(NULL, MsgElem);
+				os_free_mem(MsgElem);
 			}
 			/* RtmpusecDelay(1000);*/
 			RtmpOSWrielessEventSend(pAd->net_dev, RT_WLAN_EVENT_CGIWAP, -1, NULL, NULL, 0);
@@ -1049,7 +1050,7 @@ int RTMP_COM_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 
 #ifdef INF_PPA_SUPPORT
 	case CMD_RTPRIV_IOCTL_INF_PPA_INIT:
-		os_alloc_mem(NULL, (UCHAR **)&(pAd->pDirectpathCb), sizeof(PPA_DIRECTPATH_CB));
+		pAd->pDirectpathCb = os_alloc_mem(sizeof(PPA_DIRECTPATH_CB));
 		break;
 
 	case CMD_RTPRIV_IOCTL_INF_PPA_EXIT:
@@ -1060,7 +1061,7 @@ int RTMP_COM_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 					("Unregister PPA::status=%d, if_id=%d\n",
 					status, pAd->g_if_id));
 		}
-		os_free_mem(NULL, pAd->pDirectpathCb);
+		os_free_mem(pAd->pDirectpathCb);
 		break;
 #endif /* INF_PPA_SUPPORT*/
 
