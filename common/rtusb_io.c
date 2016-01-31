@@ -952,23 +952,23 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(PRTMP_ADAPTER pAd, NDIS_OID Oid,
 	else
 		return (NDIS_STATUS_RESOURCES);
 
-	status = os_alloc_mem(pAd, (PUCHAR *)(&cmdqelmt), sizeof(CmdQElmt));
-	if ((status != NDIS_STATUS_SUCCESS) || (cmdqelmt == NULL))
-		return (NDIS_STATUS_RESOURCES);
+	cmdqelmt = os_alloc_mem(sizeof(CmdQElmt));
+	if (cmdqelmt == NULL)
+		return NDIS_STATUS_RESOURCES;
 
-		cmdqelmt->buffer = NULL;
-		if (pInformationBuffer != NULL) {
-			status = os_alloc_mem(pAd, (PUCHAR *)&cmdqelmt->buffer, InformationBufferLength);
-			if ((status != NDIS_STATUS_SUCCESS) || (cmdqelmt->buffer == NULL)) {
-				os_free_mem(NULL, cmdqelmt);
-				return (NDIS_STATUS_RESOURCES);
-			} else {
-				NdisMoveMemory(cmdqelmt->buffer, pInformationBuffer, InformationBufferLength);
-				cmdqelmt->bufferlength = InformationBufferLength;
-			}
+	cmdqelmt->buffer = NULL;
+	if (pInformationBuffer != NULL) {
+		cmdqelmt->buffer = os_alloc_mem(InformationBufferLength);
+		if (cmdqelmt->buffer == NULL) {
+			os_free_mem(cmdqelmt);
+			return NDIS_STATUS_RESOURCES;
 		} else {
-			cmdqelmt->bufferlength = 0;
+			NdisMoveMemory(cmdqelmt->buffer, pInformationBuffer, InformationBufferLength);
+			cmdqelmt->bufferlength = InformationBufferLength;
 		}
+	} else {
+		cmdqelmt->bufferlength = 0;
+	}
 
 	cmdqelmt->command = Oid;
 	cmdqelmt->CmdFromNdis = TRUE;
@@ -988,10 +988,10 @@ NDIS_STATUS	RTUSBEnqueueCmdFromNdis(PRTMP_ADAPTER pAd, NDIS_OID Oid,
 
 	if (status == NDIS_STATUS_FAILURE) {
 		if (cmdqelmt->buffer)
-			os_free_mem(pAd, cmdqelmt->buffer);
-		os_free_mem(pAd, cmdqelmt);
+			os_free_mem(cmdqelmt->buffer);
+		os_free_mem(cmdqelmt);
 	} else {
-		RTCMDUp(&pAd->cmdQTask);
+		RtmpOsCmdUp(&pAd->cmdQTask);
 	}
 
 	return NDIS_STATUS_SUCCESS;
@@ -1914,12 +1914,12 @@ void CMDHandler(RTMP_ADAPTER *pAd)
 
 		if (cmdqelmt->CmdFromNdis == TRUE) {
 			if (cmdqelmt->buffer != NULL)
-				os_free_mem(pAd, cmdqelmt->buffer);
-			os_free_mem(pAd, cmdqelmt);
+				os_free_mem(cmdqelmt->buffer);
+			os_free_mem(cmdqelmt);
 		} else {
 			if ((cmdqelmt->buffer != NULL) && (cmdqelmt->bufferlength != 0))
-				os_free_mem(pAd, cmdqelmt->buffer);
-			os_free_mem(pAd, cmdqelmt);
+				os_free_mem(cmdqelmt->buffer);
+			os_free_mem(cmdqelmt);
 		}
 	}
 }
