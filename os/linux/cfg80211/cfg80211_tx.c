@@ -28,7 +28,7 @@
 
 #include "rt_config.h"
 
-VOID CFG80211_SwitchTxChannel(RTMP_ADAPTER *pAd, ULONG Data)
+void CFG80211_SwitchTxChannel(RTMP_ADAPTER *pAd, ULONG Data)
 {
 	//UCHAR lock_channel = CFG80211_getCenCh(pAd, Data);
 	UCHAR lock_channel = Data;
@@ -46,7 +46,7 @@ VOID CFG80211_SwitchTxChannel(RTMP_ADAPTER *pAd, ULONG Data)
 }
 
 #ifdef CONFIG_AP_SUPPORT
-BOOLEAN CFG80211_SyncPacketWmmIe(RTMP_ADAPTER *pAd, VOID *pData, ULONG dataLen)
+BOOLEAN CFG80211_SyncPacketWmmIe(RTMP_ADAPTER *pAd, void *pData, ULONG dataLen)
 {
 	const UINT WFA_OUI = 0x0050F2;
 	const UCHAR WMM_OUI_TYPE = 0x2;
@@ -85,7 +85,7 @@ BOOLEAN CFG80211_SyncPacketWmmIe(RTMP_ADAPTER *pAd, VOID *pData, ULONG dataLen)
 
 	return FALSE;
 }
-VOID CFG80211_ParseBeaconIE(RTMP_ADAPTER *pAd, MULTISSID_STRUCT *pMbss, struct wifi_dev *wdev,UCHAR *wpa_ie,UCHAR *rsn_ie)
+void CFG80211_ParseBeaconIE(RTMP_ADAPTER *pAd, MULTISSID_STRUCT *pMbss, struct wifi_dev *wdev,UCHAR *wpa_ie,UCHAR *rsn_ie)
 {
 	PEID_STRUCT 		 pEid;
 	PUCHAR				pTmp;
@@ -414,7 +414,7 @@ PCFG80211_TX_PACKET CFG80211_TxMgmtFrameSearch(RTMP_ADAPTER *pAd, USHORT Sequenc
 }
 #endif //0
 
-INT CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data)
+int CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, void *pData, ULONG Data)
 {
 	if (pData != NULL) {
 		PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
@@ -423,17 +423,16 @@ INT CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data)
 		pCfg80211_ctrl->TxStatusSeq = pAd->Sequence;
 
 		if (pCfg80211_ctrl->pTxStatusBuf != NULL) {
-			os_free_mem(NULL, pCfg80211_ctrl->pTxStatusBuf);
+			os_free_mem(pCfg80211_ctrl->pTxStatusBuf);
 			pCfg80211_ctrl->pTxStatusBuf = NULL;
 		}
 
-		os_alloc_mem(NULL, (UCHAR **)&pCfg80211_ctrl->pTxStatusBuf, Data);
+		pCfg80211_ctrl->pTxStatusBuf = os_alloc_mem(Data);
 		if (pCfg80211_ctrl->pTxStatusBuf != NULL) {
 			NdisCopyMemory(pCfg80211_ctrl->pTxStatusBuf, pData, Data);
 			pCfg80211_ctrl->TxStatusBufLen = Data;
 		} else {
 			pCfg80211_ctrl->TxStatusBufLen = 0;
-			DBGPRINT(RT_DEBUG_ERROR, ("CFG_TX_STATUS: MEM ALLOC ERROR\n"));
 			return NDIS_STATUS_FAILURE;
 		}
 		CFG80211_CheckActionFrameType(pAd, "TX", pData, Data);
@@ -443,7 +442,7 @@ INT CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data)
 		mgmt = (struct ieee80211_mgmt *)pData;
 		if (ieee80211_is_probe_resp(mgmt->frame_control)) {
 			//BOOLEAN res;
-			INT offset = sizeof(HEADER_802_11) + 12;
+			int offset = sizeof(HEADER_802_11) + 12;
 			CFG80211_SyncPacketWmmIe(pAd, pData + offset , Data - offset);
 			//hex_dump("probe_rsp:", pData, Data);
 		}
@@ -455,7 +454,7 @@ INT CFG80211_SendMgmtFrame(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data)
 return NDIS_STATUS_SUCCESS;
 }
 
-VOID CFG80211_SendMgmtFrameDone(RTMP_ADAPTER *pAd, USHORT Sequence)
+void CFG80211_SendMgmtFrameDone(RTMP_ADAPTER *pAd, USHORT Sequence)
 {
 //RTMP_USB_SUPPORT/RTMP_PCI_SUPPORT
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
