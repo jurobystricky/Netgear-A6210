@@ -15,33 +15,30 @@
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
-    Module Name:
-    radar.h
+	Module Name:
+	radar.h
 
-    Abstract:
-     CS/DFS common functions.
-
-    Revision History:
-    Who       When            What
-    --------  ----------      ----------------------------------------------
+	Abstract:
+	CS/DFS common functions.
 */
+
 #ifndef __RADAR_H__
 #define __RADAR_H__
 
-#define DEFAULT_CAL_BUF_TIME	60
-#define DEFAULT_CAL_BUF_TIME_MAX	0x10000
+//#define DEFAULT_CAL_BUF_TIME		60
+//#define DEFAULT_CAL_BUF_TIME_MAX	0x10000
 
 /* RESTRICTION_BAND_1: 5600MHz ~ 5650MHz */
-#define RESTRICTION_BAND_1(_pAd)												\
-	(_pAd->CommonCfg.RegTransmitSetting.field.BW == BW_40 ? 						\
-	((_pAd->CommonCfg.Channel >= 116) && (_pAd->CommonCfg.Channel <= 128)) :	\
+#define RESTRICTION_BAND_1(_pAd)						\
+	(_pAd->CommonCfg.RegTransmitSetting.field.BW == BW_40 ? 		\
+	((_pAd->CommonCfg.Channel >= 116) && (_pAd->CommonCfg.Channel <= 128)) :\
 	((_pAd->CommonCfg.Channel >= 120) && (_pAd->CommonCfg.Channel <= 128)))
 
-#define IS_DOT11_H_RADAR_STATE(_pAd, _RadarState)		\
-		( (_pAd->CommonCfg.Channel > 14)	\
-		&& (_pAd->CommonCfg.bIEEE80211H == 1)	\
-		&& RadarChannelCheck(_pAd, _pAd->CommonCfg.Channel)	\
-		&& _pAd->Dot11_H.RDMode == _RadarState)
+#define IS_DOT11_H_RADAR_STATE(_pAd, _RadarState)			\
+	( (_pAd->CommonCfg.Channel > 14)				\
+	&& (_pAd->CommonCfg.bIEEE80211H == 1)				\
+	&& RadarChannelCheck(_pAd, _pAd->CommonCfg.Channel)		\
+	&& _pAd->Dot11_H.RDMode == _RadarState)
 
 /* 802.11H */
 typedef struct _DOT11_H {
@@ -58,51 +55,18 @@ typedef struct _DOT11_H {
 	ULONG CalBufTime;	/* A Timing buffer for befroe calibrations which generates Tx signals */
 } DOT11_H, *PDOT11_H;
 
-BOOLEAN RadarChannelCheck(
-	IN PRTMP_ADAPTER	pAd,
-	IN UCHAR			Ch);
 
-VOID RadarStateCheck(
-	IN PRTMP_ADAPTER	pAd);
-
-ULONG JapRadarType(
-	IN PRTMP_ADAPTER pAd);
-
-UCHAR get_channel_by_reference(
-	IN PRTMP_ADAPTER pAd,
-	IN UINT8 mode);
+BOOLEAN RadarChannelCheck(PRTMP_ADAPTER pAd, UCHAR Ch);
 
 #ifdef CONFIG_AP_SUPPORT
-VOID ChannelSwitchingCountDownProc(
-	IN PRTMP_ADAPTER	pAd);
-#endif /* CONFIG_AP_SUPPORT */
+void ChannelSwitchingCountDownProc(PRTMP_ADAPTER pAd);
+#endif
 
-VOID RadarDetectPeriodic(
-	IN PRTMP_ADAPTER	pAd);
-
-INT	Set_CSPeriod_Proc(
-	IN	PRTMP_ADAPTER	pAdapter, 
-	IN	PSTRING			arg);
-
-INT Set_ChMovingTime_Proc(
-	IN PRTMP_ADAPTER pAd, 
-	IN PSTRING arg);
-
-INT Set_BlockChReset_Proc(
-	IN PRTMP_ADAPTER pAd, 
-	IN PSTRING arg);
+void RadarDetectPeriodic(PRTMP_ADAPTER pAd);
 
 #if defined(DFS_SUPPORT) || defined(CARRIER_DETECTION_SUPPORT)
-INT	Set_RadarShow_Proc(
-	IN	PRTMP_ADAPTER	pAd, 
-	IN	PSTRING			arg);
-
-VOID CckMrcStatusCtrl(
-	IN PRTMP_ADAPTER pAd);
-
-VOID RadarGLRTCompensate(
-	IN PRTMP_ADAPTER pAd);
-
-#endif /*defined(DFS_SUPPORT) || defined(CARRIER_DETECTION_SUPPORT)*/
+void CckMrcStatusCtrl(PRTMP_ADAPTER pAd);
+void RadarGLRTCompensate(PRTMP_ADAPTER pAd);
+#endif
 
 #endif /* __RADAR_H__ */
