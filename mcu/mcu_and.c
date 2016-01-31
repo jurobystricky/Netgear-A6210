@@ -146,7 +146,7 @@ static u16 andes_usb_get_crc(RTMP_ADAPTER *ad)
 
 static void usb_upload_rom_patch_complete(purbb_t urb, pregs *pt_regs)
 {
-	struct completion *load_rom_patch_done = 
+	struct completion *load_rom_patch_done =
 			(struct completion *)RTMP_OS_USB_CONTEXT_GET(urb);
 	complete(load_rom_patch_done);
 }
@@ -176,10 +176,10 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 				break;
 			RtmpOsMsDelay(1);
 		}
-		
+
 		if (i >= GET_SEMAPHORE_RETRY_MAX) {
 			DBGPRINT(RT_DEBUG_ERROR,
-					("%s: Failed to obtain SEMAPHORE_03\n", 
+					("%s: Failed to obtain SEMAPHORE_03\n",
 					__FUNCTION__));
 			return NDIS_STATUS_FAILURE;
 		}
@@ -335,7 +335,7 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x230, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: set fce dma descriptor fail (0x230)\n",
 						__FUNCTION__));
 				goto error2;
@@ -347,7 +347,7 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x232, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: set fce dma descriptor fail (0x232)\n",
 						__FUNCTION__));
 				goto error2;
@@ -364,7 +364,7 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x234, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: set fce dma length fail (0x234)\n",
 						__FUNCTION__));
 				goto error2;
@@ -376,7 +376,7 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 			ret = RTUSB_VendorRequest(ad, USBD_TRANSFER_DIRECTION_OUT,
 					DEVICE_VENDOR_REQUEST_OUT, 0x42, value, 0x236, NULL, 0);
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: set fce dma length fail (0x236)\n",
 						__FUNCTION__));
 				goto error2;
@@ -398,11 +398,11 @@ int andes_usb_load_rom_patch(RTMP_ADAPTER *ad)
 					("%s: submit urb, sent_len = %d, patch_ilm = %d, cur_len = %d\n",
 					__FUNCTION__, sent_len, patch_len, cur_len));
 
-			if (!wait_for_completion_timeout(&load_rom_patch_done, 
+			if (!wait_for_completion_timeout(&load_rom_patch_done,
 				msecs_to_jiffies(UPLOAD_FW_TIMEOUT_MS))) {
 				usb_kill_urb(urb);
 				ret = NDIS_STATUS_FAILURE;
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: upload fw timeout\n",
 						__FUNCTION__));
 				goto error2;
@@ -502,7 +502,7 @@ int andes_usb_erase_rom_patch(RTMP_ADAPTER *ad)
 
 	if (cap->load_code_method == BIN_FILE_METHOD) {
 		if (cap->rom_patch)
-			os_free_mem(NULL, cap->rom_patch);
+			os_free_mem(cap->rom_patch);
 		cap->rom_patch = NULL;
 	}
 
@@ -511,7 +511,7 @@ int andes_usb_erase_rom_patch(RTMP_ADAPTER *ad)
 
 static void usb_uploadfw_complete(purbb_t urb, pregs *pt_regs)
 {
-	struct completion *load_fw_done = 
+	struct completion *load_fw_done =
 			(struct completion *)RTMP_OS_USB_CONTEXT_GET(urb);
 
 	complete(load_fw_done);
@@ -565,10 +565,10 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 				break;
 			RtmpOsMsDelay(1);
 		}
-		
+
 		if (loop >= GET_SEMAPHORE_RETRY_MAX) {
 			DBGPRINT(RT_DEBUG_ERROR,
-					("%s: Failed to obtain SEMAPHORE_00\n", 
+					("%s: Failed to obtain SEMAPHORE_00\n",
 					__FUNCTION__));
 			return NDIS_STATUS_FAILURE;
 		}
@@ -589,7 +589,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 	USB_CFG_WRITE(ad, cfg.word);
 
 	if (cap->load_code_method == BIN_FILE_METHOD)
-		OS_LOAD_CODE_FROM_BIN(&cap->FWImageName, cap->fw_bin_file_name, 
+		OS_LOAD_CODE_FROM_BIN(&cap->FWImageName, cap->fw_bin_file_name,
 				obj->pUsb_Dev, &cap->fw_len);
 	else
 		cap->FWImageName = cap->fw_header_image;
@@ -849,7 +849,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 					0x230, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 					("%s: set fce dma descriptor fail (DLM: 0x230)\n",
 					__FUNCTION__));
 				goto error2;
@@ -866,7 +866,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 					0x232, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: set fce dma descriptor fail (DLM: 0x232)\n",
 						__FUNCTION__));
 				goto error2;
@@ -885,7 +885,7 @@ NDIS_STATUS andes_usb_loadfw(RTMP_ADAPTER *ad)
 					0x42, value, 0x234, NULL, 0);
 
 			if (ret) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s: set fce dma descriptor fail (DLM: 0x234)\n",
 						__FUNCTION__));
 				goto error2;
@@ -996,7 +996,7 @@ int andes_usb_erasefw(RTMP_ADAPTER *ad)
 
 	if (cap->load_code_method == BIN_FILE_METHOD) {
 		if (cap->FWImageName)
-			os_free_mem(NULL, cap->FWImageName);
+			os_free_mem(cap->FWImageName);
 		cap->FWImageName = NULL;
 	}
 
@@ -1021,9 +1021,8 @@ static struct cmd_msg *andes_alloc_cmd_msg(RTMP_ADAPTER *ad, unsigned int length
 
 	OS_PKT_RESERVE(net_pkt, cap->cmd_header_len);
 
-	os_alloc_mem(NULL, (PUCHAR *)&msg, sizeof(*msg));
+	msg = os_alloc_mem(sizeof(*msg));
 	if (!msg) {
-		DBGPRINT(RT_DEBUG_ERROR, ("can not allocate cmd msg\n"));
 		goto error1;
 	}
 
@@ -1050,14 +1049,14 @@ static struct cmd_msg *andes_alloc_cmd_msg(RTMP_ADAPTER *ad, unsigned int length
 #ifdef RTMP_USB_SUPPORT
 error2:
 #endif
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 error1:
 	RTMPFreeNdisPacket(ad, net_pkt);
 error0:
 	return NULL;
 }
 
-static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait, 
+static void andes_init_cmd_msg(struct cmd_msg *msg, u8 type, BOOLEAN need_wait,
 	u16 timeout, BOOLEAN need_retransmit, BOOLEAN need_rsp,
 	u16 rsp_payload_len, char *rsp_payload, MSG_RSP_HANDLER rsp_handler)
 {
@@ -1118,7 +1117,7 @@ static void andes_free_cmd_msg(struct cmd_msg *msg)
 	usb_free_urb(msg->urb);
 #endif
 
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 
 	RTMPFreeNdisPacket(ad, net_pkt);
 	ctl->free_cmd_msg++;
@@ -1144,8 +1143,8 @@ static inline void andes_inc_error_count(struct MCU_CTRL *ctl,
 			ctl->rx_receive_fail_count++;
 			break;
 		default:
-			DBGPRINT(RT_DEBUG_ERROR, 
-					("%s:unknown cmd_msg_error_type(%d)\n", 
+			DBGPRINT(RT_DEBUG_ERROR,
+					("%s:unknown cmd_msg_error_type(%d)\n",
 					__FUNCTION__, type));
 		}
 	}
@@ -1355,7 +1354,7 @@ void andes_rx_process_cmd_msg(RTMP_ADAPTER *ad, struct cmd_msg *rx_msg)
 	if (rx_info->self_gen) {
 		/* if have callback function */
 		RTEnqueueInternalCmd(ad, CMDTHREAD_RESPONSE_EVENT_CALLBACK,
-				GET_OS_PKT_DATAPTR(net_pkt) + sizeof(*rx_info), 
+				GET_OS_PKT_DATAPTR(net_pkt) + sizeof(*rx_info),
 				rx_info->pkt_len);
 	} else {
 #ifdef RTMP_USB_SUPPORT
@@ -1373,8 +1372,8 @@ void andes_rx_process_cmd_msg(RTMP_ADAPTER *ad, struct cmd_msg *rx_msg)
 				} else if ((msg->rsp_payload_len == 0) && (rx_info->pkt_len == 8)) {
 					DBGPRINT(RT_DEBUG_INFO, ("command response(ack) success\n"));
 				} else {
-					DBGPRINT(RT_DEBUG_ERROR, 
-							("expect response len(%d), command response len(%d) invalid\n", 
+					DBGPRINT(RT_DEBUG_ERROR,
+							("expect response len(%d), command response len(%d) invalid\n",
 							msg->rsp_payload_len, rx_info->pkt_len));
 					msg->rsp_payload_len = rx_info->pkt_len;
 				}
@@ -1440,7 +1439,7 @@ static void usb_rx_cmd_msg_complete(PURB urb)
 
 		usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev,
 				usb_rcvbulkpipe(pObj->pUsb_Dev, pChipCap->CommandRspBulkInAddr),
-				GET_OS_PKT_DATAPTR(net_pkt), 512, 
+				GET_OS_PKT_DATAPTR(net_pkt), 512,
 				usb_rx_cmd_msg_complete, net_pkt);
 
 		andes_queue_tail_cmd_msg(&ctl->rxq, msg, rx_start);
@@ -1449,8 +1448,8 @@ static void usb_rx_cmd_msg_complete(PURB urb)
 		if (ret) {
 			andes_unlink_cmd_msg(msg, &ctl->rxq);
 			andes_inc_error_count(ctl, error_rx_receive_fail);
-			DBGPRINT(RT_DEBUG_ERROR, 
-					("%s:submit urb fail(%d)\n", 
+			DBGPRINT(RT_DEBUG_ERROR,
+					("%s:submit urb fail(%d)\n",
 					__FUNCTION__, ret));
 			andes_queue_tail_cmd_msg(&ctl->rx_doneq, msg, rx_receive_fail);
 		}
@@ -1481,7 +1480,7 @@ int usb_rx_cmd_msg_submit(RTMP_ADAPTER *ad)
 	net_pkt = msg->net_pkt;
 
 	usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev, usb_rcvbulkpipe(pObj->pUsb_Dev,
-			pChipCap->CommandRspBulkInAddr), GET_OS_PKT_DATAPTR(net_pkt), 
+			pChipCap->CommandRspBulkInAddr), GET_OS_PKT_DATAPTR(net_pkt),
 			512, usb_rx_cmd_msg_complete, net_pkt);
 
 	andes_queue_tail_cmd_msg(&ctl->rxq, msg, rx_start);
@@ -1560,8 +1559,8 @@ static void andes_bh_schedule(RTMP_ADAPTER *ad)
 	if (!OS_TEST_BIT(MCU_INIT, &ctl->flags))
 		return;
 
-	if (((andes_queue_len(ctl, &ctl->rx_doneq) > 0) || 
-		(andes_queue_len(ctl, &ctl->tx_doneq) > 0)) && 
+	if (((andes_queue_len(ctl, &ctl->rx_doneq) > 0) ||
+		(andes_queue_len(ctl, &ctl->tx_doneq) > 0)) &&
 		OS_TEST_BIT(MCU_INIT, &ctl->flags)) {
 #ifndef WORKQUEUE_BH
 		RTMP_NET_TASK_DATA_ASSIGN(&ctl->cmd_msg_task, (unsigned long)(ad));
@@ -1602,7 +1601,7 @@ static void usb_kick_out_cmd_msg_complete(PURB urb)
 			complete(&msg->ack_done);
 		}
 
-		DBGPRINT(RT_DEBUG_ERROR, ("kick out cmd msg fail(%d)\n", 
+		DBGPRINT(RT_DEBUG_ERROR, ("kick out cmd msg fail(%d)\n",
 				RTMP_USB_URB_STATUS_GET(urb)));
 	}
 
@@ -1622,8 +1621,8 @@ static int usb_kick_out_cmd_msg(PRTMP_ADAPTER ad, struct cmd_msg *msg)
 		memset(OS_PKT_TAIL_BUF_EXTEND(net_pkt, USB_END_PADDING), 0x00, USB_END_PADDING);
 	}
 
-	usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev, usb_sndbulkpipe(pObj->pUsb_Dev, 
-			pChipCap->CommandBulkOutAddr), GET_OS_PKT_DATAPTR(net_pkt), 
+	usb_fill_bulk_urb(msg->urb, pObj->pUsb_Dev, usb_sndbulkpipe(pObj->pUsb_Dev,
+			pChipCap->CommandBulkOutAddr), GET_OS_PKT_DATAPTR(net_pkt),
 			GET_OS_PKT_LEN(net_pkt), usb_kick_out_cmd_msg_complete, net_pkt);
 
 	if (msg->need_rsp)
@@ -1665,7 +1664,7 @@ static void andes_usb_unlink_urb(RTMP_ADAPTER *ad, DL_LIST *list)
 	RTMP_SPIN_LOCK_IRQSAVE(lock, &flags);
 	DlListForEachSafe(msg, msg_tmp, list, struct cmd_msg, list) {
 		RTMP_SPIN_UNLOCK_IRQRESTORE(lock, &flags);
-		if ((msg->state == wait_cmd_out_and_ack) || 
+		if ((msg->state == wait_cmd_out_and_ack) ||
 			(msg->state == wait_cmd_out) ||
 			(msg->state == tx_start) || (msg->state == rx_start) ||
 			(msg->state == tx_retransmit))
@@ -1877,8 +1876,8 @@ int andes_send_cmd_msg(PRTMP_ADAPTER ad, struct cmd_msg *msg)
 	RTMP_SEM_EVENT_WAIT(&(ad->mcu_atomic), ret);
 #endif
 
-	if (!RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_MCU_SEND_IN_BAND_CMD) || 
-		RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_NIC_NOT_EXIST) || 
+	if (!RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_MCU_SEND_IN_BAND_CMD) ||
+		RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_NIC_NOT_EXIST) ||
 		RTMP_TEST_FLAG(ad, fRTMP_ADAPTER_SUSPEND)) {
 		andes_free_cmd_msg(msg);
 
@@ -2201,7 +2200,7 @@ int andes_read_modify_write(RTMP_ADAPTER *ad, R_M_W_REG *reg_pair, u32 num)
 		sent_len = (var_len - cur_len) > cap->InbandPacketMaxLen
 				? cap->InbandPacketMaxLen : (var_len - cur_len);
 
-		if ((sent_len < cap->InbandPacketMaxLen) || 
+		if ((sent_len < cap->InbandPacketMaxLen) ||
 			(cur_len + cap->InbandPacketMaxLen) == var_len)
 			last_packet = TRUE;
 
@@ -2370,7 +2369,7 @@ int andes_rf_random_write(RTMP_ADAPTER *ad, BANK_RF_REG_PAIR *reg_pair, u32 num)
 		sent_len = (var_len - cur_len) > cap->InbandPacketMaxLen
 				? cap->InbandPacketMaxLen : (var_len - cur_len);
 
-		if ((sent_len < cap->InbandPacketMaxLen) || 
+		if ((sent_len < cap->InbandPacketMaxLen) ||
 			(cur_len + cap->InbandPacketMaxLen) == var_len)
 			last_packet = TRUE;
 
@@ -2430,12 +2429,8 @@ int andes_sc_random_write(RTMP_ADAPTER *ad, CR_REG *table, u32 nums, u32 flags)
 		}
 	}
 
-	os_alloc_mem(NULL, (UCHAR **)&sw_ch_table, varlen);
-
+	sw_ch_table = os_alloc_mem(varlen);
 	if (!sw_ch_table) {
-		DBGPRINT(RT_DEBUG_ERROR,
-				("%s: memory is not available for allocating switch channel table\n", 
-				__FUNCTION__));
 		return -1;
 	}
 
@@ -2449,7 +2444,7 @@ int andes_sc_random_write(RTMP_ADAPTER *ad, CR_REG *table, u32 nums, u32 flags)
 	}
 
 	andes_random_write(ad, sw_ch_table, varlen / sizeof(RTMP_REG_PAIR));
-	os_free_mem(NULL, sw_ch_table);
+	os_free_mem(sw_ch_table);
 
 	return 0;
 }
@@ -2468,12 +2463,8 @@ int andes_sc_rf_random_write(RTMP_ADAPTER *ad, BANK_RF_CR_REG *table, u32 nums, 
 		}
 	}
 
-	os_alloc_mem(NULL, (UCHAR **)&sw_ch_table, varlen);
-
+	sw_ch_table = os_alloc_mem(varlen);
 	if (!sw_ch_table) {
-		DBGPRINT(RT_DEBUG_ERROR, 
-				("%s: memory is not available for allocating switch channel table\n",
-				__FUNCTION__));
 		return -1;
 	}
 
@@ -2488,7 +2479,7 @@ int andes_sc_rf_random_write(RTMP_ADAPTER *ad, BANK_RF_CR_REG *table, u32 nums, 
 	}
 
 	andes_rf_random_write(ad, sw_ch_table, varlen / sizeof(BANK_RF_REG_PAIR));
-	os_free_mem(NULL, sw_ch_table);
+	os_free_mem(sw_ch_table);
 
 	return 0;
 }
@@ -2681,7 +2672,7 @@ int andes_switch_channel(RTMP_ADAPTER *ad, u8 channel, BOOLEAN scan, unsigned in
 	u32 value = 0;
 	int ret;
 
-	DBGPRINT(RT_DEBUG_INFO, ("%s:channel(%d),scan(%d),bw(%d),trx(0x%x)\n", 
+	DBGPRINT(RT_DEBUG_INFO, ("%s:channel(%d),scan(%d),bw(%d),trx(0x%x)\n",
 			__FUNCTION__, channel, scan, bw, tx_rx_setting));
 
 	msg = andes_alloc_cmd_msg(ad, 8);
@@ -2763,7 +2754,7 @@ int andes_init_gain(RTMP_ADAPTER *ad, UINT8 channel, BOOLEAN force_mode, unsigne
 	u32 value = 0;
 	int ret = 0;
 
-	DBGPRINT(RT_DEBUG_INFO, 
+	DBGPRINT(RT_DEBUG_INFO,
 			("%s:channel(%d), force mode(%d), init gain parameter(0x%08x)\n",
 			__FUNCTION__, channel, force_mode, gain_from_e2p));
 
