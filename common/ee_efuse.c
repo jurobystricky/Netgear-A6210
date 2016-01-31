@@ -782,18 +782,15 @@ static VOID eFuseWritePhysical(
 
 ========================================================================
 */
-BOOLEAN eFuseWrite(
-   	IN	PRTMP_ADAPTER	pAd,
-	IN	USHORT			Offset,
-	IN	PUSHORT			pData,
-	IN	USHORT			length)
+BOOLEAN eFuseWrite(PRTMP_ADAPTER pAd, USHORT Offset, PUSHORT pData,
+	USHORT length)
 {
 	int i;
 	USHORT* pValueX = (PUSHORT) pData;
 	PUSHORT OddWriteByteBuf;
 
 /*	OddWriteByteBuf=(PUSHORT)kmalloc(sizeof(USHORT)*2, MEM_ALLOC_FLAG);*/
-	os_alloc_mem(NULL, (UCHAR **)&OddWriteByteBuf, sizeof(USHORT)*2);
+	OddWriteByteBuf = os_alloc_mem(sizeof(USHORT)*2);
 	/* The input value=3070 will be stored as following*/
 	/* Little-endian		S	|	S	Big-endian*/
 	/* addr			1	0	|	0	1	*/
@@ -805,7 +802,7 @@ BOOLEAN eFuseWrite(
 	/* The swapping should be removed for big-endian*/
 	if (OddWriteByteBuf == NULL)
 		return FALSE;
-		
+
 	if ((Offset%2)!=0) {
 		length+=2;
 		Offset-=1;
@@ -822,7 +819,7 @@ BOOLEAN eFuseWrite(
 		eFuseWriteRegisters(pAd, Offset+i, 2, &pValueX[i/2]);
 	}
 
-	os_free_mem(NULL, OddWriteByteBuf);
+	os_free_mem(OddWriteByteBuf);
 	return TRUE;
 }
 
@@ -894,7 +891,7 @@ BOOLEAN set_eFuseLoadFromBin_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 
 	memSize = 128 + MAX_EEPROM_BIN_FILE_SIZE + sizeof(USHORT) * 8;
 /*	memPtr = kmalloc(memSize, MEM_ALLOC_FLAG);*/
-	os_alloc_mem(NULL, (UCHAR **)&memPtr, memSize);
+	memPtr = os_alloc_mem(memSize);
 	if (memPtr == NULL)
 		return FALSE;
 
@@ -922,8 +919,8 @@ BOOLEAN set_eFuseLoadFromBin_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 		while (RtmpOSFileRead(srcf, &buffer[TotalByte], 1)==1) {
 			TotalByte++;
 			if (TotalByte>MAX_EEPROM_BIN_FILE_SIZE) {
-				DBGPRINT(RT_DEBUG_ERROR, 
-					("--> Error reading file %s, file size too large[>%d]\n", 
+				DBGPRINT(RT_DEBUG_ERROR,
+					("--> Error reading file %s, file size too large[>%d]\n",
 					src, MAX_EEPROM_BIN_FILE_SIZE));
 				retval = FALSE;
 				goto closeFile;
@@ -963,8 +960,7 @@ recoverFS:
 	RtmpOSFSInfoChange(&osfsInfo, FALSE);
 
 	if (memPtr)
-/*		kfree(memPtr);*/
-		os_free_mem(NULL, memPtr);
+		os_free_mem(memPtr);
 
 	return retval;
 }
@@ -1229,7 +1225,7 @@ BOOLEAN set_eFuseBufferModeWriteBack_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	UINT bEnable = simple_strtol(arg, 0, 10);
 
-	if (bEnable < 0) 
+	if (bEnable < 0)
 		return FALSE;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s::Write EEPROM buffer back to eFuse\n", __FUNCTION__));
