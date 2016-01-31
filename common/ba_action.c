@@ -203,7 +203,7 @@ void ba_reordering_resource_release(RTMP_ADAPTER *pAd)
 	ASSERT(pBAEntry->list.qlen == 0);
 	/* II. free memory of reordering mpdu table */
 	NdisAcquireSpinLock(&pAd->mpdu_blk_pool.lock);
-	os_free_mem(pAd, pAd->mpdu_blk_pool.mem);
+	os_free_mem(pAd->mpdu_blk_pool.mem);
 	pAd->mpdu_blk_pool.mem = NULL;
 	NdisReleaseSpinLock(&pAd->mpdu_blk_pool.lock);
 }
@@ -231,11 +231,10 @@ BOOLEAN ba_reordering_resource_init(RTMP_ADAPTER *pAd, int num)
 			(UINT32)(num*sizeof(struct reordering_mpdu))));
 
 	/* allocate number of mpdu_blk memory */
-	os_alloc_mem(pAd, (PUCHAR *)&mem, (num*sizeof(struct reordering_mpdu)));
+	mem = os_alloc_mem(num*sizeof(struct reordering_mpdu));
 
 	pAd->mpdu_blk_pool.mem = mem;
 	if (mem == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("Can't Allocate Memory for BA Reordering\n"));
 		return FALSE;
 	}
 
@@ -487,7 +486,7 @@ static VOID BAOriSessionAdd(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
 	UCHAR TID;
 	USHORT Idx;
 	UCHAR *pOutBuffer2 = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	ULONG FrameLen;
 	FRAME_BAR FrameBar;
 	UCHAR MaxPeerBufSize;
@@ -530,9 +529,8 @@ static VOID BAOriSessionAdd(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
 				pBAEntry->BAWinSize, pBAEntry->ORIBATimer.TimerValue));
 
 		/* SEND BAR */
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer2);  /*Get an unused nonpaged memory*/
-		if (NStatus != NDIS_STATUS_SUCCESS) {
-			DBGPRINT(RT_DEBUG_TRACE,("BA - BAOriSessionAdd() allocate memory failed \n"));
+		pOutBuffer2 = MlmeAllocateMemory();  /*Get an unused nonpaged memory*/
+		if (!pOutBuffer2) {
 			return;
 		}
 
@@ -552,7 +550,7 @@ static VOID BAOriSessionAdd(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
 				sizeof(FRAME_BAR), &FrameBar,
 				END_OF_ARGS);
 		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer2, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer2);
+		MlmeFreeMemory(pOutBuffer2);
 
 		if (pBAEntry->ORIBATimer.TimerValue)
 			RTMPSetTimer(&pBAEntry->ORIBATimer, pBAEntry->ORIBATimer.TimerValue); /* in mSec */
@@ -775,7 +773,7 @@ VOID BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
 			/* force send specified TID DelBA*/
 			MLME_DELBA_REQ_STRUCT DelbaReq;
 			MLME_QUEUE_ELEM *Elem;
-			os_alloc_mem(NULL, (UCHAR **)&Elem, sizeof(MLME_QUEUE_ELEM));
+			Elem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 			if (Elem != NULL) {
 				NdisZeroMemory(&DelbaReq, sizeof(DelbaReq));
 				NdisZeroMemory(Elem, sizeof(MLME_QUEUE_ELEM));
@@ -787,7 +785,7 @@ VOID BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
 				Elem->MsgLen  = sizeof(DelbaReq);
 				NdisMoveMemory(Elem->Msg, &DelbaReq, sizeof(DelbaReq));
 				MlmeDELBAAction(pAd, Elem);
-				os_free_mem(NULL, Elem);
+				os_free_mem(Elem);
 			} else {
 				DBGPRINT(RT_DEBUG_ERROR,
 						("%s(bForceSend):alloc memory failed!\n",
@@ -810,7 +808,7 @@ VOID BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
 		(pBAEntry->ORI_BA_Status == Originator_Done)) {
 		MLME_DELBA_REQ_STRUCT DelbaReq;
 		MLME_QUEUE_ELEM *Elem;
-		os_alloc_mem(NULL, (UCHAR **)&Elem, sizeof(MLME_QUEUE_ELEM));
+		Elem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 		if (Elem != NULL) {
 			NdisZeroMemory(&DelbaReq, sizeof(DelbaReq));
 			NdisZeroMemory(Elem, sizeof(MLME_QUEUE_ELEM));
@@ -822,7 +820,7 @@ VOID BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
 			Elem->MsgLen  = sizeof(DelbaReq);
 			NdisMoveMemory(Elem->Msg, &DelbaReq, sizeof(DelbaReq));
 			MlmeDELBAAction(pAd, Elem);
-			os_free_mem(NULL, Elem);
+			os_free_mem(Elem);
 		} else {
 			DBGPRINT(RT_DEBUG_ERROR, ("%s():alloc memory failed!\n",
 					__FUNCTION__));
@@ -869,7 +867,7 @@ VOID BARecSessionTearDown(PRTMP_ADAPTER pAd, UCHAR Wcid, UCHAR TID,
 		/* 1. Send DELBA Action Frame*/
 		if (bPassive == FALSE) {
 			MLME_QUEUE_ELEM *Elem;
-			os_alloc_mem(NULL, (UCHAR **)&Elem, sizeof(MLME_QUEUE_ELEM));
+			Elem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 			if (Elem != NULL) {
 				NdisZeroMemory(&DelbaReq, sizeof(DelbaReq));
 				NdisZeroMemory(Elem, sizeof(MLME_QUEUE_ELEM));
@@ -881,7 +879,7 @@ VOID BARecSessionTearDown(PRTMP_ADAPTER pAd, UCHAR Wcid, UCHAR TID,
 				Elem->MsgLen  = sizeof(DelbaReq);
 				NdisMoveMemory(Elem->Msg, &DelbaReq, sizeof(DelbaReq));
 				MlmeDELBAAction(pAd, Elem);
-				os_free_mem(NULL, Elem);
+				os_free_mem(Elem);
 			} else {
 				DBGPRINT(RT_DEBUG_ERROR,
 						("%s():alloc memory failed!\n",
@@ -1047,7 +1045,7 @@ VOID PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	UCHAR pAddr[6];
 	FRAME_ADDBA_RSP ADDframe;
 	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	PFRAME_ADDBA_REQ pAddreqFrame = NULL;
 	ULONG FrameLen, *ptemp;
 	MAC_TABLE_ENTRY *pMacEntry;
@@ -1088,10 +1086,9 @@ VOID PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 
 	pAddreqFrame = (PFRAME_ADDBA_REQ)(&Elem->Msg[0]);
 	/* 2. Always send back ADDBA Response */
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);	 /*Get an unused nonpaged memory*/
-	if (NStatus != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_TRACE,(
-				"ACTION - PeerBAAction() allocate memory failed \n"));
+
+	pOutBuffer = MlmeAllocateMemory();	 /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
 
@@ -1178,7 +1175,7 @@ VOID PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	MakeOutgoingFrame(pOutBuffer, &FrameLen, sizeof(FRAME_ADDBA_RSP), &ADDframe,
 			END_OF_ARGS);
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 
 	DBGPRINT(RT_DEBUG_TRACE,
 			("%s(%d): TID(%d), BufSize(%d) <== \n", __FUNCTION__,
@@ -1317,18 +1314,17 @@ VOID SendSMPSAction(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR smps)
 	struct wifi_dev *wdev;
 	MAC_TABLE_ENTRY *pEntry;
 	UCHAR *pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	FRAME_SMPS_ACTION Frame;
 	ULONG FrameLen;
 
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);	 /*Get an unused nonpaged memory*/
-	if (NStatus != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_ERROR,("BA - MlmeADDBAAction() allocate memory failed \n"));
+	pOutBuffer = MlmeAllocateMemory();	 /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
 
 	if (!VALID_WCID(Wcid)) {
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 		DBGPRINT(RT_DEBUG_ERROR,("BA - Invalid WCID(%d)\n",  Wcid));
 		return;
 	}
@@ -1336,7 +1332,7 @@ VOID SendSMPSAction(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR smps)
 	pEntry = &pAd->MacTab.Content[Wcid];
 	wdev = pEntry->wdev;
 	if (!wdev) {
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 		DBGPRINT(RT_DEBUG_ERROR, ("BA - wdev is null\n"));
 		return;
 	}
@@ -1366,7 +1362,7 @@ VOID SendSMPSAction(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR smps)
 	MakeOutgoingFrame(pOutBuffer, &FrameLen, sizeof(FRAME_SMPS_ACTION), &Frame,
 			END_OF_ARGS);
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 	DBGPRINT(RT_DEBUG_ERROR,("HT - %s( %d )  \n", __FUNCTION__, Frame.smps));
 }
 
@@ -1398,7 +1394,7 @@ typedef struct GNU_PACKED _MEASUREMENT_REQ
 VOID SendBeaconRequest(RTMP_ADAPTER *pAd, UCHAR Wcid)
 {
 	UCHAR *pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 	FRAME_RM_REQ_ACTION Frame;
 	ULONG FrameLen;
 	BEACON_REQUEST BeaconReq;
@@ -1408,12 +1404,11 @@ VOID SendBeaconRequest(RTMP_ADAPTER *pAd, UCHAR Wcid)
 	if (IS_ENTRY_APCLI(&pAd->MacTab.Content[Wcid]))
 		return;
 
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);	 /*Get an unused nonpaged memory*/
-	if (NStatus != NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_ERROR,
-				("Radio - SendBeaconRequest() allocate memory failed \n"));
+	pOutBuffer = MlmeAllocateMemory();	 /*Get an unused nonpaged memory*/
+	if (!pOutBuffer) {
 		return;
 	}
+
 	apidx = pAd->MacTab.Content[Wcid].apidx;
 	ActHeaderInit(pAd, &Frame.Hdr, pAd->MacTab.Content[Wcid].Addr,
 			pAd->ApCfg.MBSSID[apidx].wdev.if_addr,
@@ -1445,7 +1440,7 @@ VOID SendBeaconRequest(RTMP_ADAPTER *pAd, UCHAR Wcid)
 			&Frame, sizeof(MEASUREMENT_REQ), &MeasureReg,
 			sizeof(BEACON_REQUEST), &BeaconReq, END_OF_ARGS);
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	MlmeFreeMemory(pOutBuffer);
 	DBGPRINT(RT_DEBUG_TRACE,("Radio - SendBeaconRequest\n"));
 }
 #endif /* CONFIG_AP_SUPPORT */
