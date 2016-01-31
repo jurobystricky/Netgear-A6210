@@ -33,7 +33,7 @@ typedef struct _CmdQ {
 #define NDIS_OID	UINT
 
 /* OS_RTCMDUp is only used in UTIL/NETIF module */
-#define OS_RTCMDUp	RtmpOsCmdUp
+//#define OS_RTCMDUp	RtmpOsCmdUp
 
 
 
