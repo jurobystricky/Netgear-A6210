@@ -244,8 +244,8 @@ BOOLEAN PeerDelBAActionSanity(
 	return TRUE;
 }
 
-
-BOOLEAN PeerBeaconAndProbeRspSanity_Old(
+#if 0 // JB This is just sick!
+static BOOLEAN PeerBeaconAndProbeRspSanity_Old(
     IN PRTMP_ADAPTER pAd,
     IN VOID *Msg,
     IN ULONG MsgLen,
@@ -318,7 +318,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity_Old(
 	UCHAR			CtrlChannel = 0;
 
 
-	os_alloc_mem(NULL, &pPeerWscIe, 512);
+	pPeerWscIe = os_alloc_mem(512);
     /* Add for 3 necessary EID field check*/
     Sanity = 0;
 
@@ -559,7 +559,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity_Old(
                 {
                     DBGPRINT(RT_DEBUG_TRACE, ("%s() - wrong IE_CF_PARM\n", __FUNCTION__));
 					if (pPeerWscIe)
-						os_free_mem(NULL, pPeerWscIe);
+						os_free_mem(pPeerWscIe);
                     return FALSE;
                 }
                 break;
@@ -573,7 +573,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity_Old(
                 {
                     DBGPRINT(RT_DEBUG_TRACE, ("%s() - wrong IE_IBSS_PARM\n", __FUNCTION__));
 					if (pPeerWscIe)
-						os_free_mem(NULL, pPeerWscIe);
+						os_free_mem(pPeerWscIe);
                     return FALSE;
                 }
                 break;
@@ -905,7 +905,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity_Old(
 
 SanityCheck:
 	if (pPeerWscIe)
-		os_free_mem(NULL, pPeerWscIe);
+		os_free_mem(pPeerWscIe);
 
 	if ((Sanity != 0x7) || ( bWscCheck == FALSE))
 	{
@@ -918,7 +918,7 @@ SanityCheck:
 	}
 
 }
-
+#endif
 
 /*
     ==========================================================================
@@ -964,7 +964,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 	UCHAR CtrlChannel = 0;
 
 
-	os_alloc_mem(NULL, &pPeerWscIe, 512);
+	pPeerWscIe = os_alloc_mem(512);
 	Sanity = 0;		/* Add for 3 necessary EID field check*/
 
 	ie_list->AironetCellPowerLimit = 0xFF;  /* Default of AironetCellPowerLimit is 0xFF*/
@@ -1175,7 +1175,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 			{
 				DBGPRINT(RT_DEBUG_TRACE, ("%s() - wrong IE_CF_PARM\n", __FUNCTION__));
 				if (pPeerWscIe)
-					os_free_mem(NULL, pPeerWscIe);
+					os_free_mem(pPeerWscIe);
 				return FALSE;
 			}
 			break;
@@ -1189,7 +1189,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 			{
 				DBGPRINT(RT_DEBUG_TRACE, ("%s() - wrong IE_IBSS_PARM\n", __FUNCTION__));
 				if (pPeerWscIe)
-					os_free_mem(NULL, pPeerWscIe);
+					os_free_mem(pPeerWscIe);
 				return FALSE;
 			}
 			break;
@@ -1575,7 +1575,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 
 SanityCheck:
 	if (pPeerWscIe)
-		os_free_mem(NULL, pPeerWscIe);
+		os_free_mem(pPeerWscIe);
 
 	if ((Sanity != 0x7) || ( bWscCheck == FALSE))
 	{
