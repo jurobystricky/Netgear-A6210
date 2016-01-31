@@ -1867,13 +1867,13 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 				if (Ssid.SsidLength == 0) {
 					Set_SSID_Proc(pAd, "");
 				} else {
-					os_alloc_mem(pAd, (UCHAR **)&pSsidString, MAX_LEN_OF_SSID+1);
+					pSsidString = os_alloc_mem(MAX_LEN_OF_SSID+1);
 					if (pSsidString) {
 						NdisZeroMemory(pSsidString, MAX_LEN_OF_SSID+1);
 						NdisMoveMemory(pSsidString, Ssid.Ssid, Ssid.SsidLength);
 						pSsidString[MAX_LEN_OF_SSID] = 0x00;
 						Set_SSID_Proc(pAd, pSsidString);
-						os_free_mem(NULL, pSsidString);
+						os_free_mem(pSsidString);
 					} else {
 						Status = -ENOMEM;
 					}
@@ -1882,8 +1882,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 		}
 		break;
 	case OID_802_11_SET_PASSPHRASE:
-		os_alloc_mem(pAd, (UCHAR **)&ppassphrase, wrq->u.data.length);
-
+		ppassphrase = os_alloc_mem(wrq->u.data.length);
 		if (ppassphrase == NULL) {
 			Status = -ENOMEM;
 			DBGPRINT(RT_DEBUG_TRACE,
@@ -1910,7 +1909,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 				}
 			}
 		}
-	 	os_free_mem(NULL, ppassphrase);
+	 	os_free_mem(ppassphrase);
 		break;
 
 	case OID_802_11_BSSID:
@@ -2255,7 +2254,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 		break;
 	/* For WPA PSK PMK key */
 	case RT_OID_802_11_ADD_WPA:
-		os_alloc_mem(pAd, (UCHAR **)&pKey, wrq->u.data.length);
+		pKey = os_alloc_mem(wrq->u.data.length);
 		if (pKey == NULL) {
 			Status = -ENOMEM;
 			break;
@@ -2293,10 +2292,10 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 						pKey->KeyIndex, pKey->KeyLength));
 			}
 		}
-		os_free_mem(NULL, pKey);
+		os_free_mem(pKey);
 		break;
 	case OID_802_11_REMOVE_KEY:
-		os_alloc_mem(pAd, (UCHAR **)&pRemoveKey, wrq->u.data.length);
+		pRemoveKey = os_alloc_mem(wrq->u.data.length);
 		if (pRemoveKey == NULL) {
 			Status = -ENOMEM;
 			break;
@@ -2335,11 +2334,11 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 				}
 			}
 		}
-		os_free_mem(NULL, pRemoveKey);
+		os_free_mem(pRemoveKey);
 		break;
 	/* New for WPA */
 	case OID_802_11_ADD_KEY:
-		os_alloc_mem(pAd, (UCHAR **)&pKey, wrq->u.data.length);
+		pKey = os_alloc_mem(wrq->u.data.length);
 		if (pKey == NULL) {
 			Status = -ENOMEM;
 			break;
@@ -2354,13 +2353,13 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 					("Set::OID_802_11_ADD_KEY (id=0x%x, Len=%d-byte)\n",
 					pKey->KeyIndex, pKey->KeyLength));
 		}
-		os_free_mem(NULL, pKey);
+		os_free_mem(pKey);
 		break;
 	case OID_802_11_CONFIGURATION:
 		if (wrq->u.data.length != sizeof(NDIS_802_11_CONFIGURATION)) {
 			Status = -EINVAL;
 		} else {
-			os_alloc_mem(NULL, (UCHAR **)&pConfig, sizeof(NDIS_802_11_CONFIGURATION));
+			pConfig = os_alloc_mem(sizeof(NDIS_802_11_CONFIGURATION));
 			if (pConfig != NULL) {
 				Status = copy_from_user(pConfig, wrq->u.data.pointer, wrq->u.data.length);
 /*                pConfig = &Config; */
@@ -2382,7 +2381,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 						pAd->CommonCfg.Channel));
 				/* Config has changed */
 				pAd->bConfigChanged = TRUE;
-				os_free_mem(NULL, pConfig);
+				os_free_mem(pConfig);
 			}
 		}
 		break;
@@ -2598,10 +2597,8 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 			POID_ADD_BA_ENTRY pBA;
 			MAC_TABLE_ENTRY *pEntry;
 
-			os_alloc_mem(pAd, (UCHAR **)&pBA, wrq->u.data.length);
+			pBA = os_alloc_mem(wrq->u.data.length);
 			if (pBA == NULL) {
-				DBGPRINT(RT_DEBUG_TRACE,
-						("Set :: RT_OID_802_11_TEAR_IMME_BA kmalloc() can't allocate enough memory\n"));
 				Status = NDIS_STATUS_FAILURE;
 			} else {
 				Status = copy_from_user(pBA, wrq->u.data.pointer, wrq->u.data.length);
@@ -2611,7 +2608,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 
 				if (!pBA->bAllTid && (pBA->TID > (NUM_OF_TID-1))) {
 					Status = NDIS_STATUS_INVALID_DATA;
-					os_free_mem(NULL, pBA);
+					os_free_mem(pBA);
 					break;
 				}
 
@@ -2632,7 +2629,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 						DBGPRINT(RT_DEBUG_TRACE, ("Set :: Not found pEntry \n"));
 					}
 				}
-				os_free_mem(NULL, pBA);
+				os_free_mem(pBA);
 			}
 		}
 		break;
@@ -2640,8 +2637,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 
 	/* For WPA_SUPPLICANT to set static wep key */
 	case OID_802_11_ADD_WEP:
-		os_alloc_mem(pAd, (UCHAR **)&pWepKey, wrq->u.data.length);
-
+		pWepKey = os_alloc_mem(wrq->u.data.length);
 		if (pWepKey == NULL) {
 			Status = -ENOMEM;
 			DBGPRINT(RT_DEBUG_TRACE, ("Set::OID_802_11_ADD_WEP, Failed!!\n"));
@@ -2731,7 +2727,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 						(wdev->PortSecured == WPA_802_1X_PORT_SECURED) ? "" : "NOT"));
 			}
 		}
-		os_free_mem(NULL, pWepKey);
+		os_free_mem(pWepKey);
 		break;
 
 #ifdef WPA_SUPPLICANT_SUPPORT
@@ -2772,18 +2768,15 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 			MLME_DEAUTH_REQ_STRUCT *pInfo;
 			MLME_QUEUE_ELEM *MsgElem;
 
-			os_alloc_mem(pAd, (UCHAR **)&MsgElem, sizeof(MLME_QUEUE_ELEM));
+			MsgElem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 			if (MsgElem == NULL) {
-				DBGPRINT(RT_DEBUG_ERROR,
-						("%s():alloc memory failed!\n",
-						__FUNCTION__));
 				return -EINVAL;
 			}
 
 			pInfo = (MLME_DEAUTH_REQ_STRUCT *) MsgElem->Msg;
 			Status = copy_from_user(pInfo, wrq->u.data.pointer, wrq->u.data.length);
 			MlmeDeauthReqAction(pAd, MsgElem);
-			os_free_mem(NULL, MsgElem);
+			os_free_mem(MsgElem);
 
 			if (INFRA_ON(pAd)) {
 				LinkDown(pAd, FALSE);
@@ -2833,8 +2826,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 		}
 		break;
 	case OID_802_11_PMKID:
-		os_alloc_mem(pAd, (UCHAR **)&pPmkId, wrq->u.data.length);
-
+		pPmkId = os_alloc_mem(wrq->u.data.length);
 		if (pPmkId == NULL) {
 			Status = -ENOMEM;
 			break;
@@ -2878,22 +2870,22 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 			}
 		}
 		if (pPmkId)
-			os_free_mem(NULL, pPmkId);
+			os_free_mem(pPmkId);
 		break;
 
 	case RT_OID_WPS_PROBE_REQ_IE:
 		if (pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe) {
-			os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
+			os_free_mem(pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
 			pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe = NULL;
 		}
 		pAd->StaCfg.wpa_supplicant_info.WpsProbeReqIeLen = 0;
-		os_alloc_mem(pAd, (UCHAR **)&(pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe), wrq->u.data.length);
+		pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe = os_alloc_mem(wrq->u.data.length);
 		if (pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe) {
 			Status = copy_from_user(pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe, wrq->u.data.pointer, wrq->u.data.length);
 			if (Status) {
 				Status = -EINVAL;
 				if (pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe) {
-					os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
+					os_free_mem(pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
 					pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe = NULL;
 				}
 				pAd->StaCfg.wpa_supplicant_info.WpsProbeReqIeLen = 0;
@@ -2941,7 +2933,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 
 	case OID_802_11_WEPDEFAULTKEYVALUE:
 		DBGPRINT(RT_DEBUG_TRACE, ("Set::OID_802_11_WEPDEFAULTKEYVALUE\n"));
-		os_alloc_mem(pAd, (UCHAR **)&pKey, wrq->u.data.length);
+		pKey = os_alloc_mem(wrq->u.data.length);
 		if (pKey == NULL) {
 			Status = -EINVAL;
 			DBGPRINT(RT_DEBUG_TRACE,
@@ -2974,7 +2966,7 @@ static INT RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, IN
 			}
 			/*RestartAPIsRequired = TRUE; */
 		}
-		os_free_mem(NULL, pKey);
+		os_free_mem(pKey);
 		break;
 
 	case OID_802_11_WEPDEFAULTKEYID:
@@ -3089,7 +3081,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		/* For safety issue, we add 256 bytes just in case */
 		BssBufSize += 256;
 		/* Allocate the same size as passed from higher layer */
-		os_alloc_mem(pAd, (UCHAR **)&pBuf, BssBufSize);
+		pBuf = os_alloc_mem(BssBufSize);
 		if (pBuf == NULL) {
 			Status = -ENOMEM;
 			break;
@@ -3176,7 +3168,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			wrq->u.data.length = BssLen;
 		} else {
 			if (BssLen > wrq->u.data.length) {
-				os_free_mem(NULL, pBssidList);
+				os_free_mem(pBssidList);
 				return -E2BIG;
 			} else {
 				wrq->u.data.length = BssLen;
@@ -3184,7 +3176,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		}
 
 		Status = copy_to_user(wrq->u.data.pointer, pBssidList, BssLen);
-		os_free_mem(NULL, pBssidList);
+		os_free_mem(pBssidList);
 		break;
 
 	case OID_802_3_CURRENT_ADDRESS:
@@ -3220,7 +3212,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 				Ssid.SsidLength,Ssid.Ssid));
 		break;
 	case RT_OID_802_11_QUERY_LINK_STATUS:
-		os_alloc_mem(pAd, (UCHAR **)&pLinkStatus, sizeof(RT_802_11_LINK_STATUS));
+		pLinkStatus = os_alloc_mem(sizeof(RT_802_11_LINK_STATUS));
 		if (pLinkStatus) {
 			pLinkStatus->CurrTxRate = RateIdTo500Kbps[pAd->CommonCfg.TxRate];   /* unit : 500 kbps */
 			pLinkStatus->ChannelQuality = pAd->Mlme.ChannelQuality;
@@ -3229,7 +3221,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			pLinkStatus->CentralChannel = pAd->CommonCfg.CentralChannel;
 			wrq->u.data.length = sizeof(RT_802_11_LINK_STATUS);
 			Status = copy_to_user(wrq->u.data.pointer, pLinkStatus, wrq->u.data.length);
-			os_free_mem(NULL, pLinkStatus);
+			os_free_mem(pLinkStatus);
 			DBGPRINT(RT_DEBUG_TRACE, ("Query::RT_OID_802_11_QUERY_LINK_STATUS\n"));
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE, ("Query::RT_OID_802_11_QUERY_LINK_STATUS(kmalloc failed)\n"));
@@ -3237,7 +3229,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		}
 		break;
 	case OID_802_11_CONFIGURATION:
-		os_alloc_mem(pAd, (UCHAR **)&pConfiguration, sizeof(NDIS_802_11_CONFIGURATION));
+		pConfiguration = os_alloc_mem(sizeof(NDIS_802_11_CONFIGURATION));
 		if (pConfiguration) {
 			pConfiguration->Length = sizeof(NDIS_802_11_CONFIGURATION);
 			pConfiguration->BeaconPeriod = pAd->CommonCfg.BeaconPeriod;
@@ -3250,7 +3242,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 					pConfiguration->BeaconPeriod,
 					pConfiguration->ATIMWindow,
 					pAd->CommonCfg.Channel));
-			os_free_mem(NULL, pConfiguration);
+			os_free_mem(pConfiguration);
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE,
 					("Query::OID_802_11_CONFIGURATION(kmalloc failed)\n"));
@@ -3324,7 +3316,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		Status = copy_to_user(wrq->u.data.pointer, &ulInfo, wrq->u.data.length);
 		break;
 	case OID_802_11_STATISTICS:
-		os_alloc_mem(pAd, (UCHAR **)&pStatistics, sizeof(NDIS_802_11_STATISTICS));
+		pStatistics = os_alloc_mem(sizeof(NDIS_802_11_STATISTICS));
 		if (pStatistics) {
 			DBGPRINT(RT_DEBUG_TRACE, ("Query::OID_802_11_STATISTICS \n"));
 			/* add the most up-to-date h/w raw counters into software counters */
@@ -3356,7 +3348,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			pStatistics->WEPUndecryptableCount.QuadPart = pAd->WlanCounters.WEPUndecryptableCount.QuadPart;
 			wrq->u.data.length = sizeof(NDIS_802_11_STATISTICS);
 			Status = copy_to_user(wrq->u.data.pointer, pStatistics, wrq->u.data.length);
-			os_free_mem(NULL, pStatistics);
+			os_free_mem(pStatistics);
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE, ("Query::OID_802_11_STATISTICS(mem alloc failed)\n"));
 			Status = -EFAULT;
@@ -3381,7 +3373,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 
 				wrq->u.data.length = sizeof(RT_802_11_TXBF_TABLE);
 				Status = copy_to_user(wrq->u.data.pointer, pMacTab, wrq->u.data.length);
-				os_free_mem(NULL, pMacTab);
+				os_free_mem(pMacTab);
 			} else {
 				Status = -EFAULT;
 			}
@@ -3409,7 +3401,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		DBGPRINT(RT_DEBUG_TRACE, ("Query::RT_OID_802_11_PHY_MODE (=%ld)\n", ulInfo));
 		break;
 	case RT_OID_802_11_STA_CONFIG:
-		os_alloc_mem(pAd, (UCHAR **)&pStaConfig, sizeof(RT_802_11_STA_CONFIG));
+		pStaConfig = os_alloc_mem(sizeof(RT_802_11_STA_CONFIG));
 		if (pStaConfig) {
 			DBGPRINT(RT_DEBUG_TRACE, ("Query::RT_OID_802_11_STA_CONFIG\n"));
 			pStaConfig->EnableTxBurst = pAd->CommonCfg.bEnableTxBurst;
@@ -3422,7 +3414,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			pStaConfig->SystemErrorBitmap = pAd->SystemErrorBitmap;
 			wrq->u.data.length = sizeof(RT_802_11_STA_CONFIG);
 			Status = copy_to_user(wrq->u.data.pointer, pStaConfig, wrq->u.data.length);
-			os_free_mem(NULL, pStaConfig);
+			os_free_mem(pStaConfig);
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE,
 					("Query::RT_OID_802_11_STA_CONFIG(mem alloc failed)\n"));
@@ -3697,7 +3689,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		}
 		break;
 	case RT_OID_802_11_QUERY_HT_PHYMODE:
-		os_alloc_mem(pAd, (UCHAR **)&pHTPhyMode, sizeof(OID_SET_HT_PHYMODE));
+		pHTPhyMode = os_alloc_mem(sizeof(OID_SET_HT_PHYMODE));
 		if (pHTPhyMode) {
 			pHTPhyMode->PhyMode = pAd->CommonCfg.PhyMode;
 			pHTPhyMode->HtMode = (UCHAR)pAd->MacTab.Content[BSSID_WCID].HTPhyMode.field.MODE;
@@ -3718,7 +3710,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			DBGPRINT(RT_DEBUG_TRACE, (" %s(): (.word = %x)\n",
 					__FUNCTION__,
 					pAd->MacTab.Content[BSSID_WCID].HTPhyMode.word));
-			os_free_mem(NULL, pHTPhyMode);
+			os_free_mem(pHTPhyMode);
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE,
 					("Query::RT_OID_802_11_STA_CONFIG(mem alloc failed)\n"));
@@ -3735,7 +3727,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 		}
 		break;
 	case RT_OID_802_11_QUERY_DAT_HT_PHYMODE:
-		os_alloc_mem(pAd, (UCHAR **)&pHTPhyMode, sizeof(OID_SET_HT_PHYMODE));
+		pHTPhyMode = os_alloc_mem(sizeof(OID_SET_HT_PHYMODE));
 		if (pHTPhyMode) {
 			pHTPhyMode->PhyMode = wmode_2_cfgmode(pAd->CommonCfg.PhyMode);
 			pHTPhyMode->HtMode = (UCHAR)pAd->CommonCfg.RegTransmitSetting.field.HTMODE;
@@ -3755,7 +3747,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			DBGPRINT(RT_DEBUG_TRACE, ("%s(): (.word = %x)\n",
 					__FUNCTION__,
 					pAd->MacTab.Content[BSSID_WCID].HTPhyMode.word));
-		os_free_mem(NULL, pHTPhyMode);
+		os_free_mem(pHTPhyMode);
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE, ("Query::RT_OID_802_11_STA_CONFIG(mem alloc failed)\n"));
 			Status = -EFAULT;
@@ -3926,7 +3918,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 				break;
 			}
 
-			os_alloc_mem(pAd, (UCHAR **)&pChListBuf, sizeof(RT_CHANNEL_LIST_INFO));
+			pChListBuf = os_alloc_mem(sizeof(RT_CHANNEL_LIST_INFO));
 			if (pChListBuf == NULL) {
 				wrq->u.data.length = 0;
 				break;
@@ -3941,7 +3933,7 @@ static INT RTMPQueryInformation(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
 			DBGPRINT(RT_DEBUG_TRACE, ("Status=%d\n", Status));
 
 			if (pChListBuf)
-				os_free_mem(NULL, pChListBuf);
+				os_free_mem(pChListBuf);
 		}
 		break;
 
@@ -4000,18 +3992,14 @@ VOID RTMPIoctlMAC(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 	INT Status;
 	BOOLEAN bIsPrintAllMAC = FALSE;
 
-	os_alloc_mem(NULL, (UCHAR **)&msg, sizeof(STRING)*1024);
+	msg = os_alloc_mem(sizeof(STRING)*1024);
 	if (!msg) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
-				__FUNCTION__));
 		goto LabelOK;
 	}
 	memset(msg, 0x00, 1024);
 
-	os_alloc_mem(NULL, (UCHAR **)&arg, sizeof(STRING)*255);
+	arg = os_alloc_mem(sizeof(STRING)*255);
 	if (arg == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
-				__FUNCTION__));
 		goto LabelOK;
 	}
 	memset(arg, 0x00, 255);
@@ -4147,7 +4135,7 @@ next:
 
 		ASSERT((AddrEnd >= AddrStart));
 		/* *2 for safe */
-		os_alloc_mem(NULL, (UCHAR **)&pBufMac, (AddrEnd - AddrStart)*2);
+		pBufMac = os_alloc_mem((AddrEnd - AddrStart)*2);
 		if (pBufMac != NULL) {
 			pBuf = pBufMac;
 			for (IdAddr = AddrStart; IdAddr <= AddrEnd; IdAddr += 4, pBuf++)
@@ -4162,7 +4150,7 @@ next:
 				RtmpDrvAllMacPrint(pAd, pBufMac, AddrStart, AddrEnd, 4);
 			}
 #endif /* defined(RT65xx) || defined(MT7601) */
-			os_free_mem(NULL, pBufMac);
+			os_free_mem(pBufMac);
 		}
 	}
 	if (strlen(msg) == 1)
@@ -4174,9 +4162,9 @@ next:
 
 LabelOK:
 	if (msg != NULL)
-		os_free_mem(NULL, msg);
+		os_free_mem(msg);
 	if (arg != NULL)
-		os_free_mem(NULL, arg);
+		os_free_mem(arg);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlMAC\n\n"));
 	return;
@@ -4216,15 +4204,12 @@ VOID RTMPIoctlE2PROM(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 	BOOLEAN bIsPrintAllE2P = FALSE;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&msg, sizeof(STRING)*1024);
+	msg = os_alloc_mem(sizeof(STRING)*1024);
 	if (msg == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
-				__FUNCTION__));
 		goto LabelOK;
 	}
-	os_alloc_mem(NULL, (UCHAR **)&arg, sizeof(STRING)*255);
+	arg = os_alloc_mem(sizeof(STRING)*255);
 	if (arg == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
 		goto LabelOK;
 	}
 
@@ -4339,7 +4324,7 @@ next:
 		UINT32 ContentLen;
 		UINT32 AddrEnd = 0xFE;
 		ContentLen = AddrEnd+2;
-		os_alloc_mem(NULL, (UCHAR **)&pMacContent, ContentLen);
+		pMacContent = os_alloc_mem(ContentLen);
 		if (pMacContent == NULL) {
 			DBGPRINT(RT_DEBUG_TRACE,
 					("-->2) %s: Allocate memory fail!\n",
@@ -4360,7 +4345,7 @@ next:
 
 			/* print content to a file */
 			RtmpDrvAllE2PPrint(pAd, pMacContent, AddrEnd, 2);
-			os_free_mem(NULL, pMacContent);
+			os_free_mem(pMacContent);
 		}
 
 	}
@@ -4374,9 +4359,9 @@ next:
 
 LabelOK:
 	if (msg != NULL)
-		os_free_mem(NULL, msg);
+		os_free_mem(msg);
 	if (arg != NULL)
-		os_free_mem(NULL, arg);
+		os_free_mem(arg);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlE2PROM\n"));
 	return;
@@ -4402,7 +4387,7 @@ static VOID RTMPIoctlRF_rlt(PRTMP_ADAPTER pAdapter, RTMP_IOCTL_INPUT_STRUCT *wrq
 	DBGPRINT(RT_DEBUG_TRACE, ("==>RTMPIoctlRF (maxRFIdx = %d)\n", maxRFIdx));
 
 	memLen = 12*(maxRFIdx+1)*MAC_RF_BANK;
-	os_alloc_mem(NULL, (UCHAR **)&mpool, memLen);
+	mpool = os_alloc_mem(memLen);
 	if (mpool == NULL) {
 		return;
 	}
@@ -4523,7 +4508,7 @@ next:
 		}
 	}
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlRF\n"));
 }
 #endif /* RLT_RF */
@@ -4539,7 +4524,7 @@ static VOID RTMPIoctlRF_mt(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 
 	DBGPRINT(RT_DEBUG_TRACE, ("==>%s\n", __FUNCTION__));
 
-	os_alloc_mem(NULL, (UCHAR **)&mpool, memLen);
+	mpool = os_alloc_mem(memLen);
 	if (mpool == NULL) {
 		return;
 	}
@@ -4570,7 +4555,7 @@ static VOID RTMPIoctlRF_mt(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 		}
 	}
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlRF\n\n"));
 }
 #endif /* MT_RF */
@@ -4623,7 +4608,7 @@ static VOID RTMPIoctlRF(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 
 	maxRFIdx = pAd->chipCap.MaxNumOfRfId;
 
-	os_alloc_mem(pAd, (UCHAR **)&mpool, sizeof(CHAR)*(2048+256+12));
+	mpool = os_alloc_mem(sizeof(CHAR)*(2048+256+12));
 	if (mpool == NULL) {
 		return;
 	}
@@ -4710,7 +4695,7 @@ next:
 		}
 	}
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 	DBGPRINT(RT_DEBUG_TRACE, ("<==RTMPIoctlRF\n\n"));
 }
 #endif /* RTMP_RF_RW_SUPPORT */
@@ -5068,7 +5053,7 @@ static VOID RTMPIoctlShow(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq, UINT3
 				MLME_DISASSOC_REQ_STRUCT DisReq;
 				MLME_QUEUE_ELEM *pMsgElem;
 
-				os_alloc_mem(NULL, (UCHAR **)&pMsgElem, sizeof(MLME_QUEUE_ELEM));
+				pMsgElem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 				if (pMsgElem) {
 					COPY_MAC_ADDR(&DisReq.Addr, pAd->CommonCfg.Bssid);
 					DisReq.Reason =  REASON_DISASSOC_STA_LEAVING;
@@ -5079,7 +5064,7 @@ static VOID RTMPIoctlShow(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq, UINT3
 					NdisMoveMemory(pMsgElem->Msg, &DisReq, sizeof(MLME_DISASSOC_REQ_STRUCT));
 
 					MlmeDisassocReqAction(pAd, pMsgElem);
-					os_free_mem(NULL, pMsgElem);
+					os_free_mem(pMsgElem);
 
 					RtmpusecDelay(1000);
 				}
@@ -5621,10 +5606,8 @@ static INT RtmpIoctl_rt_ioctl_giwscan(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data
 	if (pIoctlScan->BssNr == 0)
 		return NDIS_STATUS_SUCCESS;
 
-	os_alloc_mem(NULL, (UCHAR **)&(pIoctlScan->pBssTable),
-			pAd->ScanTab.BssNr * sizeof(RT_CMD_STA_IOCTL_BSS_TABLE));
+	pIoctlScan->pBssTable = os_alloc_mem(pAd->ScanTab.BssNr * sizeof(RT_CMD_STA_IOCTL_BSS_TABLE));
 	if (pIoctlScan->pBssTable == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("Allocate memory fail!\n"));
 		return NDIS_STATUS_FAILURE;
 	}
 
@@ -5693,16 +5676,16 @@ static INT RtmpIoctl_rt_ioctl_siwessid(RTMP_ADAPTER *pAd, VOID *pData, ULONG Dat
 		PSTRING	pSsidString = NULL;
 
 		/* Includes null character. */
-		os_alloc_mem(NULL, (UCHAR **)&pSsidString, MAX_LEN_OF_SSID+1);
+		pSsidString = os_alloc_mem(MAX_LEN_OF_SSID+1);
 		if (pSsidString) {
 			NdisZeroMemory(pSsidString, MAX_LEN_OF_SSID+1);
 			NdisMoveMemory(pSsidString, pSsid->pSsid, pSsid->SsidLen);
 			if (Set_SSID_Proc(pAd, pSsidString) == FALSE) {
-				os_free_mem(NULL, pSsidString);
+				os_free_mem(pSsidString);
 				pSsid->Status = RTMP_IO_EINVAL;
 				return NDIS_STATUS_SUCCESS;
 			}
-			os_free_mem(NULL, pSsidString);
+			os_free_mem(pSsidString);
 		} else {
 			pSsid->Status = RTMP_IO_ENOMEM;
 			return NDIS_STATUS_SUCCESS;
@@ -6104,9 +6087,8 @@ static INT RtmpIoctl_rt_ioctl_siwmlme(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data
 	ULONG reason_code = (ULONG)Data;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&pMsgElem, sizeof(MLME_QUEUE_ELEM));
+	pMsgElem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 	if (pMsgElem == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
 		return NDIS_STATUS_FAILURE;
 	}
 
@@ -6145,7 +6127,7 @@ static INT RtmpIoctl_rt_ioctl_siwmlme(RTMP_ADAPTER *pAd, VOID *pData, ULONG Data
 	}
 
 	if (pMsgElem != NULL)
-		os_free_mem(NULL, pMsgElem);
+		os_free_mem(pMsgElem);
 
 	return NDIS_STATUS_SUCCESS;
 }
@@ -6626,10 +6608,10 @@ static INT RtmpIoctl_rt_ioctl_siwgenie(RTMP_ADAPTER *pAd, VOID *pData, ULONG Dat
 			return NDIS_STATUS_FAILURE;
 		} else if (length) {
 			if (pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe) {
-				os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe);
+				os_free_mem(pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe);
 				pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe = NULL;
 			}
-			os_alloc_mem(NULL, (UCHAR **)&pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe, length);
+			pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe = os_alloc_mem(length);
 			if (pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe) {
 				pAd->StaCfg.wpa_supplicant_info.WpaAssocIeLen = length;
 				NdisMoveMemory(pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe,
