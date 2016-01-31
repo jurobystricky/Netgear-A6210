@@ -328,10 +328,8 @@ VOID CntlOidScanProc(PRTMP_ADAPTER pAd, MLME_QUEUE_ELEM *Elem)
 #endif /* RALINK_ATE */
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **) & pCurrBss, sizeof (BSS_ENTRY));
+	pCurrBss = os_alloc_mem(sizeof(BSS_ENTRY));
 	if (pCurrBss == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR,
-			 ("%s: Allocate memory fail!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -355,7 +353,7 @@ VOID CntlOidScanProc(PRTMP_ADAPTER pAd, MLME_QUEUE_ELEM *Elem)
 	pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_LIST_SCAN;
 
 	if (pCurrBss != NULL)
-		os_free_mem(NULL, pCurrBss);
+		os_free_mem(pCurrBss);
 }
 
 /*
