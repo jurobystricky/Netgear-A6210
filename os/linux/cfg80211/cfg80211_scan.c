@@ -68,7 +68,7 @@ int CFG80211DRV_OpsScanGetNextChannel(void *pAdOrg)
 		if (cfg80211_ctrl->Cfg80211CurChanIndex < cfg80211_ctrl->Cfg80211ChanListLen) {
 			return cfg80211_ctrl->pCfg80211ChanList[cfg80211_ctrl->Cfg80211CurChanIndex++];
 		} else {
-			os_free_mem(NULL, cfg80211_ctrl->pCfg80211ChanList);
+			os_free_mem(cfg80211_ctrl->pCfg80211ChanList);
 			cfg80211_ctrl->pCfg80211ChanList = NULL;
 			cfg80211_ctrl->Cfg80211ChanListLen = 0;
 			cfg80211_ctrl->Cfg80211CurChanIndex = 0;
@@ -87,10 +87,9 @@ BOOLEAN CFG80211DRV_OpsScanSetSpecifyChannel(void *pAdOrg, void *pData, UINT8 da
 
 	if (pChanList != NULL) {
 		if (cfg80211_ctrl->pCfg80211ChanList != NULL)
-			os_free_mem(NULL, cfg80211_ctrl->pCfg80211ChanList);
+			os_free_mem(cfg80211_ctrl->pCfg80211ChanList);
 
-		os_alloc_mem(NULL, (UCHAR **)&cfg80211_ctrl->pCfg80211ChanList, 
-				sizeof(UINT32 *) * dataLen);
+		cfg80211_ctrl->pCfg80211ChanList = os_alloc_mem(sizeof(UINT32*)*dataLen);
 		if (cfg80211_ctrl->pCfg80211ChanList != NULL) {
 			NdisCopyMemory(cfg80211_ctrl->pCfg80211ChanList, 
 					pChanList, sizeof(UINT32 *) * dataLen);
@@ -174,12 +173,12 @@ BOOLEAN CFG80211DRV_OpsScanExtraIesSet(void *pAdOrg)
 
 	/* Reset the ExtraIe and Len */
 	if (cfg80211_ctrl->pExtraIe) {
-		os_free_mem(NULL, cfg80211_ctrl->pExtraIe);
+		os_free_mem(cfg80211_ctrl->pExtraIe);
 		cfg80211_ctrl->pExtraIe = NULL;
 	}
 	cfg80211_ctrl->ExtraIeLen = 0;
 
-	os_alloc_mem(pAd, (UCHAR **)&(cfg80211_ctrl->pExtraIe), ie_len);
+	cfg80211_ctrl->pExtraIe = os_alloc_mem(ie_len);
 	if (cfg80211_ctrl->pExtraIe) {
 		NdisCopyMemory(cfg80211_ctrl->pExtraIe, pCfg80211_CB->pCfg80211_ScanReq->ie, ie_len);
 		cfg80211_ctrl->ExtraIeLen = ie_len;
