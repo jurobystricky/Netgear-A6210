@@ -520,9 +520,8 @@ static BOOLEAN PeerWpaMessageSanity(PRTMP_ADAPTER pAd, PEAPOL_PACKET pMsg,
 	UCHAR GroupKeyIndex = 0;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&KEYDATA, MAX_LEN_OF_RSNIE);
+	KEYDATA = os_alloc_mem(MAX_LEN_OF_RSNIE);
 	if (KEYDATA == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
 		return FALSE;
 	}
 
@@ -679,12 +678,12 @@ static BOOLEAN PeerWpaMessageSanity(PRTMP_ADAPTER pAd, PEAPOL_PACKET pMsg,
 
 LabelOK:
 	if (KEYDATA != NULL)
-		os_free_mem(NULL, KEYDATA);
+		os_free_mem(KEYDATA);
 	return TRUE;
 
 LabelErr:
 	if (KEYDATA != NULL)
-		os_free_mem(NULL, KEYDATA);
+		os_free_mem(KEYDATA);
 	return FALSE;
 }
 
@@ -759,9 +758,8 @@ VOID WPAStart4WayHS(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry, ULONG TimeInterv
 	GenRandom(pAd, (UCHAR *)pBssid, pEntry->ANonce);
 
 	/* Allocate memory for output*/
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
+	mpool = os_alloc_mem(TX_EAPOL_BUFFER);
 	if (mpool == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -845,7 +843,7 @@ VOID WPAStart4WayHS(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry, ULONG TimeInterv
 	/* Update State*/
 	pEntry->WpaState = AS_PTKSTART;
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<=== WPAStart4WayHS: send Msg1 of 4-way \n"));
 }
@@ -961,9 +959,8 @@ static VOID PeerPairMsg1Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY  *pEntry,
 	pEntry->WpaState = AS_PTKINIT_NEGOTIATING;
 
 	/* Allocate memory for output*/
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
+	mpool = os_alloc_mem(TX_EAPOL_BUFFER);
 	if (mpool == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -983,7 +980,7 @@ static VOID PeerPairMsg1Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY  *pEntry,
 	RTMPToWirelessSta(pAd, pEntry, Header802_3, sizeof(Header802_3), (PUCHAR)pEapolFrame,
 			CONV_ARRARY_TO_UINT16(pEapolFrame->Body_Len) + 4, TRUE);
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<=== PeerPairMsg1Action: send Msg2 of 4-way \n"));
 }
@@ -1110,9 +1107,8 @@ static VOID PeerPairMsg2Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY  *pEntry,
 #endif
 
 		/* Allocate memory for input*/
-		os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
+		mpool = os_alloc_mem(TX_EAPOL_BUFFER);
 		if (mpool == NULL) {
-			DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
 			return;
 		}
 
@@ -1159,7 +1155,7 @@ static VOID PeerPairMsg2Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY  *pEntry,
 		/* Update State*/
 		pEntry->WpaState = AS_PTKINIT_NEGOTIATING;
 
-		os_free_mem(NULL, mpool);
+		os_free_mem(mpool);
 
 	} while (FALSE);
 
@@ -1248,9 +1244,8 @@ static VOID PeerPairMsg3Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry,
 	}
 
 	/* Allocate memory for output*/
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
+	mpool = os_alloc_mem(TX_EAPOL_BUFFER);
 	if (mpool == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -1333,7 +1328,7 @@ static VOID PeerPairMsg3Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry,
 			(PUCHAR)pEapolFrame,
 			CONV_ARRARY_TO_UINT16(pEapolFrame->Body_Len) + 4, TRUE);
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<=== PeerPairMsg3Action: send Msg4 of 4-way \n"));
 }
@@ -1490,9 +1485,8 @@ VOID WPAStart2WayGroupHS(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry)
 #endif /* CONFIG_AP_SUPPORT */
 
 	/* Allocate memory for output*/
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
+	mpool = os_alloc_mem(TX_EAPOL_BUFFER);
 	if (mpool == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -1518,7 +1512,7 @@ VOID WPAStart2WayGroupHS(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry)
 			(PUCHAR)pEapolFrame,
 			CONV_ARRARY_TO_UINT16(pEapolFrame->Body_Len) + 4, FALSE);
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<=== WPAStart2WayGroupHS : send out Group Message 1 \n"));
 
@@ -1615,9 +1609,8 @@ static VOID PeerGroupMsg1Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry,
 	NdisMoveMemory(pEntry->R_Counter, pGroup->KeyDesc.ReplayCounter, LEN_KEY_DESC_REPLAY);
 
 	/* Allocate memory for output*/
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, TX_EAPOL_BUFFER);
+	mpool = os_alloc_mem(TX_EAPOL_BUFFER);
 	if (mpool == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!%s : no memory!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -1677,7 +1670,7 @@ static VOID PeerGroupMsg1Action(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntry,
 			(PUCHAR)pEapolFrame,
 			 CONV_ARRARY_TO_UINT16(pEapolFrame->Body_Len) + 4, FALSE);
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<=== PeerGroupMsg1Action: send group message 2\n"));
 }
@@ -1724,12 +1717,12 @@ VOID MlmeDeAuthAction(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY  *pEntry,
 	PUCHAR pOutBuffer = NULL;
 	ULONG FrameLen = 0;
 	HEADER_802_11 DeAuthHdr;
-	NDIS_STATUS NStatus;
+//	NDIS_STATUS NStatus;
 
 	if (pEntry) {
 		/* Send out a Deauthentication request frame*/
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
-		if (NStatus != NDIS_STATUS_SUCCESS)
+		pOutBuffer = MlmeAllocateMemory();
+		if (!pOutBuffer)
 			return;
 
 		/* send wireless event - for send disassication */
@@ -1780,7 +1773,7 @@ VOID MlmeDeAuthAction(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY  *pEntry,
 			MiniportMMRequest(pAd, MGMT_USE_QUEUE_FLAG, pOutBuffer, FrameLen);
 		else
 			MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
-		MlmeFreeMemory(pAd, pOutBuffer);
+		MlmeFreeMemory(pOutBuffer);
 
 		/* ApLogEvent(pAd, pEntry->Addr, EVENT_DISASSOCIATED);*/
 		MacTableDeleteEntry(pAd, pEntry->wcid, pEntry->Addr);
@@ -1986,9 +1979,8 @@ static VOID PRF(UCHAR *key, INT key_len, UCHAR *prefix, INT prefix_len,
 	INT total_len;
 
 	/* Allocate memory for input*/
-	os_alloc_mem(NULL, (PUCHAR *)&input, 1024);
+	input = os_alloc_mem(1024);
 	if (input == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!PRF: no memory!!!\n"));
 		return;
 	}
 
@@ -2016,7 +2008,7 @@ static VOID PRF(UCHAR *key, INT key_len, UCHAR *prefix, INT prefix_len,
 		/* update the last octet */
 		input[total_len - 1]++;
 	}
-	os_free_mem(NULL, input);
+	os_free_mem(input);
 }
 
 /*
@@ -2112,9 +2104,8 @@ VOID KDF(PUINT8 key, INT key_len, PUINT8 label, INT label_len, PUINT8 data,
 	INT total_len;
 	UINT len_in_bits = (len << 3);
 
-	os_alloc_mem(NULL, (PUCHAR *)&input, 1024);
+	input = os_alloc_mem(1024);
 	if (input == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!KDF: no memory!!!\n"));
 		return;
 	}
 
@@ -2148,7 +2139,7 @@ VOID KDF(PUINT8 key, INT key_len, PUINT8 label, INT label_len, PUINT8 data,
 		input[0]++;		/* increment octet count*/
 
 	}
-	os_free_mem(NULL, input);
+	os_free_mem(input);
 }
 
 
@@ -3700,7 +3691,7 @@ static VOID ConstructEapolKeyData(PMAC_TABLE_ENTRY pEntry, UCHAR GroupKeyWepStat
 		return;
 
 	/* allocate memory pool*/
-	os_alloc_mem(NULL, (PUCHAR *)&mpool, 1500);
+	mpool = os_alloc_mem(1500);
 	if (mpool == NULL)
 		return;
 
@@ -3815,7 +3806,7 @@ static VOID ConstructEapolKeyData(PMAC_TABLE_ENTRY pEntry, UCHAR GroupKeyWepStat
 	SET_UINT16_TO_ARRARY(pMsg->KeyDesc.KeyDataLen, data_offset);
 	INC_UINT16_TO_ARRARY(pMsg->Body_Len, data_offset);
 
-	os_free_mem(NULL, mpool);
+	os_free_mem(mpool);
 }
 
 /*
@@ -3846,9 +3837,8 @@ VOID CalculateMIC(UCHAR KeyDescVer, UCHAR *PTK, PEAPOL_PACKET pMsg)
 	UCHAR digest[80];
 
 	/* allocate memory for MIC calculation*/
-	os_alloc_mem(NULL, (PUCHAR *)&OutBuffer, 512);
+	OutBuffer = os_alloc_mem(512);
 	if (OutBuffer == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("!!!CalculateMIC: no memory!!!\n"));
 		return;
 	}
 
@@ -3871,7 +3861,7 @@ VOID CalculateMIC(UCHAR KeyDescVer, UCHAR *PTK, PEAPOL_PACKET pMsg)
 
 	/* store the calculated MIC*/
 	NdisMoveMemory(pMsg->KeyDesc.KeyMic, mic, LEN_KEY_DESC_MIC);
-	os_free_mem(NULL, OutBuffer);
+	os_free_mem(OutBuffer);
 }
 
 static UCHAR RTMPExtractKeyIdxFromIVHdr(PUCHAR pIV, UINT8 CipherAlg)
