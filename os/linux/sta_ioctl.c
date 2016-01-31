@@ -347,12 +347,13 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 						&ChannelListNum, 0, RtmpDevPrivFlagsGet(dev));
 	range->num_channels = ChannelListNum;
 
-	os_alloc_mem(NULL, (UCHAR **)&pChannel, sizeof(UCHAR)*ChannelListNum);
+	pChannel = os_alloc_mem(sizeof(UCHAR)*ChannelListNum);
 	if (pChannel == NULL)
 		return -ENOMEM;
-	os_alloc_mem(NULL, (UCHAR **)&pFreq, sizeof(UINT32)*ChannelListNum);
+
+	pFreq = os_alloc_mem(sizeof(UINT32)*ChannelListNum);
 	if (pFreq == NULL) {
-		os_free_mem(NULL, pChannel);
+		os_free_mem(pChannel);
 		return -ENOMEM;
 	}
 
@@ -372,8 +373,8 @@ static int rt_ioctl_giwrange(struct net_device *dev, struct iw_request_info *inf
 		if (val == IW_MAX_FREQUENCIES)
 			break;
 	}
-	os_free_mem(NULL, pChannel);
-	os_free_mem(NULL, pFreq);
+	os_free_mem(pChannel);
+	os_free_mem(pFreq);
 
 	range->num_frequency = val;
 	range->max_qual.qual = 100; /* what is correct max? This was not
@@ -521,18 +522,14 @@ static int rt_ioctl_iwaplist(struct net_device *dev, struct iw_request_info *inf
 	}
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&(pBssList->pList), sizeof(RT_CMD_STA_IOCTL_BSS_LIST) * IW_MAX_AP);
+	pBssList->pList = os_alloc_mem(sizeof(RT_CMD_STA_IOCTL_BSS_LIST) * IW_MAX_AP);
 	if (pBssList->pList == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
-				__FUNCTION__));
 		return 0;
 	}
 
-	os_alloc_mem(NULL, (UCHAR **)&addr, sizeof(struct sockaddr) * IW_MAX_AP);
+	addr = os_alloc_mem(sizeof(struct sockaddr) * IW_MAX_AP);
 	if (addr == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n",
-				__FUNCTION__));
-		os_free_mem(NULL, pBssList);
+		os_free_mem(pBssList);
 		return 0;
 	}
 
@@ -553,8 +550,8 @@ static int rt_ioctl_iwaplist(struct net_device *dev, struct iw_request_info *inf
 	data->flags = 1;		/* signal quality present (sort of) */
 	memcpy(extra + i*sizeof(addr[0]), &qual, i*sizeof(qual[i]));
 
-	os_free_mem(NULL, addr);
-	os_free_mem(NULL, pBssList->pList);
+	os_free_mem(addr);
+	os_free_mem(pBssList->pList);
 	return 0;
 }
 
@@ -1014,7 +1011,7 @@ int rt_ioctl_giwscan(struct net_device *dev, struct iw_request_info *info,
 
 go_out:
 	if (pIoctlScan->pBssTable != NULL)
-		os_free_mem(NULL, pIoctlScan->pBssTable);
+		os_free_mem(pIoctlScan->pBssTable);
 
 	return status;
 }
