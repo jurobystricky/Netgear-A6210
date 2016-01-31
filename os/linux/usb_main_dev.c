@@ -30,7 +30,7 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 
 static void rtusb_vendor_specific_check(struct usb_device *dev, void *pAd)
 {
-	RT_CMD_USB_MORE_FLAG_CONFIG Config = { 
+	RT_CMD_USB_MORE_FLAG_CONFIG Config = {
 		dev->descriptor.idVendor, dev->descriptor.idProduct };
 	RTMP_DRIVER_USB_MORE_FLAG_SET(pAd, &Config);
 }
@@ -72,7 +72,7 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
 
-	os_alloc_mem(NULL, (UCHAR **)&handle, sizeof(struct os_cookie));
+	handle = os_alloc_mem(sizeof(struct os_cookie));
 	if (handle == NULL) {
 		printk("rt2870_probe(): Allocate memory for os handle failed!\n");
 		return -ENOMEM;
@@ -89,7 +89,7 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 
 	rv = RTMPAllocAdapterBlock(handle, &pAd);
 	if (rv != NDIS_STATUS_SUCCESS) {
-		os_free_mem(NULL, handle);
+		os_free_mem(handle);
 		goto err_out;
 	}
 
@@ -199,7 +199,7 @@ static void rt2870_disconnect(struct usb_device *dev, void *pAd)
 {
 	struct net_device *net_dev;
 
-	DBGPRINT(RT_DEBUG_WARN, 
+	DBGPRINT(RT_DEBUG_WARN,
 			("%s: unregister usbnet usb-%s-%s\n",
 			__FUNCTION__,dev->bus->bus_name, dev->devpath));
 	if (!pAd) {
@@ -365,11 +365,11 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 				pConfig->BulkInMaxPacketSize = iface_desc->endpoint[i].desc.wMaxPacketSize;
 #endif /* LINUX_VERSION_CODE */
 
-				DBGPRINT(RT_DEBUG_TRACE, 
-						("BULK IN MaxPacketSize = %d\n", 
+				DBGPRINT(RT_DEBUG_TRACE,
+						("BULK IN MaxPacketSize = %d\n",
 						pConfig->BulkInMaxPacketSize));
-				DBGPRINT(RT_DEBUG_TRACE, 
-						("EP address = 0x%2x\n", 
+				DBGPRINT(RT_DEBUG_TRACE,
+						("EP address = 0x%2x\n",
 						iface_desc->endpoint[i].desc.bEndpointAddress));
 			} else {
 				DBGPRINT(RT_DEBUG_ERROR, ("Bulk IN endpoint nums large than 2\n"));
@@ -385,14 +385,14 @@ static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *in
 #else
 				pConfig->BulkOutMaxPacketSize = iface_desc->endpoint[i].desc.wMaxPacketSize;
 #endif
-				DBGPRINT(RT_DEBUG_TRACE, 
-						("BULK OUT MaxPacketSize = %d\n", 
+				DBGPRINT(RT_DEBUG_TRACE,
+						("BULK OUT MaxPacketSize = %d\n",
 						pConfig->BulkOutMaxPacketSize));
-				DBGPRINT(RT_DEBUG_TRACE, 
-						("EP address = 0x%2x  \n", 
+				DBGPRINT(RT_DEBUG_TRACE,
+						("EP address = 0x%2x  \n",
 						iface_desc->endpoint[i].desc.bEndpointAddress));
 			} else {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("Bulk Out endpoint nums large than 6\n"));
 			}
 		}
@@ -501,8 +501,8 @@ int __init rtusb_init(void)
 	if (!dbgfs_dir) {
 		printk(KERN_ALERT "debugfs_create_dir failed\n");
 	}
-	
-	tmp = debugfs_create_u32("RTDebugLevel", S_IWUSR | S_IRUGO, dbgfs_dir, 
+
+	tmp = debugfs_create_u32("RTDebugLevel", S_IWUSR | S_IRUGO, dbgfs_dir,
 			&RTDebugLevel);
 	if (!tmp) {
 		printk(KERN_ALERT "debugfs_create_u32 failed\n");
