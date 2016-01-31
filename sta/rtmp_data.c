@@ -2964,7 +2964,7 @@ static void STA_Fragment_Frame_Tx(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
 #ifdef SOFT_ENCRYPT
 	if (TX_BLK_TEST_FLAG(pTxBlk, fTX_bSwEncrypt)) {
 		/* store the outgoing frame for calculating MIC per fragmented frame */
-		os_alloc_mem(pAd, (PUCHAR *) & tmp_ptr, pTxBlk->SrcBufLen);
+		tmp_ptr = os_alloc_mem(pTxBlk->SrcBufLen);
 		if (tmp_ptr == NULL) {
 			DBGPRINT(RT_DEBUG_ERROR,
 				 ("!!!%s : no memory for SW MIC calculation !!!\n",
@@ -3083,7 +3083,7 @@ static void STA_Fragment_Frame_Tx(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
 
 #ifdef SOFT_ENCRYPT
 	if (tmp_ptr != NULL)
-		os_free_mem(pAd, tmp_ptr);
+		os_free_mem(tmp_ptr);
 #endif /* SOFT_ENCRYPT */
 
 	/*
@@ -3124,7 +3124,8 @@ static void STA_NDPA_Frame_Tx(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
 	if (pMacEntry) {
 		wdev = pMacEntry->wdev;
 
-		if (MlmeAllocateMemory(pAd, &buf) != NDIS_STATUS_SUCCESS)
+		buf = MlmeAllocateMemory() ;
+		if (!buf)
 			return;
 
 		NdisZeroMemory(buf, MGMT_DMA_BUFFER_SIZE);
@@ -3166,7 +3167,7 @@ static void STA_NDPA_Frame_Tx(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
 		pTxBlk->Flags = FALSE; // No Acq Request
 
 		MiniportMMRequest(pAd, 0, buf, frm_len);
-		MlmeFreeMemory(pAd, buf);
+		MlmeFreeMemory(buf);
 	}
 
 	pMacEntry->TxSndgType = SNDG_TYPE_DISABLE;
