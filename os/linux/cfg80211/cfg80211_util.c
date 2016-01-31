@@ -205,7 +205,7 @@ void CFG80211OS_UnRegister(void *pCB, void *pNetDevOrg)
 		SET_NETDEV_DEV(pNetDev, NULL);
 	}
 
-	os_free_mem(NULL, pCfg80211_CB);
+	os_free_mem(pCfg80211_CB);
 }
 
 
@@ -283,7 +283,7 @@ BOOLEAN CFG80211_SupBandInit(void *pCB, CFG80211_BAND *pDriverBandInfo,
 	if (pRates == NULL) {
 		pRates = kzalloc(sizeof(*pRates) * NumOfRate, GFP_KERNEL);
 		if (!pRates) {
-			os_free_mem(NULL, pChannels);
+			os_free_mem(pChannels);
 			return FALSE;
 		}
 	}
