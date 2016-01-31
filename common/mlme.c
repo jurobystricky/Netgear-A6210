@@ -3993,9 +3993,8 @@ VOID BssTableSortByRssi(BSS_TABLE *OutTab, BOOLEAN isInverseOrder)
 	BSS_ENTRY *pTmpBss = NULL;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&pTmpBss, sizeof(BSS_ENTRY));
+	pTmpBss = os_alloc_mem(sizeof(BSS_ENTRY));
 	if (pTmpBss == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
 		return;
 	}
 
@@ -4013,7 +4012,7 @@ VOID BssTableSortByRssi(BSS_TABLE *OutTab, BOOLEAN isInverseOrder)
 	}
 
 	if (pTmpBss != NULL)
-		os_free_mem(NULL, pTmpBss);
+		os_free_mem(pTmpBss);
 }
 
 static VOID BssCipherParse(BSS_ENTRY *pBss)
