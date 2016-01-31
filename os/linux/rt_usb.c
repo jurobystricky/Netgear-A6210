@@ -873,12 +873,12 @@ static INT RTUSBCmdThread(ULONG Context)
 			if (pCmdQElmt) {
 				if (pCmdQElmt->CmdFromNdis == TRUE) {
 					if (pCmdQElmt->buffer != NULL)
-						os_free_mem(pAd, pCmdQElmt->buffer);
-					os_free_mem(pAd, (PUCHAR)pCmdQElmt);
+						os_free_mem(pCmdQElmt->buffer);
+					os_free_mem(pCmdQElmt);
 				} else {
 					if ((pCmdQElmt->buffer != NULL) && (pCmdQElmt->bufferlength != 0))
-						os_free_mem(pAd, pCmdQElmt->buffer);
-					os_free_mem(pAd, (PUCHAR)pCmdQElmt);
+						os_free_mem(pCmdQElmt->buffer);
+					os_free_mem(pCmdQElmt);
 				}
 			}
 		}
@@ -915,11 +915,9 @@ void InitUSBDevice(RT_CMD_USB_INIT *config, VOID *ad_src)
 	RTMP_SEM_EVENT_INIT(&(ad->reg_atomic), &ad->RscSemMemList);
 	RTMP_SEM_EVENT_INIT(&(ad->hw_atomic), &ad->RscSemMemList);
 	RTMP_SEM_EVENT_INIT(&(ad->mcu_atomic), &ad->RscSemMemList);
-	os_alloc_mem(ad, (PUCHAR *)&ad->UsbVendorReqBuf, MAX_PARAM_BUFFER_SIZE - 1);
 
+	ad->UsbVendorReqBuf = os_alloc_mem(MAX_PARAM_BUFFER_SIZE - 1);
 	if (ad->UsbVendorReqBuf == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, 
-				("Allocate vendor request temp buffer failed!\n"));
 		return;
 	}
 
