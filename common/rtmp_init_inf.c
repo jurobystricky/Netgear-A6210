@@ -47,7 +47,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	DBGPRINT(RT_DEBUG_TRACE, ("MAC[Ver:Rev=0x%08x : 0x%08x]\n",
 			pAd->MACVersion, pAd->ChipID));
 
-	RT28XXDMADisable(pAd);
+//	RT28XXDMADisable(pAd);
 
 	if (mcu_sys_init(pAd) != TRUE)
 		goto err1;
@@ -118,8 +118,6 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	Status = RtmpNetTaskInit(pAd);
 	if (Status != NDIS_STATUS_SUCCESS)
 		goto err5;
-
-//JB removed	CfgInitHook(pAd);
 
 #ifdef BLOCK_NET_IF
 	initblockQueueTab(pAd);
@@ -494,7 +492,7 @@ err1:
 #ifdef DOT11_N_SUPPORT
 	if (pAd->mpdu_blk_pool.mem) {
 		WARN_ON(1); //just to catch red handed
-		os_free_mem(pAd, pAd->mpdu_blk_pool.mem); /* free BA pool*/
+		os_free_mem(pAd->mpdu_blk_pool.mem); /* free BA pool*/
 		pAd->mpdu_blk_pool.mem = NULL;
 	}
 #endif /* DOT11_N_SUPPORT */
@@ -655,7 +653,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 
 #ifdef EXT_BUILD_CHANNEL_LIST
 	if (pAd->CommonCfg.pChDesp != NULL)
-		os_free_mem(NULL, pAd->CommonCfg.pChDesp);
+		os_free_mem(pAd->CommonCfg.pChDesp);
 	pAd->CommonCfg.pChDesp = NULL;
 	pAd->CommonCfg.DfsType = MAX_RD_REGION;
 	pAd->CommonCfg.bCountryFlag = 0;
@@ -743,7 +741,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 		CH_POWER *ch, *ch_temp;
 		DlListForEachSafe(ch, ch_temp, &pAd->SingleSkuPwrList, CH_POWER, List)
 		DlListDel(&ch->List);
-		os_free_mem(NULL, ch);
+		os_free_mem(ch);
 	}
 #endif /* SINGLE_SKU_V2 */
 
@@ -822,7 +820,7 @@ VOID RTMPInfClose(VOID *pAdSrc)
 			MLME_DISASSOC_REQ_STRUCT DisReq;
 			MLME_QUEUE_ELEM *MsgElem;
 
-			os_alloc_mem(NULL, (UCHAR **)&MsgElem, sizeof(MLME_QUEUE_ELEM));
+			MsgElem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
 			if (MsgElem) {
 				COPY_MAC_ADDR(DisReq.Addr, pAd->CommonCfg.Bssid);
 				DisReq.Reason =  REASON_DEAUTH_STA_LEAVING;
@@ -838,7 +836,7 @@ VOID RTMPInfClose(VOID *pAdSrc)
 
 				pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_DISASSOC;
 				MlmeDisassocReqAction(pAd, MsgElem);
-				os_free_mem(NULL, MsgElem);
+				os_free_mem(MsgElem);
 			}
 
 			RtmpusecDelay(1000);
@@ -851,13 +849,13 @@ VOID RTMPInfClose(VOID *pAdSrc)
 #endif /* NATIVE_WPA_SUPPLICANT_SUPPORT */
 
 		if (pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe) {
-			os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
+			os_free_mem(pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe);
 			pAd->StaCfg.wpa_supplicant_info.pWpsProbeReqIe = NULL;
 			pAd->StaCfg.wpa_supplicant_info.WpsProbeReqIeLen = 0;
 		}
 
 		if (pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe) {
-			os_free_mem(NULL, pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe);
+			os_free_mem(pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe);
 			pAd->StaCfg.wpa_supplicant_info.pWpaAssocIe = NULL;
 			pAd->StaCfg.wpa_supplicant_info.WpaAssocIeLen = 0;
 		}
@@ -917,12 +915,9 @@ static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 		while((rv = RtmpOSFileRead(file_r, tempStr, 64)) > 0) {
 			fileLen += rv;
 		}
-		os_alloc_mem(NULL, (UCHAR **)&cfgData, fileLen);
+		cfgData = os_alloc_mem(fileLen);
 		if (cfgData == NULL) {
 			RtmpOSFileClose(file_r);
-			DBGPRINT(RT_DEBUG_TRACE,
-					("CfgData mem alloc fail. (fileLen = %ld)\n",
-					fileLen));
 			goto out;
 		}
 		NdisZeroMemory(cfgData, fileLen);
@@ -944,9 +939,8 @@ static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 		offset = (PCHAR) rtstrstr((PSTRING) cfgData, "Default\n");
 		offset += strlen("Default\n");
 		RtmpOSFileWrite(file_w, (PSTRING)cfgData, (int)(offset-cfgData));
-		os_alloc_mem(NULL, (UCHAR **)&pTempStr, 512);
+		pTempStr = os_alloc_mem(512);
 		if (!pTempStr) {
-			DBGPRINT(RT_DEBUG_TRACE, ("pTempStr mem alloc fail. (512)\n"));
 			RtmpOSFileClose(file_w);
 			goto WriteErr;
 		}
@@ -1007,11 +1001,11 @@ static void WriteConfToDatFile(RTMP_ADAPTER *pAd)
 
 WriteErr:
 	if (pTempStr)
-		os_free_mem(NULL, pTempStr);
+		os_free_mem(pTempStr);
 ReadErr:
 WriteFileOpenErr:
 	if (cfgData)
-		os_free_mem(NULL, cfgData);
+		os_free_mem(cfgData);
 out:
 	RtmpOSFSInfoChange(&osFSInfo, FALSE);
 
