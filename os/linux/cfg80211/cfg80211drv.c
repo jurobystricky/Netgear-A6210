@@ -209,7 +209,7 @@ int CFG80211DRV_IoctlHandle(void *pAdSrc, int cmd, void *pData, ULONG Data)
 			pAd->ApCfg.MBSSID[MAIN_MBSSID].TimBitmaps[i] = 0;
 
 		if (pAd->cfg80211_ctrl.beacon_tail_buf != NULL) {
-			os_free_mem(NULL, pAd->cfg80211_ctrl.beacon_tail_buf);
+			os_free_mem(pAd->cfg80211_ctrl.beacon_tail_buf);
 			pAd->cfg80211_ctrl.beacon_tail_buf = NULL;
 		}
 		pAd->cfg80211_ctrl.beacon_tail_len = 0;
@@ -638,7 +638,8 @@ static BOOLEAN CFG80211DRV_OpsLeave(void *pAdOrg, UINT8 IfType)
 	pAd->cfg80211_ctrl.FlgCfg80211Connecting = FALSE;
 	pAd->MlmeAux.AutoReconnectSsidLen= 32;
 	NdisZeroMemory(pAd->MlmeAux.AutoReconnectSsid, pAd->MlmeAux.AutoReconnectSsidLen);
-	os_alloc_mem(pAd, (UCHAR **)&pMsgElem, sizeof(MLME_QUEUE_ELEM));
+	pMsgElem = os_alloc_mem(sizeof(MLME_QUEUE_ELEM));
+	//JB WTF? No memory check?
 
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
 	if (IfType == RT_CMD_80211_IFTYPE_P2P_CLIENT)
@@ -651,7 +652,7 @@ static BOOLEAN CFG80211DRV_OpsLeave(void *pAdOrg, UINT8 IfType)
 	pMsgElem->MsgLen = sizeof(MLME_DEAUTH_REQ_STRUCT);
 	NdisMoveMemory(pMsgElem->Msg, &DeAuthReq, sizeof(MLME_DEAUTH_REQ_STRUCT));
 	MlmeDeauthReqAction(pAd, pMsgElem);
-	os_free_mem(NULL, pMsgElem);
+	os_free_mem(pMsgElem);
 	pMsgElem = NULL;
 
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
@@ -1053,7 +1054,7 @@ static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev)
 	/* It should be free when ScanEnd,
 	   But Hit close the device in Scanning */
 	if (pCfg80211_ctrl->pCfg80211ChanList != NULL) {
-		os_free_mem(NULL, pCfg80211_ctrl->pCfg80211ChanList);
+		os_free_mem(pCfg80211_ctrl->pCfg80211ChanList);
 		pCfg80211_ctrl->pCfg80211ChanList = NULL;
 	}
 
@@ -1061,7 +1062,7 @@ static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev)
 	pCfg80211_ctrl->Cfg80211CurChanIndex = 0;
 
 	if (pCfg80211_ctrl->pExtraIe) {
-		os_free_mem(NULL, pCfg80211_ctrl->pExtraIe);
+		os_free_mem(pCfg80211_ctrl->pExtraIe);
 		pCfg80211_ctrl->pExtraIe = NULL;
 	}
 	pCfg80211_ctrl->ExtraIeLen = 0;
@@ -1069,14 +1070,14 @@ static void CFG80211_UnRegister(void *pAdOrg, void *pNetDev)
 /*
 CFG_TODO
 	 if (pAd->pTxStatusBuf != NULL) {
-		 os_free_mem(NULL, pAd->pTxStatusBuf);
+		 os_free_mem(pAd->pTxStatusBuf);
 		 pAd->pTxStatusBuf = NULL;
 	 }
 	 pAd->TxStatusBufLen = 0;
 */
 #ifdef CONFIG_AP_SUPPORT
 	if (pAd->cfg80211_ctrl.beacon_tail_buf != NULL) {
-		os_free_mem(NULL, pAd->cfg80211_ctrl.beacon_tail_buf);
+		os_free_mem(pAd->cfg80211_ctrl.beacon_tail_buf);
 		pAd->cfg80211_ctrl.beacon_tail_buf = NULL;
 	}
 	pAd->cfg80211_ctrl.beacon_tail_len = 0;
@@ -1565,7 +1566,7 @@ BOOLEAN CFG80211_checkScanTable(void *pAdCB)
 		chan = ieee80211_get_channel(pWiphy, CenFreq);
 		ieLen = 2 + pApCliEntry->MlmeAux.SsidLen + pBssEntry->VarIeFromProbeRspLen;
 
-		os_alloc_mem(NULL, (UCHAR **)&ie, ieLen);
+		ie = os_alloc_mem(ieLen);
 		if (!ie) {
 			CFG80211DBG(RT_DEBUG_ERROR, ("Memory Allocate Fail in CFG80211_checkScanTable\n"));
 			return FALSE;
@@ -1597,7 +1598,7 @@ BOOLEAN CFG80211_checkScanTable(void *pAdCB)
 		}
 
 		if (ie != NULL)
-			os_free_mem(NULL, ie);
+			os_free_mem(ie);
 
 		if (isOk)
 			return TRUE;
