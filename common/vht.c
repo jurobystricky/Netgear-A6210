@@ -111,7 +111,8 @@ VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
 	UINT frm_len, sta_cnt;
 	SNDING_STA_INFO *sta_info;
 
-	if (MlmeAllocateMemory(pAd, &buf) != NDIS_STATUS_SUCCESS)
+	buf = MlmeAllocateMemory();
+	if (!buf)
 		return;
 
 	NdisZeroMemory(buf, MGMT_DMA_BUFFER_SIZE);
@@ -150,7 +151,7 @@ VOID trigger_vht_ndpa(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *entry)
 	//			PRINT_MAC(entry->Addr)));
 	//hex_dump("VHT NDPA Frame", buf, frm_len);
 	MiniportMMRequest(pAd, 0, buf, frm_len);
-	MlmeFreeMemory(pAd, buf);
+	MlmeFreeMemory(buf);
 
 #ifdef SOFT_SOUNDING
 	if (1) {
