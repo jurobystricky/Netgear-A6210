@@ -31,7 +31,7 @@
 #endif
 
 struct dev_type_name_map{
-	INT type;
+	int type;
 	PSTRING prefix[2];
 };
 
@@ -69,7 +69,7 @@ static struct dev_type_name_map prefix_map[] =
 };
 
 struct dev_id_name_map{
-	INT chip_id;
+	int chip_id;
 	PSTRING chip_name;
 };
 
@@ -79,12 +79,12 @@ static const struct dev_id_name_map id_name_list[]=
 
 };
 
-VOID get_dev_config_idx(RTMP_ADAPTER *pAd)
+void get_dev_config_idx(RTMP_ADAPTER *pAd)
 {
-	INT idx = 0;
+	int idx = 0;
 #if defined(CONFIG_RT_FIRST_CARD) && defined(CONFIG_RT_SECOND_CARD)
 	static int probe_cnt = 1;
-	INT first_card = 0, second_card = 0;
+	int first_card = 0, second_card = 0;
 
 	A2Hex(first_card, FIRST_CHIP_ID);
 	A2Hex(second_card, SECOND_CHIP_ID);
@@ -108,10 +108,10 @@ VOID get_dev_config_idx(RTMP_ADAPTER *pAd)
 }
 
 
-UCHAR *get_dev_name_prefix(RTMP_ADAPTER *pAd, INT dev_type)
+UCHAR *get_dev_name_prefix(RTMP_ADAPTER *pAd, int dev_type)
 {
 	struct dev_type_name_map *map;
-	INT type_idx = 0, dev_idx = pAd->dev_idx;
+	int type_idx = 0, dev_idx = pAd->dev_idx;
 
 	do {
 		map = &prefix_map[type_idx];
@@ -134,7 +134,7 @@ static UCHAR *get_dev_profile(RTMP_ADAPTER *pAd)
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 #if defined(CONFIG_RT_FIRST_CARD) && defined(CONFIG_RT_SECOND_CARD)
-			INT card_idx = pAd->dev_idx;
+			int card_idx = pAd->dev_idx;
 
 			if (card_idx == 0)
 				src = FIRST_AP_PROFILE_PATH;
@@ -160,12 +160,12 @@ static UCHAR *get_dev_profile(RTMP_ADAPTER *pAd)
 }
 
 
-NDIS_STATUS	RTMPReadParametersHook(RTMP_ADAPTER *pAd)
+NDIS_STATUS RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 {
 	PSTRING src = NULL;
 	RTMP_OS_FD srcf;
 	RTMP_OS_FS_INFO osFSInfo;
-	INT retval = NDIS_STATUS_FAILURE;
+	NDIS_STATUS retval = NDIS_STATUS_FAILURE;
 	ULONG buf_size = MAX_INI_BUFFER_SIZE, fsize;
 	PSTRING buffer = NULL;
 
@@ -187,7 +187,7 @@ NDIS_STATUS	RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 				if (buf_size < (fsize + 1))
 					buf_size = fsize + 1;
 
-			os_alloc_mem(pAd, (UCHAR **)&buffer, buf_size);
+			buffer = os_alloc_mem(buf_size);
 			if (buffer) {
 				memset(buffer, 0x00, buf_size);
 				retval = RtmpOSFileRead(srcf, buffer, buf_size - 1);
@@ -195,16 +195,20 @@ NDIS_STATUS	RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 					RTMPSetProfileParameters(pAd, buffer);
 					retval = NDIS_STATUS_SUCCESS;
 				} else {
-					DBGPRINT(RT_DEBUG_ERROR, ("Read file \"%s\" failed(errCode=%d)!\n", src, retval));
+					DBGPRINT(RT_DEBUG_ERROR,
+							("Read file \"%s\" failed(errCode=%d)!\n",
+							src, retval));
 				}
-				os_free_mem(NULL, buffer);
+				os_free_mem(buffer);
 			} else {
 				retval = NDIS_STATUS_FAILURE;
 			}
 
 			if (RtmpOSFileClose(srcf) != 0) {
 				retval = NDIS_STATUS_FAILURE;
-				DBGPRINT(RT_DEBUG_ERROR, ("Close file \"%s\" failed(errCode=%d)!\n", src, retval));
+				DBGPRINT(RT_DEBUG_ERROR,
+						("Close file \"%s\" failed(errCode=%d)!\n",
+						src, retval));
 			}
 		}
 
@@ -222,7 +226,7 @@ NDIS_STATUS	RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 	RTMPSetSingleSKUParameters(pAd);
 #endif /* SINGLE_SKU_V2 */
 
-	return (retval);
+	return retval;
 }
 
 
@@ -231,11 +235,11 @@ void RTMP_IndicateMediaState(PRTMP_ADAPTER pAd, NDIS_MEDIA_STATE media_state)
 	pAd->IndicateMediaState = media_state;
 
 #ifdef SYSTEM_LOG_SUPPORT
-		if (pAd->IndicateMediaState == NdisMediaStateConnected) {
-			RTMPSendWirelessEvent(pAd, IW_STA_LINKUP_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
-		} else {
-			RTMPSendWirelessEvent(pAd, IW_STA_LINKDOWN_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
-		}
+	if (pAd->IndicateMediaState == NdisMediaStateConnected) {
+		RTMPSendWirelessEvent(pAd, IW_STA_LINKUP_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
+	} else {
+		RTMPSendWirelessEvent(pAd, IW_STA_LINKDOWN_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
+	}
 #endif /* SYSTEM_LOG_SUPPORT */
 }
 
@@ -248,7 +252,7 @@ void tbtt_tasklet(unsigned long data)
 	POS_COOKIE pObj = container_of(work, struct os_cookie, tbtt_task);
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pObj->pAd_va;
 #else
-		PRTMP_ADAPTER pAd = (RTMP_ADAPTER *)data;
+	PRTMP_ADAPTER pAd = (RTMP_ADAPTER *)data;
 #endif /* WORKQUEUE_BH */
 
 #ifdef RT_CFG80211_P2P_SUPPORT
@@ -302,7 +306,7 @@ void tbtt_tasklet(unsigned long data)
 }
 
 #ifdef INF_PPA_SUPPORT
-static INT process_nbns_packet(PRTMP_ADAPTER pAd, struct sk_buff *skb)
+static int process_nbns_packet(PRTMP_ADAPTER pAd, struct sk_buff *skb)
 {
 	UCHAR *data;
 	USHORT *eth_type;
@@ -318,7 +322,7 @@ static INT process_nbns_packet(PRTMP_ADAPTER pAd, struct sk_buff *skb)
 
 	eth_type = (USHORT *)&data[12];
 	if (*eth_type == cpu_to_be16(ETH_P_IP)) {
-		INT ip_h_len;
+		int ip_h_len;
 		UCHAR *ip_h;
 		UCHAR *udp_h;
 		USHORT dport, host_dport;
@@ -344,7 +348,7 @@ static INT process_nbns_packet(PRTMP_ADAPTER pAd, struct sk_buff *skb)
 }
 #endif /* INF_PPA_SUPPORT */
 
-void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
+void announce_802_3_packet(void *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 {
 //	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 	PNDIS_PACKET pRxPkt = pPacket;
@@ -376,7 +380,7 @@ void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 #ifdef INF_PPA_SUPPORT
 	{
 		if (ppa_hook_directpath_send_fn && (pAd->PPAEnable == TRUE)) {
-			INT retVal, ret;
+			int retVal, ret;
 			UINT ppa_flags = 0;
 
 			retVal = process_nbns_packet(pAd, pRxPkt);
@@ -449,33 +453,33 @@ void announce_802_3_packet(VOID *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef BG_FT_SUPPORT
-		if (BG_FTPH_PacketFromApHandle(pRxPkt) == 0)
-			return;
+	if (BG_FTPH_PacketFromApHandle(pRxPkt) == 0)
+		return;
 #endif /* BG_FT_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
 
-		RtmpOsPktProtocolAssign(pRxPkt);
+	RtmpOsPktProtocolAssign(pRxPkt);
 
 #if defined (CONFIG_WIFI_PKT_FWD)
-		if (wf_fwd_rx_hook!= NULL) {
-			unsigned int flags;
-			RTMP_IRQ_LOCK(&pAd->page_lock, flags);
+	if (wf_fwd_rx_hook!= NULL) {
+		unsigned int flags;
+		RTMP_IRQ_LOCK(&pAd->page_lock, flags);
 
-			if (wf_fwd_rx_hook(pRxPkt) == 0) {
-				RTMP_IRQ_UNLOCK(&pAd->page_lock, flags);
-				return;
-			}
-
+		if (wf_fwd_rx_hook(pRxPkt) == 0) {
 			RTMP_IRQ_UNLOCK(&pAd->page_lock, flags);
+			return;
 		}
+
+		RTMP_IRQ_UNLOCK(&pAd->page_lock, flags);
+	}
 #endif /* CONFIG_WIFI_PKT_FWD */
 
-		RtmpOsPktRcvHandle(pRxPkt);
+	RtmpOsPktRcvHandle(pRxPkt);
 }
 
 extern spinlock_t TimerSemLock;
 
-VOID RTMPFreeAdapter(VOID *pAdSrc)
+void RTMPFreeAdapter(void *pAdSrc)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdSrc;
 	POS_COOKIE os_cookie;
@@ -484,12 +488,12 @@ VOID RTMPFreeAdapter(VOID *pAdSrc)
 	os_cookie = (POS_COOKIE)pAd->OS_Cookie;
 
 	if (pAd->BeaconBuf)
-		os_free_mem(NULL, pAd->BeaconBuf);
+		os_free_mem(pAd->BeaconBuf);
 
 #ifdef MULTIPLE_CARD_SUPPORT
 #ifdef RTMP_FLASH_SUPPORT
 	if (pAd->eebuf && (pAd->eebuf != pAd->chipCap.EEPROM_DEFAULT_BIN)) {
-		os_free_mem(NULL, pAd->eebuf);
+		os_free_mem(pAd->eebuf);
 		pAd->eebuf = NULL;
 	}
 #endif /* RTMP_FLASH_SUPPORT */
@@ -518,12 +522,12 @@ VOID RTMPFreeAdapter(VOID *pAdSrc)
 #endif /* DOT11_N_SUPPORT */
 
 	if (pAd->iw_stats) {
-		os_free_mem(NULL, pAd->iw_stats);
+		os_free_mem(pAd->iw_stats);
 		pAd->iw_stats = NULL;
 	}
 
 	if (pAd->stats) {
-		os_free_mem(NULL, pAd->stats);
+		os_free_mem(pAd->stats);
 		pAd->stats = NULL;
 	}
 
@@ -545,7 +549,7 @@ VOID RTMPFreeAdapter(VOID *pAdSrc)
 
 	RtmpOsVfree(pAd); /* pci_free_consistent(os_cookie->pci_dev,sizeof(RTMP_ADAPTER),pAd,os_cookie->pAd_pa); */
 	if (os_cookie)
-		os_free_mem(NULL, os_cookie);
+		os_free_mem(os_cookie);
 }
 
 
@@ -664,32 +668,31 @@ Routine Description:
 	Driver pre-Ioctl for AP.
 
 Arguments:
-	pAdSrc			- WLAN control block pointer
-	pCB				- the IOCTL parameters
+	pAdSrc		- WLAN control block pointer
+	pCB		- the IOCTL parameters
 
 Return Value:
-	NDIS_STATUS_SUCCESS	- IOCTL OK
-	Otherwise			- IOCTL fail
+	0		No error
+	Otherwise	-errno
 
 Note:
 ========================================================================
 */
-INT RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, VOID *pCB)
+int RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, void *pCB)
 {
 	RT_CMD_AP_IOCTL_CONFIG *pConfig = (RT_CMD_AP_IOCTL_CONFIG *)pCB;
 	POS_COOKIE pObj;
 	USHORT index;
-	INT	Status = NDIS_STATUS_SUCCESS;
 #ifdef CONFIG_APSTA_MIXED_SUPPORT
-	INT cmd = 0xff;
+	int cmd = 0xff;
 #endif /* CONFIG_APSTA_MIXED_SUPPORT */
 
 	pObj = (POS_COOKIE) pAd->OS_Cookie;
 
-	if ((pConfig->priv_flags == INT_MAIN) && 
+	if ((pConfig->priv_flags == INT_MAIN) &&
 			!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_INTERRUPT_IN_USE)) {
 		if (pConfig->pCmdData == NULL)
-			return Status;
+			return 0;
 
 		if (RtPrivIoctlSetVal() == pConfig->CmdId_RTPRIV_IOCTL_SET) {
 			if (TRUE
@@ -755,11 +758,11 @@ INT RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, VOID *pCB)
 	}
 
 	pConfig->apidx = pObj->ioctl_if;
-	return Status;
+	return 0;
 }
 
 
-VOID AP_E2PROM_IOCTL_PostCtrl(RTMP_IOCTL_INPUT_STRUCT *wrq, PSTRING msg)
+void AP_E2PROM_IOCTL_PostCtrl(RTMP_IOCTL_INPUT_STRUCT *wrq, PSTRING msg)
 {
 	wrq->u.data.length = strlen(msg);
 	if (copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length)) {
@@ -768,7 +771,7 @@ VOID AP_E2PROM_IOCTL_PostCtrl(RTMP_IOCTL_INPUT_STRUCT *wrq, PSTRING msg)
 }
 
 
-VOID IAPP_L2_UpdatePostCtrl(PRTMP_ADAPTER pAd, IN UINT8 *mac_p, INT bssid)
+void IAPP_L2_UpdatePostCtrl(PRTMP_ADAPTER pAd, IN UINT8 *mac_p, int bssid)
 {
 }
 #endif /* CONFIG_AP_SUPPORT */
