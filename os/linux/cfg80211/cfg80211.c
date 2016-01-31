@@ -500,13 +500,13 @@ static int CFG80211_OpsScan(struct wiphy *pWiphy, struct net_device *pNdev,
 	if (pRequest->n_channels > 0) {
 		UINT32 *pChanList;
 		UINT idx;
-		os_alloc_mem(NULL, (UCHAR **)&pChanList, sizeof(UINT32 *) * pRequest->n_channels);
+
+		pChanList = os_alloc_mem(sizeof(UINT32 *) * pRequest->n_channels);
 		if (pChanList == NULL) {
-			DBGPRINT(RT_DEBUG_ERROR, ("%s::Alloc memory fail\n", __FUNCTION__));
 			return -ENOMEM;
 		}
 
-		for (idx=0; idx < pRequest->n_channels; idx++) {
+		for (idx = 0; idx < pRequest->n_channels; idx++) {
 			pChanList[idx] = ieee80211_frequency_to_channel(pRequest->channels[idx]->center_freq);
 			CFG80211DBG(RT_DEBUG_INFO, ("%d,", pChanList[idx]));
 		}
@@ -516,7 +516,7 @@ static int CFG80211_OpsScan(struct wiphy *pWiphy, struct net_device *pNdev,
 		RTMP_DRIVER_80211_SCAN_CHANNEL_LIST_SET(pAd, pChanList, pRequest->n_channels);
 
 		if (pChanList)
-			os_free_mem(NULL, pChanList);
+			os_free_mem(pChanList);
 	}
 
 	/* use 1st SSID in the requested SSID list */
@@ -1887,10 +1887,12 @@ static int CFG80211_OpsSetBeacon(struct wiphy *pWiphy, struct net_device *netdev
 		RTMP_DRIVER_80211_AP_ASSOC_RSP(pAd, info->assocresp_ies, info->assocresp_ies_len);
 #endif
 
-	os_alloc_mem(NULL, &beacon_head_buf, info->head_len);
+	beacon_head_buf = os_alloc_mem(info->head_len);
+	//JB WTF? no test for allocated memory?
 	NdisCopyMemory(beacon_head_buf, info->head, info->head_len);
 
-	os_alloc_mem(NULL, &beacon_tail_buf, info->tail_len);
+	beacon_tail_buf = os_alloc_mem(info->tail_len);
+	//JB WTF? no test for allocated memory?
 	NdisCopyMemory(beacon_tail_buf, info->tail, info->tail_len);
 
 	bcn.beacon_head_len = info->head_len;
@@ -1903,10 +1905,10 @@ static int CFG80211_OpsSetBeacon(struct wiphy *pWiphy, struct net_device *netdev
 	RTMP_DRIVER_80211_BEACON_SET(pAd, &bcn);
 
 	if (beacon_head_buf)
-		os_free_mem(NULL, beacon_head_buf);
+		os_free_mem(beacon_head_buf);
 
 	if (beacon_tail_buf)
-		os_free_mem(NULL, beacon_tail_buf);
+		os_free_mem(beacon_tail_buf);
 
 	return 0;
 }
@@ -1941,10 +1943,12 @@ static int CFG80211_OpsAddBeacon(struct wiphy *pWiphy, struct net_device *netdev
 		RTMP_DRIVER_80211_AP_ASSOC_RSP(pAd, info->assocresp_ies, info->assocresp_ies_len);
 #endif
 
-	os_alloc_mem(NULL, &beacon_head_buf, info->head_len);
+	beacon_head_buf = os_alloc_mem(info->head_len);
+	//JB WTF? No memory test?
 	NdisCopyMemory(beacon_head_buf, info->head, info->head_len);
 
-	os_alloc_mem(NULL, &beacon_tail_buf, info->tail_len);
+	beacon_tail_buf = os_alloc_mem(info->tail_len);
+	//JB WTF? No memory test?
 	NdisCopyMemory(beacon_tail_buf, info->tail, info->tail_len);
 
 	bcn.beacon_head_len = info->head_len;
@@ -1957,10 +1961,10 @@ static int CFG80211_OpsAddBeacon(struct wiphy *pWiphy, struct net_device *netdev
 	RTMP_DRIVER_80211_BEACON_ADD(pAd, &bcn);
 
 	if (beacon_head_buf)
-		os_free_mem(NULL, beacon_head_buf);
+		os_free_mem(beacon_head_buf);
 
 	if (beacon_tail_buf)
-		os_free_mem(NULL, beacon_tail_buf);
+		os_free_mem(beacon_tail_buf);
 
 	return 0;
 }
@@ -1985,13 +1989,17 @@ static int CFG80211_OpsStartAp(struct wiphy *pWiphy, struct net_device *netdev,
 	MAC80211_PAD_GET(pAd, pWiphy);
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> %s ==>\n", __FUNCTION__));
 
+	beacon_head_buf = beacon_tail_buf = NULL;
+
 	if (settings->beacon.head_len > 0) {
-		os_alloc_mem(NULL, &beacon_head_buf, settings->beacon.head_len);
+		beacon_head_buf = os_alloc_mem(settings->beacon.head_len);
+		//JB WTF? No memory test
 		NdisCopyMemory(beacon_head_buf, settings->beacon.head, settings->beacon.head_len);
 	}
 
 	if (settings->beacon.tail_len > 0) {
-		os_alloc_mem(NULL, &beacon_tail_buf, settings->beacon.tail_len);
+		beacon_tail_buf = os_alloc_mem(settings->beacon.tail_len);
+		//JB WTF? No memory test?
 		NdisCopyMemory(beacon_tail_buf, settings->beacon.tail, settings->beacon.tail_len);
 	}
 
@@ -2005,9 +2013,9 @@ static int CFG80211_OpsStartAp(struct wiphy *pWiphy, struct net_device *netdev,
 	RTMP_DRIVER_80211_BEACON_ADD(pAd, &bcn);
 
 	if (beacon_head_buf)
-		os_free_mem(NULL, beacon_head_buf);
+		os_free_mem(beacon_head_buf);
 	if (beacon_tail_buf)
-		os_free_mem(NULL, beacon_tail_buf);
+		os_free_mem(beacon_tail_buf);
 
 	return 0;
 }
@@ -2019,16 +2027,20 @@ static int CFG80211_OpsChangeBeacon(struct wiphy *pWiphy,
 	CMD_RTPRIV_IOCTL_80211_BEACON bcn;
 	UCHAR *beacon_head_buf, *beacon_tail_buf;
 
+	beacon_head_buf = beacon_tail_buf = NULL;
+
 	MAC80211_PAD_GET(pAd, pWiphy);
 	CFG80211DBG(RT_DEBUG_TRACE, ("80211> %s ==>\n", __FUNCTION__));
 
 	if (info->head_len > 0) {
-		os_alloc_mem(NULL, &beacon_head_buf, info->head_len);
+		beacon_head_buf = os_alloc_mem(info->head_len);
+		//JB WTF? No memory test?
 		NdisCopyMemory(beacon_head_buf, info->head, info->head_len);
 	}
 
 	if (info->tail_len > 0) {
-		os_alloc_mem(NULL, &beacon_tail_buf, info->tail_len);
+		beacon_tail_buf = os_alloc_mem(info->tail_len);
+		//JB WTF? No memory test?
 		NdisCopyMemory(beacon_tail_buf, info->tail, info->tail_len);
 	}
 
@@ -2040,9 +2052,9 @@ static int CFG80211_OpsChangeBeacon(struct wiphy *pWiphy,
 	RTMP_DRIVER_80211_BEACON_SET(pAd, &bcn);
 
 	if (beacon_head_buf)
-		os_free_mem(NULL, beacon_head_buf);
+		os_free_mem(beacon_head_buf);
 	if (beacon_tail_buf)
-		os_free_mem(NULL, beacon_tail_buf);
+		os_free_mem(beacon_tail_buf);
 	return 0;
 }
 
@@ -2729,7 +2741,7 @@ static struct wireless_dev *CFG80211_WdevAlloc(CFG80211_CB *pCfg80211_CB,
 	wiphy_free(pWdev->wiphy);
 
  LabelErrWiphyNew:
-	os_free_mem(NULL, pWdev);
+	os_free_mem(pWdev);
 
 	return NULL;
 } /* End of CFG80211_WdevAlloc */
@@ -2762,7 +2774,7 @@ BOOLEAN CFG80211_Register(VOID *pAd, struct device *pDev, struct net_device *pNe
 	INT err;
 
 	/* allocate Main Device Info structure */
-	os_alloc_mem(NULL, (UCHAR **)&pCfg80211_CB, sizeof(CFG80211_CB));
+	pCfg80211_CB = os_alloc_mem(sizeof(CFG80211_CB));
 	if (pCfg80211_CB == NULL) {
 		DBGPRINT(RT_DEBUG_ERROR, ("80211> Allocate MAC80211 CB fail!\n"));
 		return FALSE;
@@ -2775,7 +2787,7 @@ BOOLEAN CFG80211_Register(VOID *pAd, struct device *pDev, struct net_device *pNe
 				CFG80211_WdevAlloc(pCfg80211_CB, &BandInfo, pAd, pDev);
 	if (pCfg80211_CB->pCfg80211_Wdev == NULL) {
 		DBGPRINT(RT_DEBUG_ERROR, ("80211> Allocate Wdev fail!\n"));
-		os_free_mem(NULL, pCfg80211_CB);
+		os_free_mem(pCfg80211_CB);
 		return FALSE;
 	}
 
