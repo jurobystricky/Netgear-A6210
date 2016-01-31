@@ -122,7 +122,7 @@ typedef struct _UAPSD_INFO {
 #define MAX_EEPROM_BUFFER_SIZE	1024
 
 extern unsigned char CISCO_OUI[];
-extern UCHAR BaSizeArray[4];
+//extern UCHAR BaSizeArray[4];
 
 extern UCHAR BROADCAST_ADDR[MAC_ADDR_LEN];
 extern UCHAR ZERO_MAC_ADDR[MAC_ADDR_LEN];
@@ -4694,11 +4694,11 @@ UCHAR *get_dev_name_prefix(RTMP_ADAPTER *pAd, INT dev_type);
 NDIS_STATUS RTMPReadParametersHook(RTMP_ADAPTER *pAd);
 NDIS_STATUS RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING pBuffer);
 
-INT RTMPGetKeyParameter(PSTRING key, PSTRING dest, INT destsize, PSTRING buffer,
+BOOLEAN RTMPGetKeyParameter(PSTRING key, PSTRING dest, INT destsize, PSTRING buffer,
 	BOOLEAN bTrimSpace);
 
 #ifdef SINGLE_SKU_V2
-NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd);
+BOOLEAN NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd);
 VOID UpdateSkuRatePwr(RTMP_ADAPTER *pAd, UCHAR ch, UCHAR bw, CHAR base_pwr);
 #endif
 
@@ -6075,11 +6075,11 @@ VOID MlmeResetRalinkCounters(RTMP_ADAPTER *pAd);
 VOID BuildChannelList(RTMP_ADAPTER *pAd);
 UCHAR FirstChannel(RTMP_ADAPTER *pAd);
 UCHAR NextChannel(RTMP_ADAPTER *pAd, UCHAR channel);
-UCHAR RTMPFindScanChannel(PRTMP_ADAPTER pAd, UINT8 LastScanChannel);
+//UCHAR RTMPFindScanChannel(PRTMP_ADAPTER pAd, UINT8 LastScanChannel);
 VOID ChangeToCellPowerLimit(RTMP_ADAPTER *pAd, UCHAR AironetCellPowerLimit);
 
-VOID RTMPInitMICEngine(RTMP_ADAPTER *pAd, PUCHAR pKey, PUCHAR pDA, PUCHAR pSA,
-	UCHAR UserPriority, PUCHAR pMICKey);
+//VOID RTMPInitMICEngine(RTMP_ADAPTER *pAd, PUCHAR pKey, PUCHAR pDA, PUCHAR pSA,
+//	UCHAR UserPriority, PUCHAR pMICKey);
 
 BOOLEAN RTMPTkipCompareMICValue(RTMP_ADAPTER *pAd, PUCHAR pSrc, PUCHAR pDA,
 	PUCHAR pSA, PUCHAR pMICKey, UCHAR UserPriority, UINT Len);
@@ -6087,9 +6087,9 @@ BOOLEAN RTMPTkipCompareMICValue(RTMP_ADAPTER *pAd, PUCHAR pSrc, PUCHAR pDA,
 VOID RTMPCalculateMICValue(RTMP_ADAPTER *pAd, PNDIS_PACKET pPacket,
 	PUCHAR pEncap, PCIPHER_KEY pKey, UCHAR apidx);
 
-VOID RTMPTkipAppendByte(PTKIP_KEY_INFO pTkip, UCHAR uChar);
-VOID RTMPTkipAppend(PTKIP_KEY_INFO  pTkip, PUCHAR pSrc, UINT nBytes);
-VOID RTMPTkipGetMIC(TKIP_KEY_INFO *pTkip);
+//VOID RTMPTkipAppendByte(PTKIP_KEY_INFO pTkip, UCHAR uChar);
+//VOID RTMPTkipAppend(PTKIP_KEY_INFO  pTkip, PUCHAR pSrc, UINT nBytes);
+//VOID RTMPTkipGetMIC(TKIP_KEY_INFO *pTkip);
 BOOLEAN RT_CfgSetCountryRegion(RTMP_ADAPTER *pAd, PSTRING arg, INT band);
 BOOLEAN RT_CfgSetWirelessMode(RTMP_ADAPTER *pAd, PSTRING arg);
 
@@ -6598,7 +6598,7 @@ VOID dynamic_tune_be_tx_op(RTMP_ADAPTER *pAd, ULONG nonBEpackets);
 #endif /* CONFIG_AP_SUPPORT */
 
 #ifdef DOT11_N_SUPPORT
-VOID Handle_BSS_Width_Trigger_Events(RTMP_ADAPTER *pAd);
+//VOID Handle_BSS_Width_Trigger_Events(RTMP_ADAPTER *pAd);
 
 void build_ext_channel_switch_ie(RTMP_ADAPTER *pAd,
 	HT_EXT_CHANNEL_SWITCH_ANNOUNCEMENT_IE *pIE);
@@ -6827,7 +6827,7 @@ BOOLEAN Set_OpMode_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_LongRetryLimit_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_ShortRetryLimit_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_AutoFallBack_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-VOID RT28XXDMADisable(RTMP_ADAPTER *pAd);
+//VOID RT28XXDMADisable(RTMP_ADAPTER *pAd);
 VOID RT28XXDMAEnable(RTMP_ADAPTER *pAd);
 
 VOID RT28xx_UpdateBeaconToAsic(RTMP_ADAPTER * pAd, INT apidx, ULONG BeaconLen,
