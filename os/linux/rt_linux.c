@@ -174,13 +174,9 @@ void RTMP_GetCurrentSystemTick(ULONG *pNow)
 
 /* pAd MUST allow to be NULL */
 
-NDIS_STATUS os_alloc_mem(void *pReserved, UCHAR **mem, ULONG size)
+void *os_alloc_mem(size_t size)
 {
-	*mem = (PUCHAR) kmalloc(size, GFP_ATOMIC);
-	if (*mem) {
-		return NDIS_STATUS_SUCCESS;
-	} else
-		return NDIS_STATUS_FAILURE;
+	return kmalloc(size, GFP_ATOMIC);
 }
 
 NDIS_STATUS os_alloc_mem_suspend(void *pReserved, UCHAR **mem, ULONG size)
@@ -193,7 +189,7 @@ NDIS_STATUS os_alloc_mem_suspend(void *pReserved, UCHAR **mem, ULONG size)
 }
 
 /* pAd MUST allow to be NULL */
-void os_free_mem(void *pReserved, PVOID mem)
+void os_free_mem(void *mem)
 {
 	ASSERT(mem);
 	kfree(mem);
@@ -1614,7 +1610,7 @@ void RtmpDrvAllMacPrint(void *pReserved, UINT32 *pBufMac, UINT32 AddrStart,
 	STRING *msg;
 	UINT32 macAddr = 0, macValue = 0;
 
-	os_alloc_mem(NULL, (UCHAR **)&msg, 1024);
+	msg = os_alloc_mem(1024);
 	if (!msg)
 		return;
 
@@ -1648,7 +1644,7 @@ void RtmpDrvAllMacPrint(void *pReserved, UINT32 *pBufMac, UINT32 AddrStart,
 		filp_close(file_w, NULL);
 	}
 	set_fs(orig_fs);
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 }
 
 
@@ -1662,7 +1658,7 @@ void RtmpDrvAllE2PPrint(void *pReserved, USHORT *pMacContent, UINT32 AddrEnd,
 	USHORT eepAddr = 0;
 	USHORT eepValue;
 
-	os_alloc_mem(NULL, (UCHAR **)&msg, 1024);
+	msg = os_alloc_mem(1024);
 	if (!msg)
 		return;
 
@@ -1697,7 +1693,7 @@ void RtmpDrvAllE2PPrint(void *pReserved, USHORT *pMacContent, UINT32 AddrEnd,
 		filp_close(file_w, NULL);
 	}
 	set_fs(orig_fs);
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 }
 
 
@@ -1898,18 +1894,18 @@ void RtmpOsPktProtocolAssign(PNDIS_PACKET pNetPkt)
 
 BOOLEAN RtmpOsStatsAlloc(void **ppStats, void **ppIwStats)
 {
-	os_alloc_mem(NULL, (UCHAR **) ppStats, sizeof (struct net_device_stats));
+	*ppStats = os_alloc_mem(sizeof (struct net_device_stats));
 	if ((*ppStats) == NULL)
 		return FALSE;
-	NdisZeroMemory((UCHAR *) *ppStats, sizeof (struct net_device_stats));
+	NdisZeroMemory((UCHAR*) *ppStats, sizeof (struct net_device_stats));
 
 #if WIRELESS_EXT >= 12
-	os_alloc_mem(NULL, (UCHAR **) ppIwStats, sizeof (struct iw_statistics));
+	*ppIwStats = os_alloc_mem(sizeof (struct iw_statistics));
 	if ((*ppIwStats) == NULL) {
-		os_free_mem(NULL, *ppStats);
+		os_free_mem(*ppStats);
 		return FALSE;
 	}
-	NdisZeroMemory((UCHAR *)* ppIwStats, sizeof (struct iw_statistics));
+	NdisZeroMemory((UCHAR*)* ppIwStats, sizeof (struct iw_statistics));
 #endif
 
 	return TRUE;
