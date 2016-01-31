@@ -73,10 +73,9 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 	*ppAdapter = NULL;
 
 	do {
-		os_alloc_mem(NULL, (UCHAR **)&pBeaconBuf, MAX_BEACON_SIZE);
+		pBeaconBuf = os_alloc_mem(MAX_BEACON_SIZE);
 		if (pBeaconBuf == NULL) {
 			Status = NDIS_STATUS_FAILURE;
-			DBGPRINT_ERR(("Failed to allocate memory - BeaconBuf!\n"));
 			break;
 		}
 
@@ -158,16 +157,16 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 
 	if (Status != NDIS_STATUS_SUCCESS) {
 		if (pBeaconBuf)
-			os_free_mem(NULL, pBeaconBuf);
+			os_free_mem(pBeaconBuf);
 
 		if (pAd != NULL) {
 			if (pAd->stats != NULL)
-				os_free_mem(NULL, pAd->stats);
+				os_free_mem(pAd->stats);
 
 			if (pAd->iw_stats != NULL)
-				os_free_mem(NULL, pAd->iw_stats);
+				os_free_mem(pAd->iw_stats);
 
-			os_free_mem(NULL, pAd);
+			os_free_mem(pAd);
 		}
 
 		return Status;
@@ -175,10 +174,9 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 
 	/* Init ProbeRespIE Table */
 	for (index = 0; index < MAX_LEN_OF_BSS_TABLE; index++) {
-		if (os_alloc_mem(pAd,&pAd->ProbeRespIE[index].pIe, MAX_VIE_LEN) == NDIS_STATUS_SUCCESS)
+		pAd->ProbeRespIE[index].pIe = os_alloc_mem(MAX_VIE_LEN);
+		if (pAd->ProbeRespIE[index].pIe)
 			RTMPZeroMemory(pAd->ProbeRespIE[index].pIe, MAX_VIE_LEN);
-		else
-			pAd->ProbeRespIE[index].pIe = NULL;
 	}
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<-- RTMPAllocAdapterBlock, Status=%x\n", Status));
@@ -2933,7 +2931,7 @@ static void RTMP_TimerListAdd(RTMP_ADAPTER *pAd, void *pRsc)
 	}
 
 	/* allocate a timer record entry */
-	os_alloc_mem(NULL, (UCHAR **)&(pObj), sizeof(LIST_RESOURCE_OBJ_ENTRY));
+	pObj = os_alloc_mem(sizeof(LIST_RESOURCE_OBJ_ENTRY));
 	if (pObj == NULL) {
 		DBGPRINT(RT_DEBUG_ERROR, ("%s: alloc timer obj fail!\n", __FUNCTION__));
 		return;
@@ -2969,7 +2967,7 @@ static void RTMP_TimerListRelease(RTMP_ADAPTER *pAd, void *pRsc)
 
 		/* free a timer record entry */
 		DBGPRINT(RT_DEBUG_ERROR, ("%s: release timer obj %lx!\n", __FUNCTION__, (ULONG)pRsc));
-		os_free_mem(NULL, pObj);
+		os_free_mem(pObj);
 	}
 }
 
@@ -3004,7 +3002,7 @@ void RTMP_AllTimerListRelease(RTMP_ADAPTER *pAd)
 		RTMPReleaseTimer(pObjOld->pRscObj, &Cancel);
 
 		//TODO: It will casued kernel panic on reboot
-		//os_free_mem(NULL, pObjOld);
+		//os_free_mem(pObjOld);
 	}
 
 	/* reset TimerList */
@@ -3383,9 +3381,8 @@ BOOLEAN RtmpRaDevCtrlInit(void *pAdSrc, RTMP_INF_TYPE infType)
 	RTMP_SEM_EVENT_INIT(&(pAd->mcu_atomic), &pAd->RscSemMemList);
 	RTMP_SEM_EVENT_INIT(&(pAd->tssi_lock), &pAd->RscSemMemList);
 
-	os_alloc_mem(pAd, (PUCHAR *)&pAd->UsbVendorReqBuf, MAX_PARAM_BUFFER_SIZE - 1);
+	pAd->UsbVendorReqBuf = os_alloc_mem(MAX_PARAM_BUFFER_SIZE - 1);
 	if (pAd->UsbVendorReqBuf == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("Allocate vendor request temp buffer failed!\n"));
 		return FALSE;
 	}
 #endif /* RTMP_MAC_USB */
@@ -3482,7 +3479,7 @@ extern UINT8  MC_CardUsed[MAX_NUM_OF_MULTIPLE_CARD];
 	RTMP_SEM_EVENT_DESTORY(&(pAd->tssi_lock));
 
 	if (pAd->UsbVendorReqBuf)
-		os_free_mem(pAd, pAd->UsbVendorReqBuf);
+		os_free_mem(pAd->UsbVendorReqBuf);
 #endif /* RTMP_MAC_USB */
 
 	/*
@@ -3490,7 +3487,7 @@ extern UINT8  MC_CardUsed[MAX_NUM_OF_MULTIPLE_CARD];
 	*/
 	for (index = 0; index < MAX_LEN_OF_BSS_TABLE; index++) {
 		if (pAd->ProbeRespIE[index].pIe)
-			os_free_mem(pAd, pAd->ProbeRespIE[index].pIe);
+			os_free_mem(pAd->ProbeRespIE[index].pIe);
 	}
 
 #ifdef RESOURCE_PRE_ALLOC
