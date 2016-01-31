@@ -342,7 +342,7 @@ PSTRING RTMPFindSection(PSTRING buffer)
 	For SSID and security key related parameters, we SHALL NOT trim the space(' ') character.
 	========================================================================
 */
-INT RTMPGetKeyParameter(
+BOOLEAN RTMPGetKeyParameter(
 	IN PSTRING key,
 	OUT PSTRING dest,
 	IN INT destsize,
@@ -356,7 +356,7 @@ INT RTMPGetKeyParameter(
 	INT len, keyLen;
 
 	keyLen = strlen(key);
-	os_alloc_mem(NULL, (PUCHAR *)&pMemBuf, MAX_PARAM_BUFFER_SIZE  * 2);
+	pMemBuf = os_alloc_mem(MAX_PARAM_BUFFER_SIZE  * 2);
 	if (pMemBuf == NULL)
 		return FALSE;
 
@@ -366,7 +366,7 @@ INT RTMPGetKeyParameter(
 
 	/*find section*/
 	if ((offset = RTMPFindSection(buffer)) == NULL) {
-		os_free_mem(NULL, (PUCHAR)pMemBuf);
+		os_free_mem(pMemBuf);
 		return FALSE;
 	}
 
@@ -376,7 +376,7 @@ INT RTMPGetKeyParameter(
 
 	/*search key*/
 	if ((start_ptr=rtstrstr(offset, temp_buf1)) == NULL) {
-		os_free_mem(NULL, (PUCHAR)pMemBuf);
+		os_free_mem(pMemBuf);
 		return FALSE;
 	}
 
@@ -385,7 +385,7 @@ INT RTMPGetKeyParameter(
 		end_ptr = start_ptr+strlen(start_ptr);
 
 	if (end_ptr<start_ptr) {
-		os_free_mem(NULL, (PUCHAR)pMemBuf);
+		os_free_mem(pMemBuf);
 		return FALSE;
 	}
 
@@ -393,7 +393,7 @@ INT RTMPGetKeyParameter(
 	temp_buf2[end_ptr-start_ptr]='\0';
 
 	if ((start_ptr=rtstrstr(temp_buf2, "=")) == NULL) {
-		os_free_mem(NULL, (PUCHAR)pMemBuf);
+		os_free_mem(pMemBuf);
 		return FALSE;
 	}
 	ptr = (start_ptr +1);
@@ -408,7 +408,7 @@ INT RTMPGetKeyParameter(
 
 	memset(dest, 0x00, destsize);
 	strncpy(dest, ptr, ((len >= destsize) ? destsize: len));
-	os_free_mem(NULL, (PUCHAR)pMemBuf);
+	os_free_mem(pMemBuf);
 
 	return TRUE;
 }
@@ -434,7 +434,7 @@ INT RTMPGetKeyParameter(
 		This routine get the value with the matched key (case case-sensitive)
 	========================================================================
 */
-INT RTMPGetKeyParameterWithOffset(
+BOOLEAN RTMPGetKeyParameterWithOffset(
 	IN  PSTRING   key,
 	OUT PSTRING   dest,
 	OUT	USHORT	*end_offset,
@@ -453,27 +453,26 @@ INT RTMPGetKeyParameterWithOffset(
 	if (*end_offset >= MAX_INI_BUFFER_SIZE)
 		return FALSE;
 
-	os_alloc_mem(NULL, (PUCHAR *)&temp_buf1, MAX_PARAM_BUFFER_SIZE);
-
+	temp_buf1 = os_alloc_mem(MAX_PARAM_BUFFER_SIZE);
 	if (temp_buf1 == NULL)
 		return FALSE;
 
-	os_alloc_mem(NULL, (PUCHAR *)&temp_buf2, MAX_PARAM_BUFFER_SIZE);
+	temp_buf2 = os_alloc_mem(MAX_PARAM_BUFFER_SIZE);
 	if (temp_buf2 == NULL) {
-		os_free_mem(NULL, (PUCHAR)temp_buf1);
+		os_free_mem(temp_buf1);
 		return FALSE;
 	}
 
-	/*find section		*/
+	/*find section */
 	if (*end_offset == 0) {
 		if ((offset = RTMPFindSection(buffer)) == NULL) {
-			os_free_mem(NULL, (PUCHAR)temp_buf1);
-			os_free_mem(NULL, (PUCHAR)temp_buf2);
+			os_free_mem(temp_buf1);
+			os_free_mem(temp_buf2);
 			return FALSE;
 		}
-	}
-	else
+	} else {
 		offset = buffer + (*end_offset);
+	}
 
 	strcpy(temp_buf1, "\n");
 	strcat(temp_buf1, key);
@@ -481,8 +480,8 @@ INT RTMPGetKeyParameterWithOffset(
 
 	/*search key*/
 	if ((start_ptr=rtstrstr(offset, temp_buf1)) == NULL) {
-		os_free_mem(NULL, (PUCHAR)temp_buf1);
-		os_free_mem(NULL, (PUCHAR)temp_buf2);
+		os_free_mem(temp_buf1);
+		os_free_mem(temp_buf2);
 		return FALSE;
 	}
 
@@ -491,8 +490,8 @@ INT RTMPGetKeyParameterWithOffset(
 	   end_ptr=start_ptr+strlen(start_ptr);
 
 	if (end_ptr<start_ptr) {
-		os_free_mem(NULL, (PUCHAR)temp_buf1);
-		os_free_mem(NULL, (PUCHAR)temp_buf2);
+		os_free_mem(temp_buf1);
+		os_free_mem(temp_buf2);
 		return FALSE;
 	}
 
@@ -504,27 +503,27 @@ INT RTMPGetKeyParameterWithOffset(
 	strcpy(temp_buf1, temp_buf2);
 
 	if ((start_ptr=rtstrstr(temp_buf1, "=")) == NULL) {
-		os_free_mem(NULL, (PUCHAR)temp_buf1);
-		os_free_mem(NULL, (PUCHAR)temp_buf2);
+		os_free_mem(temp_buf1);
+		os_free_mem(temp_buf2);
 		return FALSE;
 	}
 
 	strcpy(temp_buf2, start_ptr+1);
 	ptr = temp_buf2;
 	/*trim space or tab*/
-	while(*ptr != 0x00) {
+	while (*ptr != 0x00) {
 		if ((bTrimSpace && (*ptr == ' ')) || (*ptr == '\t') )
 			ptr++;
 		else
-		   break;
+			break;
 	}
 
 	len = strlen(ptr);
 	memset(dest, 0x00, destsize);
 	strncpy(dest, ptr, len >= destsize ?  destsize: len);
 
-	os_free_mem(NULL, (PUCHAR)temp_buf1);
-	os_free_mem(NULL, (PUCHAR)temp_buf2);
+	os_free_mem(temp_buf1);
+	os_free_mem(temp_buf2);
 	return TRUE;
 }
 
@@ -540,13 +539,12 @@ inline void RTMPSetSTADefKeyId(RTMP_ADAPTER *pAd, ULONG KeyIdx)
 #endif /* CONFIG_STA_SUPPORT */
 
 
-static int rtmp_parse_key_buffer_from_file(IN  PRTMP_ADAPTER pAd,IN  PSTRING buffer,IN  ULONG KeyType,IN  INT BSSIdx,IN  INT KeyIdx)
+static BOOLEAN rtmp_parse_key_buffer_from_file(IN  PRTMP_ADAPTER pAd,IN  
+	PSTRING buffer,IN  ULONG KeyType,IN  INT BSSIdx,IN  INT KeyIdx)
 {
-	PSTRING		keybuff;
-	/*INT			i = BSSIdx, idx = KeyIdx, retVal;*/
-	ULONG		KeyLen;
-	/*UCHAR		CipherAlg = CIPHER_WEP64;*/
-	CIPHER_KEY	*pSharedKey;
+	PSTRING keybuff;
+	ULONG KeyLen;
+	CIPHER_KEY *pSharedKey;
 
 	keybuff = buffer;
 	KeyLen = strlen(keybuff);
@@ -556,8 +554,9 @@ static int rtmp_parse_key_buffer_from_file(IN  PRTMP_ADAPTER pAd,IN  PSTRING buf
 		((KeyType == 0) && (KeyLen != 10) && (KeyLen != 26)) ||
 		((KeyType== 1) && (KeyLen != 5) && (KeyLen != 13)))
 	{
-		DBGPRINT(RT_DEBUG_ERROR, ("Key%dStr is Invalid key length(%ld) or Type(%ld)\n",
-								KeyIdx+1, KeyLen, KeyType));
+		DBGPRINT(RT_DEBUG_ERROR, 
+				("Key%dStr is Invalid key length(%ld) or Type(%ld)\n",
+				KeyIdx+1, KeyLen, KeyType));
 		return FALSE;
 	}
 	else
@@ -570,11 +569,11 @@ static int rtmp_parse_key_buffer_from_file(IN  PRTMP_ADAPTER pAd,IN  PSTRING buf
 
 static void rtmp_read_key_parms_from_file(IN  PRTMP_ADAPTER pAd, PSTRING tmpbuf, PSTRING buffer)
 {
-	STRING		tok_str[16];
-	PSTRING		macptr;
-	INT			i = 0, idx;
-	ULONG		KeyType[HW_BEACON_MAX_NUM];
-	ULONG		KeyIdx;
+	STRING tok_str[16];
+	PSTRING macptr;
+	INT i, idx;
+	ULONG KeyType[HW_BEACON_MAX_NUM];
+	ULONG KeyIdx;
 
 	NdisZeroMemory(KeyType, sizeof(KeyType));
 
@@ -1113,8 +1112,8 @@ static void rtmp_read_acl_parms_from_file(IN  PRTMP_ADAPTER pAd, PSTRING tmpbuf,
 */
 static void rtmp_read_ap_wmm_parms_from_file(IN  PRTMP_ADAPTER pAd, PSTRING tmpbuf, PSTRING buffer)
 {
-	PSTRING					macptr;
-	INT						i=0;
+	PSTRING macptr;
+	INT i;
 
 	/*WmmCapable*/
 	if (RTMPGetKeyParameter("WmmCapable", tmpbuf, 32, buffer, TRUE))
@@ -1381,13 +1380,13 @@ static void rtmp_read_ap_wmm_parms_from_file(IN  PRTMP_ADAPTER pAd, PSTRING tmpb
 */
 static void rtmp_read_radius_parms_from_file(IN  PRTMP_ADAPTER pAd, PSTRING tmpbuf, PSTRING buffer)
 {
-	STRING					tok_str[16];
-	PSTRING					macptr;
-	UINT32					ip_addr;
-	INT						i=0;
-	BOOLEAN					bUsePrevFormat = FALSE;
-	USHORT					offset;
-	INT						count[HW_BEACON_MAX_NUM];
+	STRING tok_str[16];
+	PSTRING macptr;
+	UINT32 ip_addr;
+	INT i;
+	BOOLEAN bUsePrevFormat = FALSE;
+	USHORT offset;
+	INT count[HW_BEACON_MAX_NUM];
 
 	/* own_ip_addr*/
 	if (RTMPGetKeyParameter("own_ip_addr", tmpbuf, 32, buffer, TRUE))
@@ -1564,11 +1563,10 @@ static void rtmp_read_radius_parms_from_file(IN  PRTMP_ADAPTER pAd, PSTRING tmpb
 
 static int rtmp_parse_wpapsk_buffer_from_file(IN  PRTMP_ADAPTER pAd,IN  PSTRING buffer,IN  INT BSSIdx)
 {
-	PSTRING		tmpbuf = buffer;
-	INT			i = BSSIdx;
-	/*UCHAR		keyMaterial[40];*/
-	ULONG		len = strlen(tmpbuf);
-	int         ret = 0;
+	PSTRING tmpbuf = buffer;
+	INT i = BSSIdx;
+	ULONG len = strlen(tmpbuf);
+	int ret = 0;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("I/F(ra%d) WPAPSK_KEY=%s\n", i, tmpbuf));
 
@@ -1587,9 +1585,9 @@ static int rtmp_parse_wpapsk_buffer_from_file(IN  PRTMP_ADAPTER pAd,IN  PSTRING 
 #ifdef CONFIG_STA_SUPPORT
 static void rtmp_read_sta_wmm_parms_from_file(IN  PRTMP_ADAPTER pAd, char *tmpbuf, char *buffer)
 {
-	PSTRING					macptr;
-	INT						i=0;
-	BOOLEAN					bWmmEnable = FALSE;
+	PSTRING macptr;
+	INT i;
+	BOOLEAN bWmmEnable = FALSE;
 
 	/*WmmCapable*/
 	if (RTMPGetKeyParameter("WmmCapable", tmpbuf, 32, buffer, TRUE))
@@ -1673,10 +1671,7 @@ static void rtmp_read_sta_wmm_parms_from_file(IN  PRTMP_ADAPTER pAd, char *tmpbu
 
 
 #ifdef DOT11_VHT_AC
-static void VHTParametersHook(
-	IN RTMP_ADAPTER *pAd,
-	IN PSTRING pValueStr,
-	IN PSTRING pInput)
+static void VHTParametersHook(RTMP_ADAPTER *pAd, PSTRING pValueStr, PSTRING pInput)
 {
 	long Value;
 
@@ -1795,8 +1790,8 @@ static void HTParametersHook(
 {
 	long Value;
 #ifdef CONFIG_AP_SUPPORT
-	INT			i=0;
-	PSTRING		Bufptr;
+	INT i;
+	PSTRING Bufptr;
 #endif /* CONFIG_AP_SUPPORT */
 
 	if (RTMPGetKeyParameter("HT_PROTECT", pValueStr, 25, pInput, TRUE))
@@ -2382,9 +2377,9 @@ void RTMPSetSTAPassPhrase(RTMP_ADAPTER *pAd, PSTRING PassPh)
 inline void RTMPSetSTACipherSuites(RTMP_ADAPTER *pAd, NDIS_802_11_ENCRYPTION_STATUS WepStatus)
 {
 	/* Update all wepstatus related*/
-	pAd->StaCfg.PairCipher		= WepStatus;
-	pAd->StaCfg.GroupCipher 	= WepStatus;
-	pAd->StaCfg.bMixCipher 		= FALSE;
+	pAd->StaCfg.PairCipher = WepStatus;
+	pAd->StaCfg.GroupCipher = WepStatus;
+	pAd->StaCfg.bMixCipher = FALSE;
 }
 
 #ifdef  CREDENTIAL_STORE
@@ -2443,13 +2438,13 @@ NDIS_STATUS RecoverConnectInfo(
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<--RecoverConnectInfo()\n"));
 
+	//JB WTF? 
 	return 0;
 }
 
 
 /*STORE THE CONNECT INFO*/
-NDIS_STATUS StoreConnectInfo(
-	IN  RTMP_ADAPTER *pAd)
+NDIS_STATUS StoreConnectInfo(RTMP_ADAPTER *pAd)
 {
 	INT idx;
 	DBGPRINT(RT_DEBUG_TRACE, ("-->StoreConnectInfo()\n"));
@@ -2479,6 +2474,7 @@ NDIS_STATUS StoreConnectInfo(
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<--StoreConnectInfo()\n"));
 
+	//JB WTF?
 	return 0;
 }
 
@@ -2504,7 +2500,7 @@ void RTMPSetCountryCode(RTMP_ADAPTER *pAd, PSTRING CountryCode)
 }
 
 
-NDIS_STATUS	RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING	pBuffer)
+NDIS_STATUS RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING	pBuffer)
 {
 	PSTRING tmpbuf;
 	ULONG RtsThresh;
@@ -2512,7 +2508,7 @@ NDIS_STATUS	RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING	pBuffer)
 	PSTRING macptr;
 	INT i = 0, retval;
 
-	os_alloc_mem(NULL, (UCHAR **)&tmpbuf, MAX_PARAM_BUFFER_SIZE);
+	tmpbuf = os_alloc_mem(MAX_PARAM_BUFFER_SIZE);
 	if (tmpbuf == NULL)
 		return NDIS_STATUS_FAILURE;
 
@@ -2522,7 +2518,7 @@ NDIS_STATUS	RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING	pBuffer)
 			retval = RT_CfgSetMacAddress(pAd, tmpbuf);
 			if (retval)
 				DBGPRINT(RT_DEBUG_TRACE, ("MacAddress = %02x:%02x:%02x:%02x:%02x:%02x\n",
-											PRINT_MAC(pAd->CurrentAddress)));
+						PRINT_MAC(pAd->CurrentAddress)));
 		}
 		/*CountryRegion*/
 		if (RTMPGetKeyParameter("CountryRegion", tmpbuf, 25, pBuffer, TRUE)) {
@@ -3560,7 +3556,7 @@ NDIS_STATUS	RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING	pBuffer)
 						pRekeyInfo->ReKeyInterval = 3600;
 
 					DBGPRINT(RT_DEBUG_TRACE, ("I/F(ra%d) ReKeyInterval=%ld\n",
-															i, pRekeyInfo->ReKeyInterval));
+							i, pRekeyInfo->ReKeyInterval));
 				}
 
 				/* Apply to remaining MBSS*/
@@ -3916,7 +3912,7 @@ NDIS_STATUS	RTMPSetProfileParameters(RTMP_ADAPTER *pAd, PSTRING	pBuffer)
 
 	} while(0);
 
-	os_free_mem(NULL, tmpbuf);
+	os_free_mem(tmpbuf);
 	return NDIS_STATUS_SUCCESS;
 }
 
@@ -3993,13 +3989,13 @@ BOOLEAN RTMP_CardInfoRead(PRTMP_ADAPTER pAd)
 	RTMP_OS_FS_INFO osFSInfo;
 
 	/* init*/
-	os_alloc_mem(NULL, (UCHAR **)&buffer, MAX_INI_BUFFER_SIZE);
+	buffer = os_alloc_mem(MAX_INI_BUFFER_SIZE);
 	if (buffer == NULL)
 		return FALSE;
 
-	os_alloc_mem(NULL, (UCHAR **)&tmpbuf, MAX_PARAM_BUFFER_SIZE);
+	mpbuf = os_alloc_mem(MAX_PARAM_BUFFER_SIZE);
 	if (tmpbuf == NULL) {
-		os_free_mem(NULL, buffer);
+		os_free_mem(buffer);
 		return NDIS_STATUS_FAILURE;
 	}
 
@@ -4040,7 +4036,7 @@ BOOLEAN RTMP_CardInfoRead(PRTMP_ADAPTER pAd)
 		/* card information file does not exist */
 			DBGPRINT(RT_DEBUG_TRACE,
 				("--> Error opening %s\n", CARD_INFO_PATH));
-		goto  free_resource;
+		goto free_resource;
 	}
 
 	/* card information file exists so reading the card information */
@@ -4267,8 +4263,8 @@ retval = RtmpOSFileClose(srcf);
 
 free_resource:
 	RtmpOSFSInfoChange(&osFSInfo, FALSE);
-	os_free_mem(NULL, buffer);
-	os_free_mem(NULL, tmpbuf);
+	os_free_mem(buffer);
+	os_free_mem(tmpbuf);
 
 	return flg_match_ok;
 }
@@ -4276,7 +4272,7 @@ free_resource:
 
 
 #ifdef SINGLE_SKU_V2
-NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
+BOOLEAN RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 {
 	PSTRING buffer;
 	PSTRING	readline, token;
@@ -4292,7 +4288,7 @@ NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 	DlListInit(&pAd->SingleSkuPwrList);
 
 	/* init */
-	os_alloc_mem(NULL, (UCHAR **)&buffer, MAX_INI_BUFFER_SIZE);
+	buffer = os_alloc_mem(MAX_INI_BUFFER_SIZE);
 	if (buffer == NULL)
 		return FALSE;
 
@@ -4305,7 +4301,7 @@ NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 	if (IS_FILE_OPEN_ERR(srcf)) {
 		/* card information file does not exist */
 		DBGPRINT(RT_DEBUG_ERROR, ("--> Error opening %s\n", SINGLE_SKU_TABLE_FILE_NAME));
-		goto  free_resource;
+		goto free_resource;
 	}
 
 #ifdef RTMP_INTERNAL_TX_ALC
@@ -4330,8 +4326,18 @@ NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 				continue;
 
 			if (!strncmp(readline, "ch", 2)) {
-				CH_POWER *pwr = NULL;
-				os_alloc_mem(NULL, (UCHAR **)&pwr, sizeof(*pwr));
+				CH_POWER *pwr = os_alloc_mem(sizeof(*pwr));
+				
+				//JB: there was no test  for memory allocation,
+				//so issue at least a warning.
+				//TODO: Proper cleanup if memory allocation fails.
+
+				WARN_ON(!pwr);
+
+				if (!pwr) {
+					os_free_mem(buffer);
+					return FALSE;
+				}
 				NdisZeroMemory(pwr, sizeof(*pwr));
 
 				token= rstrtok(readline +2 ," ");
@@ -4439,7 +4445,7 @@ NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 #endif /* DOT11_VHT_AC */
 
 					if (isSame == TRUE) {
-						os_free_mem(NULL, pwr);
+						os_free_mem(pwr);
 					} else {
 						StartCh = pwr;
 						DlListAddTail(&pAd->SingleSkuPwrList, &StartCh->List);
@@ -4448,10 +4454,11 @@ NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 				}
 
 				StartCh->num ++;
-				os_alloc_mem(pAd, (PUCHAR *)&temp, StartCh->num);
+				temp = os_alloc_mem(StartCh->num);
+				//JB WTF? no test for memory allocation?
 				if (StartCh->Channel != NULL) {
 					NdisMoveMemory(temp, StartCh->Channel, StartCh->num-1);
-					os_free_mem(pAd, StartCh->Channel);
+					os_free_mem(StartCh->Channel);
 				}
 
 				StartCh->Channel = temp;
@@ -4504,7 +4511,7 @@ NDIS_STATUS RTMPSetSingleSKUParameters(RTMP_ADAPTER *pAd)
 
 free_resource:
 	RtmpOSFSInfoChange(&osFSInfo, FALSE);
-	os_free_mem(NULL, buffer);
+	os_free_mem(buffer);
 
 	return TRUE;
 }
@@ -4542,7 +4549,8 @@ UINT8 newRateGetAntenna(UINT8 MCS)
 	return ((MCS>>4) + 1);
 }
 
-void print_RalinkRate_HT(void)
+#if 0 //JB removed
+static void print_RalinkRate_HT(void)
 {
 	UINT32 i,j,k;
 
@@ -4570,4 +4578,4 @@ void print_RalinkRate_HT(void)
 		DBGPRINT(RT_DEBUG_TRACE, ("======= END BW : %d ============\n", i));
 	}
 }
-
+#endif //0
