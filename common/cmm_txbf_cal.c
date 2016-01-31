@@ -32,7 +32,7 @@
 static BOOLEAN mt76x2_ITxBFLNACalibration(RTMP_ADAPTER *pAd,
 	int calFunction, int calMethod, BOOLEAN gBand);
 
-static BOOLEAN mt76x2_ITxBFDividerCalibration(RTMP_ADAPTER *pAd, 
+static BOOLEAN mt76x2_ITxBFDividerCalibration(RTMP_ADAPTER *pAd,
 	int calFunction, int calMethod, UCHAR *divPhase);
 
 /*
@@ -436,7 +436,7 @@ static VOID CalcDividerPhase(PRTMP_ADAPTER pAd, UCHAR *mPhase0)
 	BOOLEAN gBandFlg = FALSE;
 
 	// band check
-	if (channel <= 14) 
+	if (channel <= 14)
 		gBandFlg = TRUE;
 
 	/* DPD and TSSI HW off */
@@ -636,46 +636,6 @@ static VOID CalcDividerPhase(PRTMP_ADAPTER pAd, UCHAR *mPhase0)
 #endif /* LINUX */
 #endif /* DBG */
 
-/*
-	ITxBFSaveData - save MAC data
-		Returns pointer to allocated buffer containing saved data
-*/
-#if 0 //JB removed
-static UINT32 *ITxBFSaveData(PRTMP_ADAPTER pAd)
-{
-	UINT32 *saveData, *sdPtr, macAddr, maxAddr;
-
-	/* Save 48KB MAC data. */
-	if (os_alloc_mem(pAd, (UCHAR **)&saveData, 0xC000)!= NDIS_STATUS_SUCCESS) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():Alloc memory failed\n", __FUNCTION__));
-		return NULL;
-	}
-
-	maxAddr = 0x10000;
-
-	for (sdPtr=saveData, macAddr=0x4000; macAddr<maxAddr; macAddr += 4, sdPtr++) {
-		RTMP_IO_READ32(pAd, macAddr, sdPtr);
-	}
-	return saveData;
-}
-#endif //0
-
-/*
-	ITxBFSaveData - restore MAC data
-		saveData - buffer containing data to restore
-*/
-#if 0 //JB removed
-static void ITxBFRestoreData(PRTMP_ADAPTER pAd, UINT32 *saveData)
-{
-	UINT32 *sdPtr, macAddr, maxAddr;
-
-	maxAddr = 0x10000;
-
-	for (sdPtr=saveData, macAddr=0x4000; macAddr<maxAddr; macAddr += 4, sdPtr++) {
-		RTMP_IO_WRITE32(pAd, macAddr, *sdPtr);
-	}
-}
-#endif //0
 
 /*
 	mapChannelKHz - map channel number to KHz
@@ -1649,7 +1609,7 @@ BOOLEAN ITxBFLNACalibrationStartUp(
 	RTMP_IO_WRITE32(pAd,CAL_R5,  			 pCR_BK[64]);
 	RTMP_IO_WRITE32(pAd,PWR_PIN_CFG,         pCR_BK[65]);
 
-	os_free_mem(NULL, pCR_BK);
+	os_free_mem(pCR_BK);
 
 	return cal_StatusFlg;
 }
@@ -2089,7 +2049,7 @@ BOOLEAN ITxBFPhaseCalibration(RTMP_ADAPTER *pAd, INT calFunction,USHORT ch)
 	ch = pAd->ate.Channel;
 #endif
 
-	if (ch <= 14) 
+	if (ch <= 14)
 		gBandFlg = TRUE;
 
 	/* DPD and TSSI HW off */
@@ -2736,7 +2696,7 @@ BOOLEAN TxBfProfileTagValid(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, UCHAR profile
 
 
 #ifdef MT76x2
-UCHAR Read_PFMUTxBfProfile(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, PFMU_DATA *pData, 
+UCHAR Read_PFMUTxBfProfile(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, PFMU_DATA *pData,
 	BOOLEAN implicitProfile)
 {
 	INT carrierIndex, scIndex;
@@ -2776,7 +2736,7 @@ UCHAR Read_PFMUTxBfProfile(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, PFMU_DATA *pDa
 		}
 	}
 
-	if (prof->validFlg != 1) 
+	if (prof->validFlg != 1)
 		return prof->validFlg;
 
 	BUG_ON(pTab == NULL);
@@ -2851,25 +2811,29 @@ int iCalcCalibration(PRTMP_ADAPTER pAd, int calParams[2], int profileNum)
 	struct timeval tval1, tval2;
 #endif
 
-	if (os_alloc_mem(pAd, (UCHAR **)&pExpData, sizeof(PFMU_DATA)) != NDIS_STATUS_SUCCESS) {
+	pExpData = os_alloc_mem(sizeof(PFMU_DATA));
+	if (!pExpData) {
 		return -3;
 	}
 
-	if (os_alloc_mem(pAd, (UCHAR **)&pImpData, sizeof(PFMU_DATA))!= NDIS_STATUS_SUCCESS) {
-		os_free_mem(pAd, pExpData);
+	pImpData = os_alloc_mem(sizeof(PFMU_DATA));
+	if (!pImpData) {
+		os_free_mem(pExpData);
 		return -3;
 	}
 
-	if (os_alloc_mem(pAd, (UCHAR **)&pExpProf, sizeof(PFMU_PROFILE))!= NDIS_STATUS_SUCCESS) {
-		os_free_mem(pAd, pImpData);
-		os_free_mem(pAd, pExpData);
+	pExpProf = os_alloc_mem(sizeof(PFMU_PROFILE));
+	if (!pExpProf) {
+		os_free_mem(pImpData);
+		os_free_mem(pExpData);
 		return -3;
 	}
 
-	if (os_alloc_mem(pAd, (UCHAR **)&pImpProf, sizeof(PFMU_PROFILE)) != NDIS_STATUS_SUCCESS) {
-		os_free_mem(pAd, pImpData);
-		os_free_mem(pAd, pExpData);
-		os_free_mem(pAd, pExpProf);
+	pImpProf = os_alloc_mem(sizeof(PFMU_PROFILE));
+	if (!pImpProf) {
+		os_free_mem(pImpData);
+		os_free_mem(pExpData);
+		os_free_mem(pExpProf);
 		return -3;
 	}
 
@@ -3018,10 +2982,10 @@ int iCalcCalibration(PRTMP_ADAPTER pAd, int calParams[2], int profileNum)
 #endif
 
 exitCalcCal:
-	os_free_mem(pAd, pExpData);
-	os_free_mem(pAd, pImpData);
-	os_free_mem(pAd, pExpProf);
-	os_free_mem(pAd, pImpProf);
+	os_free_mem(pExpData);
+	os_free_mem(pImpData);
+	os_free_mem(pExpProf);
+	os_free_mem(pImpProf);
 
 	return result;
 }
