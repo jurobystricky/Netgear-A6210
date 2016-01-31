@@ -772,14 +772,12 @@ PRTMP_ADAPTER pAd,
 
 
 #ifdef INF_PPA_SUPPORT
-BOOLEAN Set_INF_AMAZON_SE_PPA_Proc(
-PRTMP_ADAPTER pAd,
-		PUCHAR			arg)
+BOOLEAN Set_INF_AMAZON_SE_PPA_Proc(PRTMP_ADAPTER pAd, PUCHAR arg)
 {
 	UINT status;
 	UCHAR aggre;
 	UINT32 g_if_id;
-	NDIS_STATUS	re_val;
+//	NDIS_STATUS re_val;
 
 	aggre = simple_strtol(arg, 0, 10);
 
@@ -800,9 +798,8 @@ PRTMP_ADAPTER pAd,
 			if (pAd->pDirectpathCb == NULL)
 			{
 				DBGPRINT(RT_DEBUG_TRACE, ("Allocate memory for pDirectpathCb\n"));
-				re_val = os_alloc_mem(NULL, (UCHAR **)&(pAd->pDirectpathCb), sizeof(PPA_DIRECTPATH_CB));
-
-				if (re_val != NDIS_STATUS_SUCCESS)
+				pAd->pDirectpathCb = os_alloc_mem(sizeof(PPA_DIRECTPATH_CB));
+				if (!pAd->pDirectpathCb)
 					return FALSE;
 			}
 
@@ -1024,7 +1021,7 @@ BOOLEAN Set_ChannelListAdd_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 		PCH_DESP pChDesp = NULL;
 		UCHAR CountryCode[3] = {0};
 		if (pAd->CommonCfg.pChDesp == NULL) {
-			os_alloc_mem(pAd,  &pAd->CommonCfg.pChDesp, MAX_PRECONFIG_DESP_ENTRY_SIZE*sizeof(CH_DESP));
+			pAd->CommonCfg.pChDesp = os_alloc_mem(MAX_PRECONFIG_DESP_ENTRY_SIZE*sizeof(CH_DESP));
 			pChDesp = (PCH_DESP) pAd->CommonCfg.pChDesp;
 			if (pChDesp) {
 				for (EntryIdx = 0; pChRegion->pChDesp[EntryIdx].FirstChannel != 0; EntryIdx++) {
@@ -1038,7 +1035,6 @@ BOOLEAN Set_ChannelListAdd_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 				/* Copy the NULL entry*/
 				NdisCopyMemory(&pChDesp[EntryIdx], &pChRegion->pChDesp[EntryIdx], sizeof(CH_DESP));
 			} else {
-				DBGPRINT(RT_DEBUG_ERROR, ("os_alloc_mem failded.\n"));
 				return FALSE;
 			}
 		} else {
@@ -1168,7 +1164,7 @@ PRTMP_ADAPTER pAd,
 
 	if (pAd->CommonCfg.pChDesp == NULL)
 	{
-		os_alloc_mem(pAd,  &pAd->CommonCfg.pChDesp, MAX_PRECONFIG_DESP_ENTRY_SIZE*sizeof(CH_DESP));
+		pAd->CommonCfg.pChDesp = os_alloc_mem(MAX_PRECONFIG_DESP_ENTRY_SIZE*sizeof(CH_DESP));
 		if (pAd->CommonCfg.pChDesp)
 		{
 			pChDesp = (PCH_DESP) pAd->CommonCfg.pChDesp;
@@ -1186,7 +1182,6 @@ PRTMP_ADAPTER pAd,
 		}
 		else
 		{
-			DBGPRINT(RT_DEBUG_ERROR, ("os_alloc_mem failded.\n"));
 			return FALSE;
 		}
 	}
@@ -1197,7 +1192,7 @@ PRTMP_ADAPTER pAd,
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("Default table used.\n" ));
 		if (pAd->CommonCfg.pChDesp != NULL)
-			os_free_mem(NULL, pAd->CommonCfg.pChDesp);
+			os_free_mem(pAd->CommonCfg.pChDesp);
 		pAd->CommonCfg.pChDesp = NULL;
 		pAd->CommonCfg.DfsType = MAX_RD_REGION;
 	}
@@ -2344,11 +2339,8 @@ VOID RTMPIoctlGetSiteSurvey(
 	else
 		BufLen = wrq->u.data.length;
 
-	os_alloc_mem(NULL, (PUCHAR *)&msg, TotalLen);
-
-	if (msg == NULL)
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("RTMPIoctlGetSiteSurvey - msg memory alloc fail.\n"));
+	msg = os_alloc_mem(TotalLen);
+	if (msg == NULL) {
 		return;
 	}
 
@@ -2395,7 +2387,7 @@ VOID RTMPIoctlGetSiteSurvey(
 	Status = copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("RTMPIoctlGetSiteSurvey - wrq->u.data.length = %d\n", wrq->u.data.length));
-	os_free_mem(NULL, (PUCHAR)msg);
+	os_free_mem(msg);
 }
 #endif
 
@@ -2410,10 +2402,8 @@ VOID RTMPIoctlGetMacTableStaInfo(
 	MAC_TABLE_ENTRY *pEntry;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&pMacTab, sizeof(RT_802_11_MAC_TABLE));
-	if (pMacTab == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+	pMacTab = os_alloc_mem(sizeof(RT_802_11_MAC_TABLE));
+	if (pMacTab == NULL) {
 		return;
 	}
 
@@ -2456,7 +2446,7 @@ VOID RTMPIoctlGetMacTableStaInfo(
 	}
 
 	if (pMacTab != NULL)
-		os_free_mem(NULL, pMacTab);
+		os_free_mem(pMacTab);
 }
 
 
@@ -2473,10 +2463,8 @@ VOID RTMPIoctlGetMacTable(
 	char *msg;
 
 	/* allocate memory */
-	os_alloc_mem(NULL, (UCHAR **)&pMacTab, sizeof(RT_802_11_MAC_TABLE));
-	if (pMacTab == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+	pMacTab = os_alloc_mem(sizeof(RT_802_11_MAC_TABLE));
+	if (pMacTab == NULL) {
 		return;
 	}
 
@@ -2519,10 +2507,8 @@ VOID RTMPIoctlGetMacTable(
 		DBGPRINT(RT_DEBUG_TRACE, ("%s: copy_to_user() fail\n", __FUNCTION__));
 	}
 
-	os_alloc_mem(NULL, (UCHAR **)&msg, sizeof(CHAR)*(MAX_LEN_OF_MAC_TABLE*MAC_LINE_LEN));
-	if (msg == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():Alloc memory failed\n", __FUNCTION__));
+	msg = os_alloc_mem(sizeof(CHAR)*(MAX_LEN_OF_MAC_TABLE*MAC_LINE_LEN));
+	if (msg == NULL) {
 		goto LabelOK;
 	}
 	memset(msg, 0 ,MAX_LEN_OF_MAC_TABLE*MAC_LINE_LEN );
@@ -2554,11 +2540,11 @@ VOID RTMPIoctlGetMacTable(
 	/* for compatible with old API just do the printk to console*/
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s", msg));
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 
 LabelOK:
 	if (pMacTab != NULL)
-		os_free_mem(NULL, pMacTab);
+		os_free_mem(pMacTab);
 }
 
 #if defined(INF_AR9) || defined(BB_SOC)
@@ -2571,10 +2557,8 @@ VOID RTMPAR9IoctlGetMacTable(
 	INT i;
 	char *msg;
 
-	os_alloc_mem(NULL, (UCHAR **)&msg, sizeof(CHAR)*(MAX_LEN_OF_MAC_TABLE*MAC_LINE_LEN));
-	if (msg == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():Alloc memory failed\n", __FUNCTION__));
+	msg = os_alloc_mem(sizeof(CHAR)*(MAX_LEN_OF_MAC_TABLE*MAC_LINE_LEN));
+	if (msg == NULL) {
 		return;
 	}
 	memset(msg, 0 ,MAX_LEN_OF_MAC_TABLE*MAC_LINE_LEN );
@@ -2611,7 +2595,7 @@ VOID RTMPAR9IoctlGetMacTable(
 		DBGPRINT(RT_DEBUG_OFF, ("%s", msg));
 	}
 
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 }
 
 VOID RTMPIoctlGetSTAT2(
@@ -2619,13 +2603,11 @@ VOID RTMPIoctlGetSTAT2(
 	 RTMP_IOCTL_INPUT_STRUCT *wrq)
 {
 	char *msg;
-	PMULTISSID_STRUCT	pMbss;
+	PMULTISSID_STRUCT pMbss;
 	INT apidx;
 
-	os_alloc_mem(NULL, (UCHAR **)&msg, sizeof(CHAR)*(pAd->ApCfg.BssidNum*(14*128)));
-	if (msg == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():Alloc memory failed\n", __FUNCTION__));
+	msg = os_alloc_mem(sizeof(CHAR)*(pAd->ApCfg.BssidNum*(14*128)));
+	if (msg == NULL) {
 		return;
 	}
 	memset(msg, 0 ,pAd->ApCfg.BssidNum*(14*128));
@@ -2659,7 +2641,7 @@ VOID RTMPIoctlGetSTAT2(
 		DBGPRINT(RT_DEBUG_OFF, ("%s", msg));
 	}
 
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 }
 
 
@@ -2673,10 +2655,8 @@ VOID RTMPIoctlGetRadioDynInfo(
 	struct wifi_dev *wdev;
 
 /*	msg = kmalloc(sizeof(CHAR)*(4096), MEM_ALLOC_FLAG);*/
-	os_alloc_mem(NULL, (UCHAR **)&msg, sizeof(CHAR)*(4096));
-	if (msg == NULL)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():Alloc memory failed\n", __FUNCTION__));
+	msg = os_alloc_mem(sizeof(CHAR)*(4096));
+	if (msg == NULL) {
 		return;
 	}
 	memset(msg, 0 ,4096);
@@ -2715,7 +2695,7 @@ VOID RTMPIoctlGetRadioDynInfo(
 		DBGPRINT(RT_DEBUG_OFF, ("%s", msg));
 	}
 
-	os_free_mem(NULL, msg);
+	os_free_mem(msg);
 }
 #endif/*CONFIG_AP_SUPPORT*/
 #endif/*AR9_MAPI_SUPPORT*/
@@ -5216,7 +5196,7 @@ BOOLEAN show_devinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg)
 	pstr = wmode_2_str(pAd->CommonCfg.PhyMode);
 	if (pstr) {
 		DBGPRINT(RT_DEBUG_OFF, ("WirelessMode: %s(%d)\n", pstr, pAd->CommonCfg.PhyMode));
-		os_free_mem(pAd, pstr);
+		os_free_mem(pstr);
 	}
 
 	DBGPRINT(RT_DEBUG_OFF, ("Channel: %d\n", pAd->CommonCfg.Channel));
@@ -5310,7 +5290,7 @@ BOOLEAN show_sysinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg)
 			str = wmode_2_str(wdev->PhyMode);
 			if (str) {
 				DBGPRINT(RT_DEBUG_OFF, ("\t\tPhyMode:%s\n", str));
-				os_free_mem(pAd, str);
+				os_free_mem(str);
 			}
 			DBGPRINT(RT_DEBUG_OFF, ("\t\tChannel:%d\n", wdev->channel));
 			DBGPRINT(RT_DEBUG_OFF, ("\t\tPortSecured/AllowTx: %d:%d\n",
@@ -5496,7 +5476,8 @@ BOOLEAN Set_InvTxBfTag_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 #else
 	PFMU_PROFILE *prof;
 
-	if (os_alloc_mem(pAd, (UCHAR **)&prof, sizeof(PROFILE_DATA))!= NDIS_STATUS_SUCCESS) {
+	prof = os_alloc_mem(sizeof(PROFILE_DATA));
+	if (!prof) {
 //JB: Moron		return -3;
 		return FALSE;
 	}
@@ -5520,7 +5501,7 @@ BOOLEAN Set_InvTxBfTag_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 	/* Restore Profile Updates */
 	RTMP_IO_WRITE32(pAd, PFMU_R1, rValue);
 
-	os_free_mem(pAd, prof);
+	os_free_mem(prof);
 #endif
 
 	return TRUE;
@@ -7741,9 +7722,8 @@ BOOLEAN Show_Diag_Proc(RTMP_ADAPTER *pAd, PSTRING arg)
 	UCHAR vht_mcs_max_idx = MAX_VHT_MCS_SET;
 #endif /* DOT11_VHT_AC */
 
-	os_alloc_mem(pAd, (UCHAR **)&pDiag, sizeof(RtmpDiagStruct));
+	pDiag = os_alloc_mem(sizeof(RtmpDiagStruct));
 	if (!pDiag) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():AllocMem failed!\n", __FUNCTION__));
 		return FALSE;
 	}
 
@@ -7886,7 +7866,7 @@ BOOLEAN Show_Diag_Proc(RTMP_ADAPTER *pAd, PSTRING arg)
 	printk("\n-------------\n");
 
 done:
-	os_free_mem(pAd, pDiag);
+	os_free_mem(pDiag);
 	return TRUE;
 }
 #endif /* DBG_DIAGNOSE */
