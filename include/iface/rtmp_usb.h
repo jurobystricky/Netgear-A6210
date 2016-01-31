@@ -5,7 +5,7 @@
 
 extern UCHAR EpToQueue[6];
 
-// TODO: shiang-usw, fine tune BULKAGGRE_SIZE, origianl is 60
+// TODO: shiang-usw, fine tune BULKAGGRE_SIZE, original is 60
 #ifdef INF_AMAZON_SE
 #define BULKAGGRE_SIZE 	30
 #else
@@ -28,26 +28,25 @@ extern UCHAR EpToQueue[6];
 
 /* Flags for Bulkflags control for bulk out data */
 
-#define	fRTUSB_BULK_OUT_DATA_NULL	0x00000001
-#define	fRTUSB_BULK_OUT_RTS		0x00000002
-#define	fRTUSB_BULK_OUT_MLME		0x00000004
+#define fRTUSB_BULK_OUT_DATA_NULL	0x00000001
+#define fRTUSB_BULK_OUT_RTS		0x00000002
+#define fRTUSB_BULK_OUT_MLME		0x00000004
 
-#define	fRTUSB_BULK_OUT_PSPOLL		0x00000010
-#define	fRTUSB_BULK_OUT_DATA_FRAG	0x00000020
-#define	fRTUSB_BULK_OUT_DATA_FRAG_2	0x00000040
-#define	fRTUSB_BULK_OUT_DATA_FRAG_3	0x00000080
-#define	fRTUSB_BULK_OUT_DATA_FRAG_4	0x00000100
+#define fRTUSB_BULK_OUT_PSPOLL		0x00000010
+#define fRTUSB_BULK_OUT_DATA_FRAG	0x00000020
+#define fRTUSB_BULK_OUT_DATA_FRAG_2	0x00000040
+#define fRTUSB_BULK_OUT_DATA_FRAG_3	0x00000080
+#define fRTUSB_BULK_OUT_DATA_FRAG_4	0x00000100
 
-#define	fRTUSB_BULK_OUT_DATA_NORMAL	0x00010000
-#define	fRTUSB_BULK_OUT_DATA_NORMAL_2	0x00020000
-#define	fRTUSB_BULK_OUT_DATA_NORMAL_3	0x00040000
-#define	fRTUSB_BULK_OUT_DATA_NORMAL_4	0x00080000
+#define fRTUSB_BULK_OUT_DATA_NORMAL	0x00010000
+#define fRTUSB_BULK_OUT_DATA_NORMAL_2	0x00020000
+#define fRTUSB_BULK_OUT_DATA_NORMAL_3	0x00040000
+#define fRTUSB_BULK_OUT_DATA_NORMAL_4	0x00080000
 
 /* TODO:move to ./ate/include/iface/ate_usb.h */
 #ifdef RALINK_ATE
-#define	fRTUSB_BULK_OUT_DATA_ATE	0x00100000
+#define fRTUSB_BULK_OUT_DATA_ATE	0x00100000
 #endif
-
 
 #define FREE_HTTX_RING(_pCookie, _pipeId, _txContext)			\
 {									\
@@ -79,7 +78,7 @@ extern UCHAR EpToQueue[6];
 #define RTUSB_CLEAR_BULK_FLAG(_M, _F)	((_M)->BulkFlags &= ~(_F))
 #define RTUSB_TEST_BULK_FLAG(_M, _F)	(((_M)->BulkFlags & (_F)) != 0)
 
-struct _MGMT_STRUC;
+//struct _MGMT_STRUC;
 struct _TX_BLK;
 
 NTSTATUS RTUSB_VendorRequest(struct _RTMP_ADAPTER *pAd, UINT32 TxFlags,
@@ -91,32 +90,28 @@ NTSTATUS RTUSBMultiWrite(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, U
 NTSTATUS RTUSBMultiWrite_nBytes(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, USHORT len, USHORT batchLen);
 NTSTATUS RTUSBMultiWrite_OneByte(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *pData);
 NTSTATUS RTUSBSingleWrite(struct _RTMP_ADAPTER *pAd, USHORT Offset, USHORT val, BOOLEAN bWriteHigh);
-
 NTSTATUS RTUSBReadBBPRegister(struct _RTMP_ADAPTER *pAd, UCHAR Id, UCHAR *pValue);
 NTSTATUS RTUSBWriteBBPRegister(struct _RTMP_ADAPTER *pAd, UCHAR Id, UCHAR Value);
 NTSTATUS RTUSBWriteRFRegister(struct _RTMP_ADAPTER *pAd, UINT32 Value);
 NTSTATUS RTUSBWriteMACRegister(struct _RTMP_ADAPTER *pAd, USHORT Offset, UINT32 val, BOOLEAN bWriteHigh);
 NTSTATUS RTUSBReadMACRegister(struct _RTMP_ADAPTER *pAd, USHORT Offset, UINT32 *val);
-
 NTSTATUS RTUSBReadEEPROM(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, USHORT len);
 NTSTATUS RTUSBWriteEEPROM(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, USHORT len);
 NTSTATUS RTUSBFirmwareWrite(struct _RTMP_ADAPTER *pAd, UCHAR *pFwImage, ULONG FwLen);
 NTSTATUS RTUSBVendorReset(struct _RTMP_ADAPTER *pAd);
-BOOLEAN AsicCheckCommandOk(struct _RTMP_ADAPTER *pAd, UCHAR cmd);
 
 NDIS_STATUS RTUSBEnqueueCmdFromNdis(struct _RTMP_ADAPTER *pAd, NDIS_OID Oid,
 	BOOLEAN SetInfo, PVOID pInfoBuf, UINT32 BufLen);
-void RTUSBDequeueCmd(PCmdQ cmdq, PCmdQElmt *pcmdqelmt);
 
+void RTUSBDequeueCmd(PCmdQ cmdq, PCmdQElmt *pcmdqelmt);
 void RTUSBBssBeaconExit(struct _RTMP_ADAPTER *pAd);
 void RTUSBBssBeaconStop(struct _RTMP_ADAPTER *pAd);
 void RTUSBBssBeaconStart(struct _RTMP_ADAPTER * pAd);
 void RTUSBBssBeaconInit(struct _RTMP_ADAPTER *pAd);
 
 NDIS_STATUS RTUSBFreeDescRequest(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId, UINT32 req_cnt);
-BOOLEAN	RTUSBNeedQueueBackForAgg(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId);
+BOOLEAN RTUSBNeedQueueBackForAgg(struct _RTMP_ADAPTER *pAd, UCHAR BulkOutPipeId);
 
-//USHORT RtmpUSB_WriteSubTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, BOOLEAN bIsLast, USHORT *freeCnt);
 USHORT RtmpUSB_WriteSingleTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, BOOLEAN bIsLast, USHORT *freeCnt);
 USHORT RtmpUSB_WriteFragTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR fragNum, USHORT *freeCnt);
 USHORT RtmpUSB_WriteMultiTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR frmNum, USHORT *freeCnt);
@@ -124,19 +119,14 @@ void RtmpUSB_FinalWriteTxResource(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTx
 
 void RtmpUSBDataLastTxIdx(struct _RTMP_ADAPTER *pAd, UCHAR QueIdx, USHORT TxIdx);
 void RtmpUSBDataKickOut(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR QueIdx);
-int RtmpUSBMgmtKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, PNDIS_PACKET pkt, UCHAR *pSrcBufVA, UINT SrcBufLen);
+int  RtmpUSBMgmtKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, PNDIS_PACKET pkt, UCHAR *pSrcBufVA, UINT SrcBufLen);
 void RtmpUSBNullFrameKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, UCHAR *pNullFrm, UINT32 frmLen);
-
 void RTUSBWatchDog(struct _RTMP_ADAPTER *pAd);
-
 void RTUSBPutToSleep(struct _RTMP_ADAPTER *pAd);
 NTSTATUS RTUSBWakeUp(struct _RTMP_ADAPTER *pAd);
-
 void RtmpUsbStaAsicForceWakeupTimeout(PVOID arg1, PVOID FuncContext, PVOID arg2, PVOID arg3);
-
 void RT28xxUsbStaAsicForceWakeup(struct _RTMP_ADAPTER *pAd, BOOLEAN bFromTx);
 void RT28xxUsbStaAsicSleepThenAutoWakeup(struct _RTMP_ADAPTER *pAd, USHORT TbttNumToNextWakeUp);
-
 void RT28xxUsbMlmeRadioOn(struct _RTMP_ADAPTER *pAd);
 void RT28xxUsbMlmeRadioOFF(struct _RTMP_ADAPTER *pAd);
 void RT28xxUsbAsicRadioOn(struct _RTMP_ADAPTER *pAd);
