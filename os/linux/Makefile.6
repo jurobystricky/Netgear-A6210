@@ -722,7 +722,7 @@ endif
 
 install:
 	rm -rf $(DAT_PATH)
-	mkdir $(DAT_PATH)
+	mkdir -pv $(DAT_PATH)
 	cp $(RT28xx_DIR)/$(DAT_FILE_NAME) $(DAT_PATH)/.
 	install -d $(LINUX_SRC_MODULE)
 	install -m 644 -c $(addsuffix .ko,$(MOD_NAME)) $(LINUX_SRC_MODULE)
