@@ -13,17 +13,17 @@
 static void ba_mpdu_blk_free(PRTMP_ADAPTER pAd, struct reordering_mpdu *mpdu_blk);
 
 #ifdef PEER_DELBA_TX_ADAPT
-static VOID Peer_DelBA_Tx_Adapt_Enable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry);
-static VOID Peer_DelBA_Tx_Adapt_Disable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry);
+static void Peer_DelBA_Tx_Adapt_Enable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry);
+static void Peer_DelBA_Tx_Adapt_Disable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry);
 #endif /* PEER_DELBA_TX_ADAPT */
 
 static BA_ORI_ENTRY *BATableAllocOriEntry(RTMP_ADAPTER *pAd, USHORT *Idx);
 static BA_REC_ENTRY *BATableAllocRecEntry(RTMP_ADAPTER *pAd, USHORT *Idx);
 
-static VOID BAOriSessionSetupTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
+static void BAOriSessionSetupTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3);
 
-static VOID BARecSessionIdleTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
+static void BARecSessionIdleTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3);
 
 static BUILD_TIMER_FUNCTION(BAOriSessionSetupTimeout);
@@ -32,7 +32,7 @@ static BUILD_TIMER_FUNCTION(BARecSessionIdleTimeout);
 #define ANNOUNCE_REORDERING_PACKET(_pAd, _mpdu_blk)	\
 			Announce_Reordering_Packet(_pAd, _mpdu_blk);
 
-static VOID BA_MaxWinSizeReasign(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntryPeer,
+static void BA_MaxWinSizeReasign(PRTMP_ADAPTER pAd, MAC_TABLE_ENTRY *pEntryPeer,
 	UCHAR *pWinSize)
 {
 	UCHAR MaxSize;
@@ -193,7 +193,7 @@ void ba_reordering_resource_release(RTMP_ADAPTER *pAd)
 		if (pBAEntry->REC_BA_Status != Recipient_NONE) {
 			while ((mpdu_blk = ba_reordering_mpdu_dequeue(&pBAEntry->list))) {
 				ASSERT(mpdu_blk->pPacket);
-				RELEASE_NDIS_PACKET(pAd, mpdu_blk->pPacket, NDIS_STATUS_FAILURE);
+				dev_kfree_skb_any(mpdu_blk->pPacket);
 				ba_mpdu_blk_free(pAd, mpdu_blk);
 			}
 		}
@@ -408,7 +408,7 @@ void ba_flush_reordering_timeout_mpdus(PRTMP_ADAPTER pAd, PBA_REC_ENTRY pBAEntry
 /*
  * generate ADDBA request to set up BA agreement
  */
-VOID BAOriSessionSetUp(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
+void BAOriSessionSetUp(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
 	UCHAR TID, USHORT TimeOut, ULONG DelayTime, BOOLEAN isForced)
 {
 	BA_ORI_ENTRY *pBAEntry = NULL;
@@ -478,7 +478,7 @@ VOID BAOriSessionSetUp(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
 }
 
 
-static VOID BAOriSessionAdd(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
+static void BAOriSessionAdd(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry,
 	FRAME_ADDBA_RSP *pFrame)
 {
 	BA_ORI_ENTRY *pBAEntry = NULL;
@@ -697,7 +697,7 @@ done:
 }
 
 
-static VOID BATableFreeOriEntry(RTMP_ADAPTER *pAd, ULONG Idx)
+static void BATableFreeOriEntry(RTMP_ADAPTER *pAd, ULONG Idx)
 {
 	BA_ORI_ENTRY *pBAEntry = NULL;
 	MAC_TABLE_ENTRY *pEntry;
@@ -733,7 +733,7 @@ static VOID BATableFreeOriEntry(RTMP_ADAPTER *pAd, ULONG Idx)
 }
 
 
-static VOID BATableFreeRecEntry(RTMP_ADAPTER *pAd, ULONG Idx)
+static void BATableFreeRecEntry(RTMP_ADAPTER *pAd, ULONG Idx)
 {
 	BA_REC_ENTRY *pBAEntry = NULL;
 	MAC_TABLE_ENTRY *pEntry;
@@ -756,7 +756,7 @@ static VOID BATableFreeRecEntry(RTMP_ADAPTER *pAd, ULONG Idx)
 }
 
 
-VOID BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
+void BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
 	BOOLEAN bPassive, BOOLEAN bForceSend)
 {
 	UINT Idx = 0;
@@ -835,7 +835,7 @@ VOID BAOriSessionTearDown(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR TID,
 	}
 }
 
-VOID BARecSessionTearDown(PRTMP_ADAPTER pAd, UCHAR Wcid, UCHAR TID,
+void BARecSessionTearDown(PRTMP_ADAPTER pAd, UCHAR Wcid, UCHAR TID,
 	BOOLEAN bPassive)
 {
 	ULONG Idx;
@@ -909,7 +909,7 @@ VOID BARecSessionTearDown(PRTMP_ADAPTER pAd, UCHAR Wcid, UCHAR TID,
 }
 
 
-VOID BASessionTearDownALL(RTMP_ADAPTER *pAd, UCHAR Wcid)
+void BASessionTearDownALL(RTMP_ADAPTER *pAd, UCHAR Wcid)
 {
 	int i;
 
@@ -934,7 +934,7 @@ VOID BASessionTearDownALL(RTMP_ADAPTER *pAd, UCHAR Wcid)
 		FALSE , then continue indicaterx at this moment.
 	==========================================================================
  */
-static VOID BAOriSessionSetupTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
+static void BAOriSessionSetupTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	BA_ORI_ENTRY *pBAEntry = (BA_ORI_ENTRY *)FunctionContext;
@@ -1014,7 +1014,7 @@ static VOID BAOriSessionSetupTimeout(PVOID SystemSpecific1, PVOID FunctionContex
 		FALSE , then continue indicaterx at this moment.
 	==========================================================================
  */
-static VOID BARecSessionIdleTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
+static void BARecSessionIdleTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	BA_REC_ENTRY *pBAEntry = (BA_REC_ENTRY *)FunctionContext;
@@ -1039,7 +1039,7 @@ static VOID BARecSessionIdleTimeout(PVOID SystemSpecific1, PVOID FunctionContext
 }
 
 
-VOID PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
+void PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 {
 	UCHAR Status = 1;
 	UCHAR pAddr[6];
@@ -1050,7 +1050,7 @@ VOID PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	ULONG FrameLen, *ptemp;
 	MAC_TABLE_ENTRY *pMacEntry;
 #ifdef CONFIG_AP_SUPPORT
-	INT apidx;
+	int apidx;
 #endif /* CONFIG_AP_SUPPORT */
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s ==> (Wcid = %d)\n", __FUNCTION__, Elem->Wcid));
@@ -1183,7 +1183,7 @@ VOID PeerAddBAReqAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 }
 
 
-VOID PeerAddBARspAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
+void PeerAddBARspAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 {
 	PFRAME_ADDBA_RSP pFrame = NULL;
 
@@ -1224,7 +1224,7 @@ VOID PeerAddBARspAction(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 	}
 }
 
-VOID PeerDelBAAction(PRTMP_ADAPTER pAd, MLME_QUEUE_ELEM *Elem)
+void PeerDelBAAction(PRTMP_ADAPTER pAd, MLME_QUEUE_ELEM *Elem)
 {
 	PFRAME_DELBA_REQ    pDelFrame = NULL;
 
@@ -1309,7 +1309,7 @@ BOOLEAN CntlEnqueueForRecv(RTMP_ADAPTER *pAd, ULONG Wcid, ULONG MsgLen,
 
 
 /* Description : Send SMPS Action frame If SMPS mode switches. */
-VOID SendSMPSAction(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR smps)
+void SendSMPSAction(RTMP_ADAPTER *pAd, UCHAR Wcid, UCHAR smps)
 {
 	struct wifi_dev *wdev;
 	MAC_TABLE_ENTRY *pEntry;
@@ -1391,7 +1391,7 @@ typedef struct GNU_PACKED _MEASUREMENT_REQ
 } MEASUREMENT_REQ;
 
 #ifdef CONFIG_AP_SUPPORT
-VOID SendBeaconRequest(RTMP_ADAPTER *pAd, UCHAR Wcid)
+void SendBeaconRequest(RTMP_ADAPTER *pAd, UCHAR Wcid)
 {
 	UCHAR *pOutBuffer = NULL;
 //	NDIS_STATUS NStatus;
@@ -1559,7 +1559,7 @@ static void convert_reordering_packet_to_preAMSDU_or_802_3_packet(PRTMP_ADAPTER 
 #endif /* HDR_TRANS_SUPPORT */
 
 
-static VOID ba_enqueue_reordering_packet(RTMP_ADAPTER *pAd, BA_REC_ENTRY *pBAEntry,
+static void ba_enqueue_reordering_packet(RTMP_ADAPTER *pAd, BA_REC_ENTRY *pBAEntry,
 	RX_BLK *pRxBlk, UCHAR FromWhichBSSID)
 {
 	struct reordering_mpdu *mpdu_blk;
@@ -1583,7 +1583,7 @@ static VOID ba_enqueue_reordering_packet(RTMP_ADAPTER *pAd, BA_REC_ENTRY *pBAEnt
 
 		if (ba_reordering_mpdu_insertsorted(&pBAEntry->list, mpdu_blk) == FALSE) {
 			/* had been already within reordering list don't indicate */
-			RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_SUCCESS);
+			dev_kfree_skb_any(pRxBlk->pRxPacket);
 			ba_mpdu_blk_free(pAd, mpdu_blk);
 		}
 
@@ -1607,7 +1607,7 @@ static VOID ba_enqueue_reordering_packet(RTMP_ADAPTER *pAd, BA_REC_ENTRY *pBAEnt
 
 
 #ifdef HDR_TRANS_SUPPORT
-static VOID ba_enqueue_reordering_packet_hdr_trns(PRTMP_ADAPTER pAd,
+static void ba_enqueue_reordering_packet_hdr_trns(PRTMP_ADAPTER pAd,
 	PBA_REC_ENTRY pBAEntry, RX_BLK *pRxBlk, UCHAR FromWhichBSSID)
 {
 	struct reordering_mpdu *mpdu_blk;
@@ -1635,7 +1635,7 @@ static VOID ba_enqueue_reordering_packet_hdr_trns(PRTMP_ADAPTER pAd,
 
 		if (ba_reordering_mpdu_insertsorted(&pBAEntry->list, mpdu_blk) == FALSE) {
 			/* had been already within reordering list don't indicate */
-			RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_SUCCESS);
+			dev_kfree_skb_any(pRxBlk->pRxPacket);
 			ba_mpdu_blk_free(pAd, mpdu_blk);
 		}
 
@@ -1676,7 +1676,7 @@ static VOID ba_enqueue_reordering_packet_hdr_trns(PRTMP_ADAPTER pAd,
 		  or pre_AMSDU format
 	==========================================================================
 */
-VOID Indicate_AMPDU_Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSSID)
+void Indicate_AMPDU_Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSSID)
 {
 	USHORT Idx;
 	PBA_REC_ENTRY pBAEntry = NULL;
@@ -1695,7 +1695,7 @@ VOID Indicate_AMPDU_Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSS
 			 err_size = 0;
 		}
 
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 		return;
 	}
 
@@ -1710,7 +1710,7 @@ VOID Indicate_AMPDU_Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSS
 	} else {
 		/* impossible !!! release packet*/
 		ASSERT(0);
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 		return;
 	}
 
@@ -1748,11 +1748,11 @@ VOID Indicate_AMPDU_Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSS
 	} else if (Sequence == pBAEntry->LastIndSeq) {
 		/* II. Drop Duplicated Packet*/
 		pBAEntry->nDropPacket++;
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 	} else if (SEQ_SMALLER(Sequence, pBAEntry->LastIndSeq, MAXSEQ)) {
 		/* III. Drop Old Received Packet*/
 		pBAEntry->nDropPacket++;
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 	} else if (SEQ_SMALLER(Sequence,
 		(((pBAEntry->LastIndSeq+pBAEntry->BAWinSize+1)) & MAXSEQ), MAXSEQ)) {
 		/* IV. Receive Sequence within Window Size*/
@@ -1778,7 +1778,7 @@ VOID Indicate_AMPDU_Packet(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk, UCHAR FromWhichBSS
 
 
 #ifdef HDR_TRANS_SUPPORT
-VOID Indicate_AMPDU_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
+void Indicate_AMPDU_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 	UCHAR FromWhichBSSID)
 {
 	USHORT Idx;
@@ -1800,7 +1800,7 @@ VOID Indicate_AMPDU_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 		}
 
 		/* release packet*/
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 		return;
 	}
 
@@ -1816,7 +1816,7 @@ VOID Indicate_AMPDU_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 		/* impossible !!!*/
 		ASSERT(0);
 		/* release packet*/
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 		return;
 	}
 
@@ -1854,12 +1854,12 @@ VOID Indicate_AMPDU_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 		/* II. Drop Duplicated Packet*/
 		/* drop and release packet*/
 		pBAEntry->nDropPacket++;
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 	} else if (SEQ_SMALLER(Sequence, pBAEntry->LastIndSeq, MAXSEQ)) {
 		/* III. Drop Old Received Packet*/
 		/* drop and release packet*/
 		pBAEntry->nDropPacket++;
-		RELEASE_NDIS_PACKET(pAd, pRxBlk->pRxPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pRxBlk->pRxPacket);
 	} else if (SEQ_SMALLER(Sequence,
 		(((pBAEntry->LastIndSeq+pBAEntry->BAWinSize+1)) & MAXSEQ), MAXSEQ)) {
 		/* IV. Receive Sequence within Window Size*/
@@ -1886,7 +1886,7 @@ VOID Indicate_AMPDU_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 #endif /* HDR_TRANS_SUPPORT */
 
 #if 0 //JB removed
-static VOID BaReOrderingBufferMaintain(RTMP_ADAPTER *pAd)
+static void BaReOrderingBufferMaintain(RTMP_ADAPTER *pAd)
 {
 	ULONG Now32;
 	UCHAR Wcid;
@@ -1913,14 +1913,14 @@ static VOID BaReOrderingBufferMaintain(RTMP_ADAPTER *pAd)
 #endif
 
 #ifdef PEER_DELBA_TX_ADAPT
-VOID Peer_DelBA_Tx_Adapt_Init(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry)
+void Peer_DelBA_Tx_Adapt_Init(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry)
 {
 	pEntry->bPeerDelBaTxAdaptEn = 0;
 	RTMPInitTimer(pAd, &pEntry->DelBA_tx_AdaptTimer,
 			GET_TIMER_FUNCTION(PeerDelBATxAdaptTimeOut), pEntry, FALSE);
 }
 
-static VOID Peer_DelBA_Tx_Adapt_Enable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry)
+static void Peer_DelBA_Tx_Adapt_Enable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry)
 {
 #ifdef MCS_LUT_SUPPORT
 	if ((pAd->CommonCfg.bBADecline == TRUE) ||
@@ -1960,7 +1960,7 @@ static VOID Peer_DelBA_Tx_Adapt_Enable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntr
 #endif /* MCS_LUT_SUPPORT */
 }
 
-static VOID Peer_DelBA_Tx_Adapt_Disable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry)
+static void Peer_DelBA_Tx_Adapt_Disable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEntry)
 {
 #ifdef MCS_LUT_SUPPORT
 	if (!RTMP_TEST_MORE_FLAG(pAd, fASIC_CAP_MCS_LUT) || !(pEntry->wcid < 128)) {
@@ -1995,7 +1995,7 @@ static VOID Peer_DelBA_Tx_Adapt_Disable(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pEnt
 #endif /* MCS_LUT_SUPPORT */
 }
 
-VOID PeerDelBATxAdaptTimeOut(PVOID SystemSpecific1, PVOID FunctionContext,
+void PeerDelBATxAdaptTimeOut(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	PMAC_TABLE_ENTRY pEntry = (PMAC_TABLE_ENTRY) FunctionContext;
