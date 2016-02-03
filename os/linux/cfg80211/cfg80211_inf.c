@@ -442,7 +442,7 @@ static int CFG80211_PacketSend(PNDIS_PACKET pPktSrc, PNET_DEV pDev, RTMP_NET_PAC
 		if (!OPSTATUS_TEST_FLAG(pAd, fOP_AP_STATUS_MEDIA_STATE_CONNECTED)) {
 			DBGPRINT(RT_DEBUG_TRACE,
 					("Drop the Packet due P2P GO not in ready state\n"));
-			RELEASE_NDIS_PACKET(pAd, pPktSrc, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPktSrc);
 			return 0;
 		}
 		RTMP_SET_PACKET_OPMODE(pPktSrc, OPMODE_AP);
@@ -457,7 +457,7 @@ static int CFG80211_PacketSend(PNDIS_PACKET pPktSrc, PNET_DEV pDev, RTMP_NET_PAC
 	default:
 		DBGPRINT(RT_DEBUG_TRACE, ("Unknown CFG80211 I/F Type(%d)\n",
 				pDev->ieee80211_ptr->iftype));
-		RELEASE_NDIS_PACKET(pAd, pPktSrc, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pPktSrc);
 		return 0;
 	}
 
@@ -478,7 +478,7 @@ static int CFG80211_VirtualIF_PacketSend(struct sk_buff *skb, PNET_DEV dev_p)
 
 	if (!(RTMP_OS_NETDEV_STATE_RUNNING(dev_p))) {
 		/* the interface is down */
-		RELEASE_NDIS_PACKET(NULL, skb, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(skb);
 		return 0;
 	}
 
