@@ -487,7 +487,7 @@ static void rtusb_mgmt_dma_done_tasklet(unsigned long data)
 
 	/* No-matter success or fail, we free the mgmt packet. */
 	if (pPacket)
-		RTMPFreeNdisPacket(pAd, pPacket);
+		dev_kfree_skb_any(pPacket);
 
 	if ((RTMP_TEST_FLAG(pAd, (fRTMP_ADAPTER_RESET_IN_PROGRESS |
 		fRTMP_ADAPTER_HALT_IN_PROGRESS | fRTMP_ADAPTER_NIC_NOT_EXIST)))) {
