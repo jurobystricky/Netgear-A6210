@@ -28,20 +28,20 @@
 #include "rt_config.h"
 #include <stdarg.h>
 
-static VOID MlmeAutoScan(RTMP_ADAPTER *pAd);
-//static VOID MlmeCheckForRoaming(RTMP_ADAPTER *pAd, ULONG Now32);
+static void MlmeAutoScan(RTMP_ADAPTER *pAd);
+//static void MlmeCheckForRoaming(RTMP_ADAPTER *pAd, ULONG Now32);
 static BOOLEAN MlmeCheckForFastRoaming(RTMP_ADAPTER *pAd);
-static VOID BssCipherParse(BSS_ENTRY *pBss);
+static void BssCipherParse(BSS_ENTRY *pBss);
 static BOOLEAN MlmeDequeue(MLME_QUEUE *Queue, MLME_QUEUE_ELEM **Elem);
-static VOID MlmeRestartStateMachine(RTMP_ADAPTER *pAd);
+static void MlmeRestartStateMachine(RTMP_ADAPTER *pAd);
 static BOOLEAN  MlmeQueueEmpty(MLME_QUEUE *Queue);
 static BOOLEAN  MlmeQueueFull(MLME_QUEUE *Queue, UCHAR SendId);
-static VOID MlmeQueueDestroy(MLME_QUEUE *Queue);
-static VOID AsicEvaluateRxAnt(RTMP_ADAPTER *pAd);
+static void MlmeQueueDestroy(MLME_QUEUE *Queue);
+static void AsicEvaluateRxAnt(RTMP_ADAPTER *pAd);
 //static BOOLEAN RTMPAutoRateSwitchCheck(RTMP_ADAPTER *pAd);
 
 #ifdef CONFIG_STA_SUPPORT
-static VOID AsicStaBbpTuning(RTMP_ADAPTER *pAd);
+static void AsicStaBbpTuning(RTMP_ADAPTER *pAd);
 #endif
 
 UCHAR CISCO_OUI[] = {0x00, 0x40, 0x96};
@@ -569,7 +569,7 @@ static void periodic_check_channel_smoothing(RTMP_ADAPTER *ad)
 #endif
 #endif
 
-VOID set_default_ap_edca_param(RTMP_ADAPTER *pAd)
+void set_default_ap_edca_param(RTMP_ADAPTER *pAd)
 {
 	pAd->CommonCfg.APEdcaParm.bValid = TRUE;
 	pAd->CommonCfg.APEdcaParm.Aifsn[0] = 3;
@@ -595,7 +595,7 @@ VOID set_default_ap_edca_param(RTMP_ADAPTER *pAd)
 
 
 #ifdef CONFIG_AP_SUPPORT
-VOID set_default_sta_edca_param(RTMP_ADAPTER *pAd)
+void set_default_sta_edca_param(RTMP_ADAPTER *pAd)
 {
 	pAd->ApCfg.BssEdcaParm.bValid = TRUE;
 	pAd->ApCfg.BssEdcaParm.Aifsn[0] = 3;
@@ -621,9 +621,9 @@ VOID set_default_sta_edca_param(RTMP_ADAPTER *pAd)
 #endif /* CONFIG_AP_SUPPORT */
 
 
-UCHAR dot11_max_sup_rate(INT SupRateLen, UCHAR *SupRate, INT ExtRateLen, UCHAR *ExtRate)
+UCHAR dot11_max_sup_rate(int SupRateLen, UCHAR *SupRate, int ExtRateLen, UCHAR *ExtRate)
 {
-	INT idx;
+	int idx;
 	UCHAR MaxSupportedRateIn500Kbps = 0;
 
 	/* supported rates array may not be sorted. sort it and find the maximum rate */
@@ -681,7 +681,7 @@ UCHAR dot11_2_ra_rate(UCHAR MaxSupportedRateIn500Kbps)
 
 	==========================================================================
  */
-static VOID MlmeHandler(RTMP_ADAPTER *pAd)
+static void MlmeHandler(RTMP_ADAPTER *pAd)
 {
 	MLME_QUEUE_ELEM *Elem = NULL;
 #ifdef APCLI_SUPPORT
@@ -868,7 +868,7 @@ Return Value:
 Note:
 ========================================================================
 */
-static INT MlmeThread(ULONG Context)
+static int MlmeThread(ULONG Context)
 {
 	RTMP_ADAPTER *pAd;
 	RTMP_OS_TASK *pTask;
@@ -918,7 +918,7 @@ LabelExit:
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef APCLI_SUPPORT
-static VOID ApCliMlmeInit(RTMP_ADAPTER *pAd)
+static void ApCliMlmeInit(RTMP_ADAPTER *pAd)
 {
 	/* init apcli state machines*/
 	ASSERT(APCLI_AUTH_FUNC_SIZE == APCLI_MAX_AUTH_MSG * APCLI_MAX_AUTH_STATE);
@@ -935,7 +935,7 @@ static VOID ApCliMlmeInit(RTMP_ADAPTER *pAd)
 }
 #endif /* APCLI_SUPPORT */
 
-static VOID ApMlmeInit(RTMP_ADAPTER *pAd)
+static void ApMlmeInit(RTMP_ADAPTER *pAd)
 {
 	/* init AP state machines*/
 	APAssocStateMachineInit(pAd, &pAd->Mlme.ApAssocMachine, pAd->Mlme.ApAssocFunc);
@@ -1099,7 +1099,7 @@ NDIS_STATUS MlmeInit(RTMP_ADAPTER *pAd)
 
 	==========================================================================
  */
-VOID MlmeHalt(RTMP_ADAPTER *pAd)
+void MlmeHalt(RTMP_ADAPTER *pAd)
 {
 	BOOLEAN Cancelled;
 	RTMP_OS_TASK *pTask;
@@ -1196,7 +1196,7 @@ VOID MlmeHalt(RTMP_ADAPTER *pAd)
 	DBGPRINT(RT_DEBUG_TRACE, ("<== MlmeHalt\n"));
 }
 
-VOID MlmeResetRalinkCounters(RTMP_ADAPTER *pAd)
+void MlmeResetRalinkCounters(RTMP_ADAPTER *pAd)
 {
 	pAd->RalinkCounters.LastOneSecRxOkDataCnt = pAd->RalinkCounters.OneSecRxOkDataCnt;
 
@@ -1207,7 +1207,6 @@ VOID MlmeResetRalinkCounters(RTMP_ADAPTER *pAd)
 		NdisZeroMemory(&pAd->RalinkCounters,
 				&pAd->RalinkCounters.OneSecEnd -
 				&pAd->RalinkCounters.OneSecStart);
-	return;
 }
 
 
@@ -1216,7 +1215,7 @@ VOID MlmeResetRalinkCounters(RTMP_ADAPTER *pAd)
 	Description:
 		This routine is executed periodically to -
 		1. Decide if it's a right time to turn on PwrMgmt bit of all
-		   outgoiing frames
+		   outgoing frames
 		2. Calculate ChannelQuality based on statistics of the last
 		   period, so that TX rate won't toggling very frequently between a
 		   successful TX and a failed TX.
@@ -1228,7 +1227,7 @@ VOID MlmeResetRalinkCounters(RTMP_ADAPTER *pAd)
 	==========================================================================
  */
 #define ADHOC_BEACON_LOST_TIME	(8*OS_HZ)  /* 8 sec*/
-VOID MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
+void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	ULONG TxTotalCnt;
@@ -1251,7 +1250,9 @@ VOID MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 		UINT8 stage = pAd->Mlme.PeriodicRound%10;
 
 		if (stage == MO_MEAS_PERIOD) {
-			ASIC_MEASURE_FALSE_CCA(pAd);
+			if (pAd->chipOps.AsicMeasureFalseCCA != NULL)
+				pAd->chipOps.AsicMeasureFalseCCA(pAd);
+
 			pAd->CommonCfg.MO_Cfg.nPeriod_Cnt = 0;
 		} else if (stage == MO_IDLE_PERIOD) {
 			UINT16 Idx;
@@ -1261,7 +1262,8 @@ VOID MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 
 			//printk("%s: fales cca1 %d\n", __FUNCTION__, pAd->CommonCfg.MO_Cfg.nFalseCCACnt);
 			if (pAd->CommonCfg.MO_Cfg.nFalseCCACnt > pAd->CommonCfg.MO_Cfg.nFalseCCATh)
-				ASIC_MITIGATE_MICROWAVE(pAd);
+				if (pAd->chipOps.AsicMitigateMicrowave != NULL)
+					pAd->chipOps.AsicMitigateMicrowave(pAd);
 		}
 	}
 #endif /* MICROWAVE_OVEN_SUPPORT */
@@ -1443,7 +1445,8 @@ VOID MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 		/* Hint: throughput impact is very serious in the function */
 		NICUpdateRawCounters(pAd);
 
-		RTMP_SECOND_CCA_DETECTION(pAd);
+		if (pAd->chipOps.SecondCCADetection != NULL)
+			pAd->chipOps.SecondCCADetection(pAd);
 
 #ifdef RTMP_MAC_USB
 #ifndef INF_AMAZON_SE
@@ -1611,7 +1614,9 @@ VOID MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 		}
 #endif /* CONFIG_STA_SUPPORT */
 
-		RTMP_SECOND_CCA_DETECTION(pAd);
+		if (pAd->chipOps.SecondCCADetection != NULL)
+			pAd->chipOps.SecondCCADetection(pAd);
+
 		MlmeResetRalinkCounters(pAd);
 
 #ifdef CONFIG_STA_SUPPORT
@@ -1693,7 +1698,7 @@ BOOLEAN MlmeValidateSSID(UCHAR *pSsid, UCHAR SsidLen)
 
 
 #ifdef CONFIG_STA_SUPPORT
-VOID STAMlmePeriodicExec(RTMP_ADAPTER *pAd)
+void STAMlmePeriodicExec(RTMP_ADAPTER *pAd)
 {
 	ULONG TxTotalCnt;
 	int i;
@@ -1704,7 +1709,8 @@ VOID STAMlmePeriodicExec(RTMP_ADAPTER *pAd)
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
 
-	RTMP_CHIP_HIGH_POWER_TUNING(pAd, &pAd->StaCfg.RssiSample);
+	if (pAd->chipOps.HighPowerTuning != NULL)
+		pAd->chipOps.HighPowerTuning(pAd, &pAd->StaCfg.RssiSample);
 
 #ifdef WPA_SUPPLICANT_SUPPORT
 	if (pAd->StaCfg.wpa_supplicant_info.WpaSupplicantUP == WPA_SUPPLICANT_DISABLE)
@@ -1766,7 +1772,8 @@ VOID STAMlmePeriodicExec(RTMP_ADAPTER *pAd)
 	/* Radio is currently in noisy environment*/
 	if (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) {
 		AsicAdjustTxPower(pAd);
-		RTMP_CHIP_ASIC_TEMPERATURE_COMPENSATION(pAd);
+		if (pAd->chipOps.TemperCompensation != NULL)
+			pAd->chipOps.TemperCompensation(pAd);
 	}
 
 	/*
@@ -2154,7 +2161,7 @@ SKIP_AUTO_SCAN_CONN:
 }
 
 /* Link down report*/
-VOID LinkDownExec(PVOID SystemSpecific1, PVOID FunctionContext,
+void LinkDownExec(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)FunctionContext;
@@ -2178,7 +2185,7 @@ VOID LinkDownExec(PVOID SystemSpecific1, PVOID FunctionContext,
 }
 
 
-static VOID MlmeAutoScan(RTMP_ADAPTER *pAd)
+static void MlmeAutoScan(RTMP_ADAPTER *pAd)
 {
 	/* check CntlMachine.CurrState to avoid collision with NDIS SetOID request*/
 	if (pAd->Mlme.CntlMachine.CurrState == CNTL_IDLE) {
@@ -2192,7 +2199,7 @@ static VOID MlmeAutoScan(RTMP_ADAPTER *pAd)
 }
 
 
-VOID MlmeAutoReconnectLastSSID(RTMP_ADAPTER *pAd)
+void MlmeAutoReconnectLastSSID(RTMP_ADAPTER *pAd)
 {
 	if (pAd->StaCfg.bAutoConnectByBssid) {
 		DBGPRINT(RT_DEBUG_TRACE,
@@ -2237,7 +2244,7 @@ VOID MlmeAutoReconnectLastSSID(RTMP_ADAPTER *pAd)
 ==========================================================================
  */
 
-static VOID MlmeCheckForRoaming(RTMP_ADAPTER *pAd, ULONG Now32)
+static void MlmeCheckForRoaming(RTMP_ADAPTER *pAd, ULONG Now32)
 {
 	USHORT	   i;
 	BSS_TABLE  *pRoamTab = &pAd->MlmeAux.RoamTab;
@@ -2357,7 +2364,7 @@ static BOOLEAN MlmeCheckForFastRoaming(RTMP_ADAPTER *pAd)
 
 ==========================================================================
  */
-VOID MlmeCheckPsmChange(RTMP_ADAPTER *pAd, ULONG Now32)
+void MlmeCheckPsmChange(RTMP_ADAPTER *pAd, ULONG Now32)
 {
 	ULONG PowerMode;
 
@@ -2402,7 +2409,7 @@ VOID MlmeCheckPsmChange(RTMP_ADAPTER *pAd, ULONG Now32)
 }
 
 
-VOID MlmeSetPsmBit(RTMP_ADAPTER *pAd, USHORT psm)
+void MlmeSetPsmBit(RTMP_ADAPTER *pAd, USHORT psm)
 {
 	pAd->StaCfg.Psm = psm;
 	DBGPRINT(RT_DEBUG_TRACE, ("MlmeSetPsmBit = %d\n", psm));
@@ -2429,7 +2436,7 @@ VOID MlmeSetPsmBit(RTMP_ADAPTER *pAd, USHORT psm)
 		channel quality based on the most up-to-date information
 	==========================================================================
  */
-VOID MlmeCalculateChannelQuality(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacEntry,
+void MlmeCalculateChannelQuality(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacEntry,
 	ULONG Now32)
 {
 	ULONG TxOkCnt, TxCnt, TxPER, TxPRR;
@@ -2540,7 +2547,7 @@ VOID MlmeCalculateChannelQuality(PRTMP_ADAPTER pAd, PMAC_TABLE_ENTRY pMacEntry,
 }
 
 
-VOID MlmeSetTxPreamble(RTMP_ADAPTER *pAd, USHORT TxPreamble)
+void MlmeSetTxPreamble(RTMP_ADAPTER *pAd, USHORT TxPreamble)
 {
 	/* Always use Long preamble before verifiation short preamble functionality works well.*/
 	/* Todo: remove the following line if short preamble functionality works*/
@@ -2565,9 +2572,9 @@ VOID MlmeSetTxPreamble(RTMP_ADAPTER *pAd, USHORT TxPreamble)
 		Update basic rate bitmap
 	==========================================================================
 */
-static VOID UpdateBasicRateBitmap(RTMP_ADAPTER *pAdapter)
+static void UpdateBasicRateBitmap(RTMP_ADAPTER *pAdapter)
 {
-	INT i, j;
+	int i, j;
 	              /* 1  2  5.5, 11,  6,  9, 12, 18, 24, 36, 48,  54 */
 	UCHAR rate[] = { 2, 4,  11, 22, 12, 18, 24, 36, 48, 72, 96, 108 };
 	UCHAR *sup_p = pAdapter->CommonCfg.SupRate;
@@ -2622,7 +2629,7 @@ static VOID UpdateBasicRateBitmap(RTMP_ADAPTER *pAdapter)
 	bLinkUp is to identify the inital link speed.
 	TRUE indicates the rate update at linkup, we should not try to set the rate at 54Mbps.
 */
-VOID MlmeUpdateTxRates(RTMP_ADAPTER *pAd, BOOLEAN bLinkUp, UCHAR apidx)
+void MlmeUpdateTxRates(RTMP_ADAPTER *pAd, BOOLEAN bLinkUp, UCHAR apidx)
 {
 	int i, num;
 	UCHAR Rate = RATE_6, MaxDesire = RATE_1, MaxSupport = RATE_1;
@@ -2985,7 +2992,7 @@ VOID MlmeUpdateTxRates(RTMP_ADAPTER *pAd, BOOLEAN bLinkUp, UCHAR apidx)
 
 	==========================================================================
  */
-VOID MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
+void MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
 {
 	UCHAR StbcMcs;
 	RT_HT_CAPABILITY *pRtHtCap = NULL;
@@ -3163,7 +3170,7 @@ VOID MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
 }
 
 
-VOID BATableInit(RTMP_ADAPTER *pAd, BA_TABLE *Tab)
+void BATableInit(RTMP_ADAPTER *pAd, BA_TABLE *Tab)
 {
 	int i;
 
@@ -3183,7 +3190,7 @@ VOID BATableInit(RTMP_ADAPTER *pAd, BA_TABLE *Tab)
 }
 
 
-VOID BATableExit(RTMP_ADAPTER *pAd)
+void BATableExit(RTMP_ADAPTER *pAd)
 {
 	int i;
 
@@ -3195,13 +3202,13 @@ VOID BATableExit(RTMP_ADAPTER *pAd)
 #endif /* DOT11_N_SUPPORT */
 
 
-VOID MlmeRadioOff(RTMP_ADAPTER *pAd)
+void MlmeRadioOff(RTMP_ADAPTER *pAd)
 {
 	RTMP_MLME_RADIO_OFF(pAd);
 }
 
 
-VOID MlmeRadioOn(RTMP_ADAPTER *pAd)
+void MlmeRadioOn(RTMP_ADAPTER *pAd)
 {
 	RTMP_MLME_RADIO_ON(pAd);
 }
@@ -3217,7 +3224,7 @@ VOID MlmeRadioOn(RTMP_ADAPTER *pAd)
  IRQL = DISPATCH_LEVEL
 
  */
-VOID BssTableInit(BSS_TABLE *Tab)
+void BssTableInit(BSS_TABLE *Tab)
 {
 	int i;
 
@@ -3338,7 +3345,7 @@ ULONG BssSsidTableSearchBySSID(BSS_TABLE *Tab, UCHAR *pSsid, UCHAR SsidLen)
 }
 
 
-VOID BssTableDeleteEntry(BSS_TABLE *Tab, UCHAR *pBssid, UCHAR Channel)
+void BssTableDeleteEntry(BSS_TABLE *Tab, UCHAR *pBssid, UCHAR Channel)
 {
 	UCHAR i, j;
 
@@ -3374,7 +3381,7 @@ VOID BssTableDeleteEntry(BSS_TABLE *Tab, UCHAR *pBssid, UCHAR Channel)
 }
 
 
-VOID BssEntrySet(RTMP_ADAPTER *pAd, BSS_ENTRY *pBss, BCN_IE_LIST *ie_list,
+void BssEntrySet(RTMP_ADAPTER *pAd, BSS_ENTRY *pBss, BCN_IE_LIST *ie_list,
 	CHAR Rssi, USHORT LengthVIE, PNDIS_802_11_VARIABLE_IEs pVIE)
 {
 	COPY_MAC_ADDR(pBss->Bssid, ie_list->Bssid);
@@ -3673,7 +3680,7 @@ ULONG BssTableSetEntry(PRTMP_ADAPTER pAd, BSS_TABLE *Tab, BCN_IE_LIST *ie_list,
 #if defined(CONFIG_STA_SUPPORT) || defined(APCLI_SUPPORT)
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-VOID TriEventInit(RTMP_ADAPTER *pAd)
+void TriEventInit(RTMP_ADAPTER *pAd)
 {
 	UCHAR i;
 
@@ -3685,7 +3692,7 @@ VOID TriEventInit(RTMP_ADAPTER *pAd)
 }
 
 //JB Why is this not void?
-INT TriEventTableSetEntry(RTMP_ADAPTER *pAd, TRIGGER_EVENT_TAB *Tab,
+int TriEventTableSetEntry(RTMP_ADAPTER *pAd, TRIGGER_EVENT_TAB *Tab,
 	UCHAR *pBssid, HT_CAPABILITY_IE *pHtCapability, UCHAR HtCapabilityLen,
 	UCHAR RegClass, UCHAR ChannelNo)
 {
@@ -3734,10 +3741,10 @@ INT TriEventTableSetEntry(RTMP_ADAPTER *pAd, TRIGGER_EVENT_TAB *Tab,
 #endif /* defined(CONFIG_STA_SUPPORT) || defined(APCLI_SUPPORT) */
 
 #ifdef CONFIG_STA_SUPPORT
-VOID BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
+void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 	UCHAR SsidLen)
 {
-	INT i;
+	int i;
 	struct wifi_dev *wdev = &pAd->StaCfg.wdev;
 
 	BssTableInit(OutTab);
@@ -3987,9 +3994,9 @@ VOID BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 }
 #endif /* CONFIG_STA_SUPPORT */
 
-VOID BssTableSortByRssi(BSS_TABLE *OutTab, BOOLEAN isInverseOrder)
+void BssTableSortByRssi(BSS_TABLE *OutTab, BOOLEAN isInverseOrder)
 {
-	INT i, j;
+	int i, j;
 	BSS_ENTRY *pTmpBss = NULL;
 
 	/* allocate memory */
@@ -4015,7 +4022,7 @@ VOID BssTableSortByRssi(BSS_TABLE *OutTab, BOOLEAN isInverseOrder)
 		os_free_mem(pTmpBss);
 }
 
-static VOID BssCipherParse(BSS_ENTRY *pBss)
+static void BssCipherParse(BSS_ENTRY *pBss)
 {
 	PEID_STRUCT pEid;
 	PUCHAR pTmp;
@@ -4023,7 +4030,7 @@ static VOID BssCipherParse(BSS_ENTRY *pBss)
 	PCIPHER_SUITE_STRUCT pCipher;
 	PAKM_SUITE_STRUCT pAKM;
 	USHORT Count;
-	INT Length;
+	int Length;
 	NDIS_802_11_ENCRYPTION_STATUS TmpCipher;
 
 	/* WepStatus will be reset later, if AP announce TKIP or AES on the beacon frame.*/
@@ -4054,7 +4061,7 @@ static VOID BssCipherParse(BSS_ENTRY *pBss)
 	pBss->WPA2.RsnCapability = 0;
 	pBss->WPA2.bMixMode  = FALSE;
 
-	Length = (INT) pBss->VarIELen;
+	Length = (int) pBss->VarIELen;
 
 	while (Length > 0) {
 		/* Parse cipher suite base on WPA1 & WPA2, they should be parsed differently*/
@@ -4342,9 +4349,9 @@ static VOID BssCipherParse(BSS_ENTRY *pBss)
  *	\pre
  *	\post
  */
-VOID MacAddrRandomBssid(RTMP_ADAPTER *pAd, UCHAR *pAddr)
+void MacAddrRandomBssid(RTMP_ADAPTER *pAd, UCHAR *pAddr)
 {
-	INT i;
+	int i;
 
 	for (i = 0; i < MAC_ADDR_LEN; i++) {
 		pAddr[i] = RandomByte(pAd);
@@ -4365,7 +4372,7 @@ VOID MacAddrRandomBssid(RTMP_ADAPTER *pAd, UCHAR *pAddr)
  *	\post
  *	\note this function initializes the following field
  */
-VOID MgtMacHeaderInit(
+void MgtMacHeaderInit(
 	IN RTMP_ADAPTER *pAd,
 	INOUT HEADER_802_11 *pHdr80211,
 	IN UCHAR SubType,
@@ -4396,7 +4403,7 @@ VOID MgtMacHeaderInit(
 }
 
 
-VOID MgtMacHeaderInitExt(
+void MgtMacHeaderInitExt(
 	IN RTMP_ADAPTER *pAd,
 	IN OUT HEADER_802_11 *pHdr80211,
 	IN UCHAR SubType,
@@ -4472,7 +4479,7 @@ ULONG MakeOutgoingFrame(UCHAR *Buffer, ULONG *FrameLen, ...)
  */
 NDIS_STATUS MlmeQueueInit(RTMP_ADAPTER *pAd, MLME_QUEUE *Queue)
 {
-	INT i;
+	int i;
 
 	NdisAllocateSpinLock(pAd, &Queue->Lock);
 
@@ -4502,9 +4509,9 @@ NDIS_STATUS MlmeQueueInit(RTMP_ADAPTER *pAd, MLME_QUEUE *Queue)
  *	\note	 The message has to be initialized
  */
 BOOLEAN MlmeEnqueue(RTMP_ADAPTER *pAd, ULONG Machine, ULONG MsgType, ULONG MsgLen,
-	VOID *Msg, ULONG Priv)
+	void *Msg, ULONG Priv)
 {
-	INT Tail;
+	int Tail;
 	MLME_QUEUE *Queue = (MLME_QUEUE *)&pAd->Mlme.Queue;
 
 	/* Do nothing if the driver is starting halt state.*/
@@ -4558,11 +4565,11 @@ BOOLEAN MlmeEnqueue(RTMP_ADAPTER *pAd, ULONG Machine, ULONG MsgType, ULONG MsgLe
  */
 BOOLEAN MlmeEnqueueForRecv(RTMP_ADAPTER *pAd, ULONG Wcid, ULONG TimeStampHigh,
 	ULONG TimeStampLow, UCHAR Rssi0, UCHAR Rssi1, UCHAR Rssi2, ULONG MsgLen,
-	VOID *Msg, UCHAR Signal, UCHAR OpMode)
+	void *Msg, UCHAR Signal, UCHAR OpMode)
 {
-	INT Tail, Machine = 0xff;
+	int Tail, Machine = 0xff;
 	PFRAME_802_11 pFrame = (PFRAME_802_11)Msg;
-	INT MsgType = 0x0;
+	int MsgType = 0x0;
 	MLME_QUEUE *Queue = (MLME_QUEUE *)&pAd->Mlme.Queue;
 #ifdef APCLI_SUPPORT
 	UCHAR ApCliIdx = 0;
@@ -4728,7 +4735,7 @@ static BOOLEAN MlmeDequeue(MLME_QUEUE *Queue, MLME_QUEUE_ELEM **Elem)
 }
 
 
-static VOID MlmeRestartStateMachine(RTMP_ADAPTER *pAd)
+static void MlmeRestartStateMachine(RTMP_ADAPTER *pAd)
 {
 #ifdef CONFIG_STA_SUPPORT
 	BOOLEAN Cancelled;
@@ -4825,7 +4832,7 @@ static BOOLEAN MlmeQueueFull(MLME_QUEUE *Queue, UCHAR SendId)
  IRQL = PASSIVE_LEVEL
 
  */
-static VOID MlmeQueueDestroy(MLME_QUEUE *pQueue)
+static void MlmeQueueDestroy(MLME_QUEUE *pQueue)
 {
 	NdisAcquireSpinLock(&(pQueue->Lock));
 	pQueue->Num  = 0;
@@ -4848,8 +4855,8 @@ static VOID MlmeQueueDestroy(MLME_QUEUE *pQueue)
 
  */
 #ifdef CONFIG_STA_SUPPORT
-BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, INT *Machine, 
-	INT *MsgType)
+BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, int *Machine, 
+	int *MsgType)
 {
 	USHORT Seq, Alg;
 	UCHAR EAPType;
@@ -4864,7 +4871,7 @@ BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, INT *Machine,
 		if (bRV == FALSE) {
 			*Machine = WPA_STATE_MACHINE;
 			EAPType = *((UCHAR*)pFrame + LENGTH_802_11 + LENGTH_802_1_H + 1);
-			return (WpaMsgTypeSubst(EAPType, (INT *) MsgType));
+			return (WpaMsgTypeSubst(EAPType, (int *) MsgType));
 		}
 	}
 
@@ -4959,7 +4966,7 @@ BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, INT *Machine,
  IRQL = PASSIVE_LEVEL
 
  */
-VOID StateMachineInit(STATE_MACHINE *S, STATE_MACHINE_FUNC Trans[], ULONG StNr,
+void StateMachineInit(STATE_MACHINE *S, STATE_MACHINE_FUNC Trans[], ULONG StNr,
 	ULONG MsgNr, STATE_MACHINE_FUNC DefFunc, ULONG InitState, ULONG Base)
 {
 	ULONG i, j;
@@ -4993,7 +5000,7 @@ VOID StateMachineInit(STATE_MACHINE *S, STATE_MACHINE_FUNC Trans[], ULONG StNr,
  IRQL = PASSIVE_LEVEL
 
  */
-VOID StateMachineSetAction(STATE_MACHINE *S, ULONG St, ULONG Msg, 
+void StateMachineSetAction(STATE_MACHINE *S, ULONG St, ULONG Msg, 
 	STATE_MACHINE_FUNC Func)
 {
 	ULONG MsgIdx;
@@ -5013,7 +5020,7 @@ VOID StateMachineSetAction(STATE_MACHINE *S, ULONG St, ULONG Msg,
  *	\param	 *Elem	  the message to be executed
  *	\return   None
  */
-VOID StateMachinePerformAction(PRTMP_ADAPTER pAd, STATE_MACHINE *S,
+void StateMachinePerformAction(PRTMP_ADAPTER pAd, STATE_MACHINE *S,
 	MLME_QUEUE_ELEM *Elem, ULONG CurrState)
 {
 	if (S->TransFunc[(CurrState) * S->NrMsg + Elem->MsgType - S->Base])
@@ -5029,7 +5036,7 @@ VOID StateMachinePerformAction(PRTMP_ADAPTER pAd, STATE_MACHINE *S,
 		StateMachinePerformAction()
 ==========================================================================
  */
-VOID Drop(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
+void Drop(RTMP_ADAPTER *pAd, MLME_QUEUE_ELEM *Elem)
 {
 }
 
@@ -5099,7 +5106,7 @@ UCHAR RandomByte2(RTMP_ADAPTER *pAd)
 
 	========================================================================
 */
-VOID RTMPCheckRates(RTMP_ADAPTER *pAd, UCHAR SupRate[], UCHAR *SupRateLen)
+void RTMPCheckRates(RTMP_ADAPTER *pAd, UCHAR SupRate[], UCHAR *SupRateLen)
 {
 	UCHAR	RateIdx, i, j;
 	UCHAR	NewRate[12], NewRateLen;
@@ -5374,7 +5381,7 @@ BOOLEAN RTMPCheckVht(
 
 	========================================================================
 */
-VOID RTMPUpdateMlmeRate(RTMP_ADAPTER *pAd)
+void RTMPUpdateMlmeRate(RTMP_ADAPTER *pAd)
 {
 	UCHAR MinimumRate;
 	UCHAR ProperMlmeRate; /*= RATE_54; */
@@ -5604,7 +5611,7 @@ CHAR RTMPMinSnr(RTMP_ADAPTER *pAd, CHAR Snr0, CHAR Snr1)
 
 	========================================================================
 */
-static VOID AsicEvaluateRxAnt(RTMP_ADAPTER *pAd)
+static void AsicEvaluateRxAnt(RTMP_ADAPTER *pAd)
 {
 #ifdef RALINK_ATE
 	if (ATE_ON(pAd))
@@ -5685,7 +5692,7 @@ static VOID AsicEvaluateRxAnt(RTMP_ADAPTER *pAd)
 
 	========================================================================
 */
-VOID AsicRxAntEvalTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
+void AsicRxAntEvalTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)FunctionContext;
@@ -5753,7 +5760,7 @@ VOID AsicRxAntEvalTimeout(PVOID SystemSpecific1, PVOID FunctionContext,
 }
 
 
-VOID APSDPeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
+void APSDPeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)FunctionContext;
@@ -5841,7 +5848,7 @@ static BOOLEAN RTMPAutoRateSwitchCheck(RTMP_ADAPTER *pAd)
 {
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
-		INT apidx = 0;
+		int apidx = 0;
 
 		for (apidx = 0; apidx < pAd->ApCfg.BssidNum; apidx++) {
 			if (pAd->ApCfg.MBSSID[apidx].wdev.bAutoTxRateSwitch)
@@ -5922,7 +5929,7 @@ UCHAR RTMPStaFixedTxMode(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry)
 
 	========================================================================
 */
-VOID RTMPUpdateLegacyTxSetting(UCHAR fixed_tx_mode, MAC_TABLE_ENTRY *pEntry)
+void RTMPUpdateLegacyTxSetting(UCHAR fixed_tx_mode, MAC_TABLE_ENTRY *pEntry)
 {
 	HTTRANSMIT_SETTING TransmitSetting;
 
@@ -5979,7 +5986,7 @@ VOID RTMPUpdateLegacyTxSetting(UCHAR fixed_tx_mode, MAC_TABLE_ENTRY *pEntry)
 
 	==========================================================================
  */
-static VOID AsicStaBbpTuning(RTMP_ADAPTER *pAd)
+static void AsicStaBbpTuning(RTMP_ADAPTER *pAd)
 {
 	UCHAR OrigR66Value = 0, R66;/*, R66UpperBound = 0x30, R66LowerBound = 0x30;*/
 	CHAR Rssi;
@@ -6003,7 +6010,8 @@ static VOID AsicStaBbpTuning(RTMP_ADAPTER *pAd)
 		else
 			Rssi = pAd->StaCfg.RssiSample.AvgRssi0;
 
-		RTMP_CHIP_ASIC_AGC_ADJUST(pAd, Rssi, R66);
+		if (pAd->chipOps.ChipAGCAdjust != NULL)
+			R66 = pAd->chipOps.ChipAGCAdjust(pAd, Rssi, R66);
 
 		// TODO: shiang,I didn't find AsicAGCAdjust for RT30xx, so I move following code from upper #if case.
 	}
@@ -6011,7 +6019,7 @@ static VOID AsicStaBbpTuning(RTMP_ADAPTER *pAd)
 #endif /* CONFIG_STA_SUPPORT */
 
 
-VOID RTMPSetAGCInitValue(RTMP_ADAPTER *pAd, UCHAR BandWidth)
+void RTMPSetAGCInitValue(RTMP_ADAPTER *pAd, UCHAR BandWidth)
 {
 	if (pAd->chipOps.ChipAGCInit != NULL)
 		pAd->chipOps.ChipAGCInit(pAd, BandWidth);
