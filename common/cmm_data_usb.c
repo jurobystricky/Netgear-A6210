@@ -256,10 +256,10 @@ void ComposeNullFrame(RTMP_ADAPTER *pAd)
 	rlt_usb_write_txinfo(pAd, pTxInfo,
 			(USHORT)(data_len + TXWISize + TSO_SIZE), TRUE,
 			EpToQueue[MGMTPIPEIDX], FALSE, FALSE);
-	RTMPWriteTxWI(pAd, pTxWI, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, 0,
-					BSSID_WCID, data_len, 0, 0,
-					(UCHAR)pAd->CommonCfg.MlmeTransmit.field.MCS,
-					IFS_BACKOFF, &pAd->CommonCfg.MlmeTransmit);
+	RTMPWriteTxWI(pAd, pTxWI, FALSE, FALSE, FALSE, FALSE, TRUE, 
+			FALSE, 0, BSSID_WCID, data_len, 0, 0, 
+			(UCHAR)pAd->CommonCfg.MlmeTransmit.field.MCS,
+			IFS_BACKOFF, &pAd->CommonCfg.MlmeTransmit);
 	RTMPMoveMemory((void *)&buf[TXWISize + TXINFO_SIZE], (void *)&pAd->NullFrame, data_len);
 	pAd->NullContext.BulkOutSize = TXINFO_SIZE + TXWISize + TSO_SIZE + data_len + 4;
 }
@@ -368,7 +368,7 @@ USHORT RtmpUSB_WriteFragTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
 			pHTTXContext->CurWriteRealPos = pHTTXContext->CurWritePosition;
 		} else {
 			RTMP_IRQ_UNLOCK(&pAd->TxContextQueueLock[QueIdx], IrqFlags);
-			RELEASE_NDIS_PACKET(pAd, pTxBlk->pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pTxBlk->pPacket);
 			return Status;
 		}
 	} else {
@@ -378,7 +378,7 @@ USHORT RtmpUSB_WriteFragTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
 			fillOffset += pTxBlk->Priv;
 		} else {
 			RTMP_IRQ_UNLOCK(&pAd->TxContextQueueLock[QueIdx], IrqFlags);
-			RELEASE_NDIS_PACKET(pAd, pTxBlk->pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pTxBlk->pPacket);
 			return Status;
 		}
 	}
@@ -480,7 +480,7 @@ USHORT RtmpUSB_WriteFragTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
 		RTMP_IRQ_UNLOCK(&pAd->TxContextQueueLock[QueIdx], IrqFlags);
 
 		/* succeed and release the skb buffer*/
-		RELEASE_NDIS_PACKET(pAd, pTxBlk->pPacket, NDIS_STATUS_SUCCESS);
+		dev_kfree_skb_any(pTxBlk->pPacket);
 	}
 
 	return Status;
@@ -645,7 +645,7 @@ USHORT RtmpUSB_WriteSingleTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
 	RTMP_IRQ_UNLOCK(&pAd->TxContextQueueLock[QueIdx], IrqFlags);
 
 	/* succeed and release the skb buffer*/
-	RELEASE_NDIS_PACKET(pAd, pTxBlk->pPacket, NDIS_STATUS_SUCCESS);
+	dev_kfree_skb_any(pTxBlk->pPacket);
 	return Status;
 }
 
@@ -763,7 +763,7 @@ USHORT RtmpUSB_WriteMultiTxResource(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk,
 
 done:
 	/* Release the skb buffer here*/
-	RELEASE_NDIS_PACKET(pAd, pTxBlk->pPacket, NDIS_STATUS_SUCCESS);
+	dev_kfree_skb_any(pTxBlk->pPacket);
 	return Status;
 }
 
