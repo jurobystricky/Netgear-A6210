@@ -830,9 +830,11 @@ VOID AsicAdjustTxPower(RTMP_ADAPTER *pAd)
 
 	/* Get Tx rate offset table which from EEPROM 0xDEh ~ 0xEFh */
 	RTMP_CHIP_ASIC_TX_POWER_OFFSET_GET(pAd, (PULONG)&CfgOfTxPwrCtrlOverMAC);
+
 	/* Get temperature compensation delta power value */
-	RTMP_CHIP_ASIC_AUTO_AGC_OFFSET_GET(
-			pAd, &DeltaPwr, &TotalDeltaPower, &TxAgcCompensate, &DeltaPowerByBbpR1);
+	if (pAd->chipOps.AsicTxAlcGetAutoAgcOffset != NULL)
+		pAd->chipOps.AsicTxAlcGetAutoAgcOffset(pAd, &DeltaPwr, 
+				&TotalDeltaPower, &TxAgcCompensate, &DeltaPowerByBbpR1);
 
 	DBGPRINT(RT_DEBUG_INFO,
 			("%s(): DeltaPwr=%d, TotalDeltaPower=%d, TxAgcCompensate=%d, DeltaPowerByBbpR1=%d\n",
@@ -969,7 +971,8 @@ VOID AsicAdjustTxPower(RTMP_ADAPTER *pAd)
 		}
 
 		/* Extra set MAC registers to compensate Tx power if any */
-		RTMP_CHIP_ASIC_EXTRA_POWER_OVER_MAC(pAd);
+		if (pAd->chipOps.AsicExtraPowerOverMAC != NULL)
+			pAd->chipOps.AsicExtraPowerOverMAC(pAd);
 	}
 }
 
