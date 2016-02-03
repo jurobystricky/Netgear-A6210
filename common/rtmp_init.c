@@ -82,11 +82,13 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 		NdisZeroMemory(pBeaconBuf, MAX_BEACON_SIZE);
 
 		/* Allocate RTMP_ADAPTER memory block*/
-		Status = AdapterBlockAllocateMemory(handle, (PVOID *)&pAd, sizeof(RTMP_ADAPTER));
-		if (Status != NDIS_STATUS_SUCCESS) {
+		pAd = vmalloc(sizeof(RTMP_ADAPTER));
+		if (!pAd) {
 			DBGPRINT_ERR(("Failed to allocate memory - ADAPTER\n"));
+			Status = NDIS_STATUS_FAILURE;
 			break;
 		} else {
+			NdisZeroMemory(pAd, sizeof(RTMP_ADAPTER));
 			/* init resource list (must be after pAd allocation) */
 			initList(&pAd->RscTimerMemList);
 			initList(&pAd->RscTaskMemList);
@@ -98,7 +100,7 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 			pAd->OS_Cookie = handle;
 #ifdef WORKQUEUE_BH
 			((POS_COOKIE)(handle))->pAd_va = (UINT32)pAd;
-#endif /* WORKQUEUE_BH */
+#endif
 		}
 		pAd->BeaconBuf = pBeaconBuf;
 		DBGPRINT(RT_DEBUG_OFF, ("\n=== pAd = %p, size = %lu ===\n\n",
@@ -111,7 +113,6 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 				STA_DRIVER_VERSION, __DATE__, __TIME__));
 #endif
 #endif
-
 		if (RtmpOsStatsAlloc(&pAd->stats, &pAd->iw_stats) == FALSE) {
 			Status = NDIS_STATUS_FAILURE;
 			break;
@@ -122,7 +123,7 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 
 #if defined(RT3290) || defined(RLT_MAC)
 //		NdisAllocateSpinLock(pAd, &pAd->WlanEnLock);
-#endif /* defined(RT3290) || defined(RLT_MAC) */
+#endif
 
 		for (index = 0 ; index < NUM_OF_TX_RING; index++) {
 			NdisAllocateSpinLock(pAd, &pAd->TxSwQueueLock[index]);
@@ -132,8 +133,10 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 
 #ifdef RESOURCE_PRE_ALLOC
 		/*
-			move this function from rt28xx_init() to here. now this function only allocate memory and
-			leave the initialization job to RTMPInitTxRxRingMemory() which called in rt28xx_init().
+			move this function from rt28xx_init() to here. 
+			now this function only allocate memory and
+			leave the initialization job to RTMPInitTxRxRingMemory() 
+			which called in rt28xx_init().
 		*/
 		Status = RTMPAllocTxRxRingMemory(pAd);
 		if (Status != NDIS_STATUS_SUCCESS) {
@@ -314,7 +317,8 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 #if defined(BB_SOC)&&!defined(NEW_MBSSID_MODE)
 		BBUPrepareMAC(pAd, pAd->CurrentAddress);
 		COPY_MAC_ADDR(pAd->PermanentAddress, pAd->CurrentAddress);
-		printk("now bb MainSsid mac %02x:%02x:%02x:%02x:%02x:%02x\n",PRINT_MAC(pAd->CurrentAddress));
+		printk("now bb MainSsid mac %02x:%02x:%02x:%02x:%02x:%02x\n",
+				PRINT_MAC(pAd->CurrentAddress));
 #endif
 	} else if (mac_addr && strlen((PSTRING)mac_addr) == 17 &&
 		(strcmp(mac_addr, "00:00:00:00:00:00") != 0)) {
@@ -454,7 +458,8 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 		 * The correct RfIcType value is set correctly later
 		 * on in this routine, before it is is used in code.
 		 */
-		RTMP_CHIP_ANTENNA_INFO_DEFAULT_RESET(pAd, &Antenna);
+		if (pAd->chipOps.AsicAntennaDefaultReset != NULL)
+			pAd->chipOps.AsicAntennaDefaultReset(pAd, &Antenna);
 	}
 
 	/* Choose the desired Tx&Rx stream.*/
@@ -558,7 +563,8 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 		pAd->phy_ctrl.rf_band_cap = RFIC_24GHZ;
 	}
 
-	RTMP_NET_DEV_NICKNAME_INIT(pAd);
+	if (pAd->chipOps.NetDevNickNameInit != NULL)
+		pAd->chipOps.NetDevNickNameInit(pAd);
 
 #ifdef MT76x2
 	if (IS_MT76x2(pAd)) {
@@ -928,12 +934,13 @@ void NICInitAsicFromEEPROM(RTMP_ADAPTER *pAd)
 	/* finally set primary ant */
 	AntCfgInit(pAd);
 
-	RTMP_CHIP_ASIC_INIT_TEMPERATURE_COMPENSATION(pAd);
+	if (pAd->chipOps.InitTemperCompensation != NULL)
+		pAd->chipOps.InitTemperCompensation(pAd);
 
 #ifdef RTMP_RF_RW_SUPPORT
 	/*Init RFRegisters after read RFIC type from EEPROM*/
 	InitRFRegisters(pAd);
-#endif /* RTMP_RF_RW_SUPPORT */
+#endif
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
@@ -1050,7 +1057,8 @@ void NICInitAsicFromEEPROM(RTMP_ADAPTER *pAd)
 	}
 #endif /* CONFIG_STA_SUPPORT */
 
-	RTMP_EEPROM_ASIC_INIT(pAd);
+	if (pAd->chipOps.NICInitAsicFromEEPROM != NULL)
+		pAd->chipOps.NICInitAsicFromEEPROM(pAd);
 
 #ifdef CONFIG_STA_SUPPORT
 #ifdef RTMP_FREQ_CALIBRATION_SUPPORT
