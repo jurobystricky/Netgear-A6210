@@ -21,57 +21,11 @@
 	Abstract:
 	Ralink Wireless driver CHIP related functions
 
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
 */
 
 
 #include "rt_config.h"
 
-
-/*
-========================================================================
-Routine Description:
-	write high memory.
-	if firmware does not support auto high/low memory switching,
-	we should switch to high memory by ourself.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	Offset		- Memory offsets
-	Value		- Written value
-	Unit		- Unit in "Byte"
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-#if 0 //JB unused
-static VOID RtmpChipWriteHighMemory(RTMP_ADAPTER *pAd, USHORT Offset, UINT32 Value,
-	UINT8 Unit)
-{
-#ifdef RTMP_MAC_USB
-	switch (Unit) {
-	case 1:
-		RTUSBSingleWrite(pAd, Offset, Value, TRUE);
-		break;
-	case 2:
-	{
-		UINT16 ShortVal = (UINT16)Value;
-		RTUSBMultiWrite(pAd, Offset, (UCHAR *) &ShortVal, 2, TRUE);
-		break;
-	}
-	case 4:
-		RTUSBWriteMACRegister(pAd, Offset, Value, TRUE);
-	default:
-		break;
-	}
-#endif /* RTMP_MAC_USB */
-}
-#endif //0
 
 /*
 ========================================================================
@@ -89,7 +43,7 @@ Return Value:
 Note:
 ========================================================================
 */
-static VOID RtmpChipWriteMemory(RTMP_ADAPTER *pAd, USHORT Offset,
+static void RtmpChipWriteMemory(RTMP_ADAPTER *pAd, USHORT Offset,
 	UINT32 Value, UINT8 Unit)
 {
 	switch (Unit) {
@@ -121,7 +75,7 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID RtmpChipBcnInit(RTMP_ADAPTER *pAd)
+void RtmpChipBcnInit(RTMP_ADAPTER *pAd)
 {
 	RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
 
@@ -171,7 +125,7 @@ Return Value:
 Note:
 ========================================================================
 */
-VOID rlt_bcn_buf_init(RTMP_ADAPTER *pAd)
+void rlt_bcn_buf_init(RTMP_ADAPTER *pAd)
 {
 	RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
 
@@ -352,7 +306,7 @@ Return Value:
 Note:
 ========================================================================
 */
-int RtmpChipOpsHook(VOID *pCB)
+int RtmpChipOpsHook(void *pCB)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pCB;
 #ifdef DBG
@@ -408,7 +362,7 @@ int RtmpChipOpsHook(VOID *pCB)
 #ifdef RTMP_MAC
 	// TODO: default settings for rest of the chips!! change this to really default chip.
 	RTxx_default_Init(pAd);
-#endif /* RTMP_MAC */
+#endif
 
 	/*
 	 * We depends on RfICType and MACVersion to assign the
@@ -429,7 +383,7 @@ done:
 }
 
 #ifdef RT65xx
-BOOLEAN isExternalPAMode(RTMP_ADAPTER *ad, INT channel)
+BOOLEAN isExternalPAMode(RTMP_ADAPTER *ad, int channel)
 {
 	BOOLEAN pa_mode = FALSE;
 
@@ -453,7 +407,7 @@ BOOLEAN isExternalPAMode(RTMP_ADAPTER *ad, INT channel)
 	return pa_mode;
 }
 
-BOOLEAN is_external_lna_mode(RTMP_ADAPTER *ad, INT channel)
+BOOLEAN is_external_lna_mode(RTMP_ADAPTER *ad, int channel)
 {
 	BOOLEAN lna_mode = FALSE;
 
