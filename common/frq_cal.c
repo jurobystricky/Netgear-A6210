@@ -34,7 +34,7 @@
 	Sometimes frequency will be shift we need to adjust it when
 	the frequencey shift.
 */
-static VOID InitFrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
+static void InitFrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
 {
 #ifdef RTMP_BBP
 	BBP_R179_STRUC BbpR179 = {{0}};
@@ -64,7 +64,7 @@ static VOID InitFrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R142, 1);
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R143, BBP_R57); /* Rx OFDM/CCK frequency offset report*/
 		} else {
-			DBGPRINT(RT_DEBUG_ERROR, ("%s:Unknow mode = %d\n", __FUNCTION__, Mode));
+			DBGPRINT(RT_DEBUG_ERROR, ("%s:Unknown mode = %d\n", __FUNCTION__, Mode));
 		}
 	} else
 #endif /* RTMP_BBP */
@@ -75,7 +75,7 @@ static VOID InitFrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
 
 
 /* Initialize the frequency calibration*/
-VOID InitFrequencyCalibration(PRTMP_ADAPTER pAd)
+void InitFrequencyCalibration(PRTMP_ADAPTER pAd)
 {
 	if (pAd->FreqCalibrationCtrl.bEnableFrequencyCalibration == TRUE) {
 		DBGPRINT(RT_DEBUG_ERROR, ("---> %s\n", __FUNCTION__));
@@ -91,7 +91,7 @@ VOID InitFrequencyCalibration(PRTMP_ADAPTER pAd)
 
 
 /* To stop the frequency calibration algorithm*/
-VOID StopFrequencyCalibration(PRTMP_ADAPTER pAd)
+void StopFrequencyCalibration(PRTMP_ADAPTER pAd)
 {
 	if (pAd->FreqCalibrationCtrl.bEnableFrequencyCalibration == TRUE) {
 		DBGPRINT(RT_DEBUG_TRACE, ("---> %s\n", __FUNCTION__));
@@ -109,7 +109,7 @@ VOID StopFrequencyCalibration(PRTMP_ADAPTER pAd)
 }
 
 
-static VOID FrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
+static void FrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
 {
 	UCHAR RFValue = 0;
 
@@ -135,7 +135,7 @@ static VOID FrequencyCalibrationMode(PRTMP_ADAPTER pAd, UINT8 Mode)
 
 
 /* The frequency calibration algorithm*/
-VOID FrequencyCalibration(PRTMP_ADAPTER pAd)
+void FrequencyCalibration(PRTMP_ADAPTER pAd)
 {
 	CHAR HighFreqTriggerPoint, LowFreqTriggerPoint;
 	CHAR DecreaseFreqOffset, IncreaseFreqOffset;
