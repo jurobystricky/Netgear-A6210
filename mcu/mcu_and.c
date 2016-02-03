@@ -1051,7 +1051,7 @@ error2:
 #endif
 	os_free_mem(msg);
 error1:
-	RTMPFreeNdisPacket(ad, net_pkt);
+	dev_kfree_skb_any(net_pkt);
 error0:
 	return NULL;
 }
@@ -1119,7 +1119,7 @@ static void andes_free_cmd_msg(struct cmd_msg *msg)
 
 	os_free_mem(msg);
 
-	RTMPFreeNdisPacket(ad, net_pkt);
+	dev_kfree_skb_any(net_pkt);
 	ctl->free_cmd_msg++;
 }
 
