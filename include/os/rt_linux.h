@@ -152,9 +152,9 @@ extern const struct iw_handler_def rt28xx_ap_iw_handler_def;
 typedef struct net_device_stats	NET_DEV_STATS;
 typedef struct net_device	* PNET_DEV;
 typedef struct wireless_dev	* PWIRELESS_DEV;
-typedef void			* PNDIS_PACKET;
-typedef char			NDIS_PACKET;
+typedef struct sk_buff 		* PNDIS_PACKET;
 typedef PNDIS_PACKET		* PPNDIS_PACKET;
+
 typedef	ra_dma_addr_t		NDIS_PHYSICAL_ADDRESS;
 typedef void			* NDIS_HANDLE;
 typedef char 			* PNDIS_BUFFER;
@@ -381,8 +381,6 @@ do { \
 #define OS_SEM_EVENT_DESTORY(_pSema)		do{}while(0)
 #define OS_SEM_EVENT_WAIT(_pSema, _status)	((_status) = down_interruptible((_pSema)))
 #define OS_SEM_EVENT_UP(_pSema)			up(_pSema)
-
-//#define RTCMDUp					OS_RTCMDUp
 
 #ifdef KTHREAD_SUPPORT
 #define RTMP_WAIT_EVENT_INTERRUPTIBLE(_Status, _pTask) \
@@ -694,11 +692,6 @@ void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
 #ifdef CONFIG_5VT_ENHANCE
 #define BRIDGE_TAG 0x35564252    /* depends on 5VT define in br_input.c */
 #endif
-
-#define RELEASE_NDIS_PACKET(_pAd, _pPacket, _Status)			\
-{									\
-		RTMPFreeNdisPacket(_pAd, _pPacket);			\
-}
 
 /*
  * packet helper
