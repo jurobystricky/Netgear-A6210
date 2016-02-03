@@ -20,9 +20,9 @@
 
 #include "rt_config.h"
 
-INT rtmp_wdev_idx_unreg(RTMP_ADAPTER *pAd, struct wifi_dev *wdev)
+int rtmp_wdev_idx_unreg(RTMP_ADAPTER *pAd, struct wifi_dev *wdev)
 {
-	INT idx;
+	int idx;
 	ULONG flags;
 
 	if (!wdev)
@@ -52,13 +52,12 @@ INT rtmp_wdev_idx_unreg(RTMP_ADAPTER *pAd, struct wifi_dev *wdev)
 	RTMP_INT_UNLOCK(&pAd->irq_lock, flags);
 
 	return ((idx < WDEV_NUM_MAX) ? 0 : -1);
-
 }
 
 
-INT rtmp_wdev_idx_reg(RTMP_ADAPTER *pAd, struct wifi_dev *wdev)
+int rtmp_wdev_idx_reg(RTMP_ADAPTER *pAd, struct wifi_dev *wdev)
 {
-	INT idx;
+	int idx;
 	ULONG flags;
 
 	if (!wdev)
@@ -107,7 +106,7 @@ Note:
 	You only can put OS-depened & AP related code in here.
 ========================================================================
 */
-VOID wdev_tx_pkts(NDIS_HANDLE dev_hnd, PPNDIS_PACKET pkt_list, UINT pkt_cnt,
+void wdev_tx_pkts(NDIS_HANDLE dev_hnd, PPNDIS_PACKET pkt_list, UINT pkt_cnt,
 	struct wifi_dev *wdev)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)dev_hnd;
@@ -124,18 +123,19 @@ VOID wdev_tx_pkts(NDIS_HANDLE dev_hnd, PPNDIS_PACKET pkt_list, UINT pkt_cnt,
 			fRTMP_ADAPTER_RADIO_OFF |
 			fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS))) {
 			/* Drop send request since hardware is in reset state */
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPacket);
 			continue;
 		}
 
 #ifdef RT_CFG80211_SUPPORT
-	if (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP && (wdev->Hostapd != Hostapd_CFG)
+	if (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP && 
+		(wdev->Hostapd != Hostapd_CFG)
 #ifdef RT_CFG80211_P2P_SUPPORT
 	&& (!RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
 #endif 	/*RT_CFG80211_P2P_SUPPORT*/
 		) {
 			/* Drop send request since hardware is in reset state */
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPacket);
 			continue;
 		}
 #endif /*RT_CFG80211_SUPPORT*/
@@ -168,7 +168,7 @@ VOID wdev_tx_pkts(NDIS_HANDLE dev_hnd, PPNDIS_PACKET pkt_list, UINT pkt_cnt,
 		}
 #endif /* CONFIG_STA_SUPPORT */
 		} else {
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPacket);
 		}
 	}
 
