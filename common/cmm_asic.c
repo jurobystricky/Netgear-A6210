@@ -2854,7 +2854,7 @@ INT StopDmaRx(RTMP_ADAPTER *pAd, UCHAR Level)
 		if ((RxPending == 0) && (bReschedule == FALSE))
 			break;
 		else
-			RELEASE_NDIS_PACKET(pAd, pRxPacket, NDIS_STATUS_SUCCESS);
+			dev_kfree_skb_any(pRxPacket);
 	}
 
 	/*
@@ -3308,7 +3308,9 @@ VOID thermal_protection(RTMP_ADAPTER *pAd)
 	if (pAd->chipCap.ThermalProtectSup == FALSE)
 		return;
 
-	RTMP_CHIP_GET_CURRENT_TEMP(pAd, current_temp);
+	if (pAd->chipOps.ChipGetCurrentTemp != NULL) \
+		pCurrentTemp = pAd->chipOps.ChipGetCurrentTemp(pAd); 
+
 	temp_diff = current_temp - pAd->last_thermal_pro_temp;
 	pAd->last_thermal_pro_temp = current_temp;
 
