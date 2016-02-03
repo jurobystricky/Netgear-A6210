@@ -55,7 +55,7 @@ NDIS_STATUS RtmpInsertPsQueue(
 #endif /* UAPSD_SUPPORT */
 	{
 		if (pMacEntry->PsQueue.Number >= MAX_PACKETS_IN_PS_QUEUE) {
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPacket);
 			return NDIS_STATUS_FAILURE;
 		} else {
 			DBGPRINT(RT_DEBUG_TRACE, ("legacy ps> queue a packet!\n"));
@@ -91,7 +91,7 @@ NDIS_STATUS RtmpInsertPsQueue(
 		used whenever a wireless client is deleted.
 	==========================================================================
  */
-VOID RtmpCleanupPsQueue(RTMP_ADAPTER *pAd, QUEUE_HEADER *pQueue)
+void RtmpCleanupPsQueue(RTMP_ADAPTER *pAd, QUEUE_HEADER *pQueue)
 {
 	QUEUE_ENTRY *pQEntry;
 	PNDIS_PACKET pPacket;
@@ -105,7 +105,7 @@ VOID RtmpCleanupPsQueue(RTMP_ADAPTER *pAd, QUEUE_HEADER *pQueue)
 		pQEntry = RemoveHeadQueue(pQueue);
 		/*pPacket = CONTAINING_RECORD(pEntry, NDIS_PACKET, MiniportReservedEx); */
 		pPacket = QUEUE_ENTRY_TO_PACKET(pQEntry);
-		RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pPacket);
 
 		DBGPRINT(RT_DEBUG_TRACE, ("RtmpCleanupPsQueue pkt = %lx...\n", (ULONG)pPacket));
 	}
@@ -120,7 +120,7 @@ VOID RtmpCleanupPsQueue(RTMP_ADAPTER *pAd, QUEUE_HEADER *pQueue)
 	is received from a WSTA which has MAC address FF:FF:FF:FF:FF:FF
   ========================================================================
 */
-VOID RtmpHandleRxPsPoll(RTMP_ADAPTER *pAd, UCHAR *pAddr, USHORT wcid, BOOLEAN isActive)
+void RtmpHandleRxPsPoll(RTMP_ADAPTER *pAd, UCHAR *pAddr, USHORT wcid, BOOLEAN isActive)
 {
 	QUEUE_ENTRY *pQEntry;
 	MAC_TABLE_ENTRY *pMacEntry;
@@ -326,7 +326,7 @@ Arguments:
 	pAd		Pointer to our adapter
 
 Return Value:
-    TRUE	can set
+	TRUE	can set
 	FALSE	can not set
 
 Note:
@@ -343,13 +343,13 @@ BOOLEAN RtmpPktPmBitCheck(RTMP_ADAPTER *pAd)
 }
 
 
-VOID RtmpPsActiveExtendCheck(RTMP_ADAPTER *pAd)
+void RtmpPsActiveExtendCheck(RTMP_ADAPTER *pAd)
 {
 	/* count down the TDLS active counter */
 }
 
 
-VOID RtmpPsModeChange(RTMP_ADAPTER *pAd, UINT32 PsMode)
+void RtmpPsModeChange(RTMP_ADAPTER *pAd, UINT32 PsMode)
 {
 	if (pAd->StaCfg.BssType == BSS_INFRA) {
 		/* reset ps mode */
