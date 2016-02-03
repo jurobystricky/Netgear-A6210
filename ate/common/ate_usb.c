@@ -575,7 +575,7 @@ void RTUSBRejectPendingPackets(PRTMP_ADAPTER pAd)
 			pQueue = (PQUEUE_HEADER) &(pAd->TxSwQueue[Index]);
 			pEntry = RemoveHeadQueue(pQueue);
 			pPacket = QUEUE_ENTRY_TO_PACKET(pEntry);
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPacket);
 		}
 		NdisReleaseSpinLock(&pAd->TxSwQueueLock[Index]);
 	}
