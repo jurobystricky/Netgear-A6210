@@ -79,7 +79,7 @@ void RTMPResetTxRxRingMemory(RTMP_ADAPTER * pAd)
 		while (pQueue->Head) {
 			pEntry = RemoveHeadQueue(pQueue);
 			pPacket = QUEUE_ENTRY_TO_PACKET(pEntry);
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pPacket);
 		}
 		RTMP_IRQ_UNLOCK(&pAd->irq_lock, IrqFlags);
 	}
@@ -114,7 +114,7 @@ void RTMPResetTxRxRingMemory(RTMP_ADAPTER * pAd)
 		}
 
 		if (pAd->MgmtRing.Cell[i].pNdisPacket != NULL) {
-			RELEASE_NDIS_PACKET(pAd, pAd->MgmtRing.Cell[i].pNdisPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pAd->MgmtRing.Cell[i].pNdisPacket);
 			pAd->MgmtRing.Cell[i].pNdisPacket = NULL;
 			if (pMLMEContext)
 				pMLMEContext->TransferBuffer = NULL;
@@ -215,7 +215,7 @@ void RTMPFreeTxRxRingMemory(PRTMP_ADAPTER pAd)
 		}
 
 		if (pAd->MgmtRing.Cell[i].pNdisPacket != NULL) {
-			RELEASE_NDIS_PACKET(pAd, pAd->MgmtRing.Cell[i].pNdisPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pAd->MgmtRing.Cell[i].pNdisPacket);
 			pAd->MgmtRing.Cell[i].pNdisPacket = NULL;
 			if (pMLMEContext)
 				pMLMEContext->TransferBuffer = NULL;
@@ -235,7 +235,7 @@ void RTMPFreeTxRxRingMemory(PRTMP_ADAPTER pAd)
 	}
 
 	if (pAd->FragFrame.pFragPacket)
-		RELEASE_NDIS_PACKET(pAd, pAd->FragFrame.pFragPacket, NDIS_STATUS_SUCCESS);
+		dev_kfree_skb_any(pAd->FragFrame.pFragPacket);
 
 	DBGPRINT(RT_DEBUG_ERROR, ("<--- RTMPFreeTxRxRingMemory\n"));
 }
@@ -1022,7 +1022,7 @@ void RTMPFreeTxRxRingMemory(PRTMP_ADAPTER pAd)
 		}
 
 		if (NULL != pAd->MgmtRing.Cell[i].pNdisPacket) {
-			RELEASE_NDIS_PACKET(pAd, pAd->MgmtRing.Cell[i].pNdisPacket, NDIS_STATUS_FAILURE);
+			dev_kfree_skb_any(pAd->MgmtRing.Cell[i].pNdisPacket);
 			pAd->MgmtRing.Cell[i].pNdisPacket = NULL;
 			if (pMLMEContext)
 			pMLMEContext->TransferBuffer = NULL;
@@ -1043,7 +1043,7 @@ void RTMPFreeTxRxRingMemory(PRTMP_ADAPTER pAd)
 
 	/* Free fragement frame buffer*/
 	if (pAd->FragFrame.pFragPacket)
-		RELEASE_NDIS_PACKET(pAd, pAd->FragFrame.pFragPacket, NDIS_STATUS_SUCCESS);
+		dev_kfree_skb_any(pAd->FragFrame.pFragPacket);
 
 	/* Free spinlocks*/
 	for (i = 0; i < 6; i++) {
