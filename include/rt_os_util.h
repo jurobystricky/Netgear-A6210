@@ -33,22 +33,17 @@ UINT32 RtmpOsTickUnitGet(void);
 void *os_alloc_mem(size_t size);
 NDIS_STATUS os_alloc_mem_suspend(void *pReserved, UCHAR **mem, ULONG size);
 void os_free_mem(void *mem);
-NDIS_STATUS AdapterBlockAllocateMemory(void *handle, void **ppAd, UINT32 SizeOfpAd);
-void *RtmpOsVmalloc(ULONG Size);
 void RtmpOsVfree(void *pMem);
 ULONG RtmpOsCopyFromUser(void *to, const void *from, ULONG n);
 ULONG RtmpOsCopyToUser(void *to, const void *from, ULONG n);
 BOOLEAN RtmpOsStatsAlloc(void **ppStats, void **ppIwStats);
 
 /* OS Packet */
-PNDIS_PACKET RtmpOSNetPktAlloc(void *pReserved, int size);
 
 PNDIS_PACKET RTMP_AllocateFragPacketBuffer(void *pReserved, ULONG Length);
 
 NDIS_STATUS RTMPAllocateNdisPacket(void *pReserved, PNDIS_PACKET *ppPacket,
 	PUCHAR pHeader, UINT HeaderLen, PUCHAR pData, UINT DataLen);
-
-void RTMPFreeNdisPacket(void *pReserved, PNDIS_PACKET pPacket);
 
 void RTMP_QueryPacketInfo(PNDIS_PACKET pPacket, PACKET_INFO *pPacketInfo,
 	PUCHAR *pSrcBufVA, UINT *pSrcBufLen);
@@ -85,33 +80,8 @@ void wlan_802_11_to_802_3_packet(PNET_DEV pNetDev, UCHAR OpMode, USHORT VLAN_VID
 UCHAR VLAN_8023_Header_Copy(USHORT VLAN_VID, USHORT VLAN_Priority, PUCHAR pHeader802_3,
 	UINT HdrLen, PUCHAR pData, UCHAR FromWhichBSSID, UCHAR *TPID);
 
-void RtmpOsPktBodyCopy(PNET_DEV pNetDev, PNDIS_PACKET pNetPkt, ULONG ThisFrameLen,
-	PUCHAR pData);
-
-int RtmpOsIsPktCloned(PNDIS_PACKET pNetPkt);
-PNDIS_PACKET RtmpOsPktCopy(PNDIS_PACKET pNetPkt);
-PNDIS_PACKET RtmpOsPktClone(PNDIS_PACKET pNetPkt);
-
-void RtmpOsPktDataPtrAssign(PNDIS_PACKET pNetPkt, UCHAR *pData);
-void RtmpOsPktLenAssign(PNDIS_PACKET pNetPkt, LONG Len);
-void RtmpOsPktTailAdjust(PNDIS_PACKET pNetPkt, UINT removedTagLen);
-PUCHAR RtmpOsPktTailBufExtend(PNDIS_PACKET pNetPkt, UINT len);
-PUCHAR RtmpOsPktHeadBufExtend(PNDIS_PACKET pNetPkt, UINT len);
-void RtmpOsPktReserve(PNDIS_PACKET pNetPkt, UINT len);
-void RtmpOsPktProtocolAssign(PNDIS_PACKET pNetPkt);
-void RtmpOsPktInfPpaSend(PNDIS_PACKET pNetPkt);
 void RtmpOsPktRcvHandle(PNDIS_PACKET pNetPkt);
-void RtmpOsPktNatMagicTag(PNDIS_PACKET pNetPkt);
-void RtmpOsPktNatNone(PNDIS_PACKET pNetPkt);
 void RtmpOsPktInit(PNDIS_PACKET pNetPkt, PNET_DEV pNetDev, UCHAR *buf, USHORT len);
-
-PNDIS_PACKET RtmpOsPktIappMakeUp(PNET_DEV pNetDev, UINT8 *pMac);
-
-BOOLEAN RtmpOsPktOffsetInit(void);
-UINT16 RtmpOsNtohs(UINT16 Value);
-UINT16 RtmpOsHtons(UINT16 Value);
-UINT32 RtmpOsNtohl(UINT32 Value);
-UINT32 RtmpOsHtonl(UINT32 Value);
 
 /* OS File */
 RTMP_OS_FD RtmpOSFileOpen(char *pPath,  int flag, int mode);
@@ -119,16 +89,12 @@ int RtmpOSFileClose(RTMP_OS_FD osfd);
 void RtmpOSFileSeek(RTMP_OS_FD osfd, int offset);
 int RtmpOSFileRead(RTMP_OS_FD osfd, char *pDataPtr, int readLen);
 int RtmpOSFileWrite(RTMP_OS_FD osfd, char *pDataPtr, int writeLen);
-
-INT32 RtmpOsFileIsErr(void *pFile);
-
 void RtmpOSFSInfoChange(RTMP_OS_FS_INFO *pOSFSInfoOrg, BOOLEAN bSet);
 
 /* OS Network Interface */
 int RtmpOSNetDevAddrSet(UCHAR OpMode, PNET_DEV pNetDev, PUCHAR pMacAddr,
 	PUCHAR dev_name);
 
-void RtmpOSNetDevClose(PNET_DEV pNetDev);
 void RtmpOSNetDevFree(PNET_DEV pNetDev);
 
 #ifdef CONFIG_STA_SUPPORT
