@@ -171,7 +171,7 @@ NDIS_STATUS RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 
 #ifdef HOSTAPD_SUPPORT
 	int i;
-#endif /*HOSTAPD_SUPPORT */
+#endif
 
 	src = get_dev_profile(pAd);
 	if (src && *src) {
@@ -298,11 +298,32 @@ void tbtt_tasklet(unsigned long data)
 			pAd->MacTab.PsQIdleCount = 0;
 
 			if (bPS == TRUE) {
-				RTMPDeQueuePacket(pAd, FALSE, NUM_OF_TX_RING, /*MAX_TX_IN_TBTT*/MAX_PACKETS_IN_MCAST_PS_QUEUE);
+				RTMPDeQueuePacket(pAd, FALSE, NUM_OF_TX_RING, 
+						/*MAX_TX_IN_TBTT*/MAX_PACKETS_IN_MCAST_PS_QUEUE);
 			}
 		}
 	}
 #endif /* CONFIG_AP_SUPPORT */
+}
+
+/*
+========================================================================
+Routine Description:
+	Assign protocol to the packet.
+
+Arguments:
+	pPkt		- the packet
+
+Return Value:
+	None
+
+Note:
+========================================================================
+*/
+static void RtmpOsPktProtocolAssign(PNDIS_PACKET pNetPkt)
+{
+	struct sk_buff *pRxPkt = RTPKT_TO_OSPKT(pNetPkt);
+	pRxPkt->protocol = eth_type_trans(pRxPkt, pRxPkt->dev);
 }
 
 #ifdef INF_PPA_SUPPORT
@@ -553,12 +574,8 @@ void RTMPFreeAdapter(void *pAdSrc)
 }
 
 
-int RTMPSendPackets(
-	IN NDIS_HANDLE dev_hnd,
-	IN PPNDIS_PACKET pkt_list,
-	IN UINT pkt_cnt,
-	IN UINT32 pkt_total_len,
-	IN RTMP_NET_ETH_CONVERT_DEV_SEARCH Func)
+int RTMPSendPackets(NDIS_HANDLE dev_hnd, PPNDIS_PACKET pkt_list, UINT pkt_cnt,
+	UINT32 pkt_total_len, RTMP_NET_ETH_CONVERT_DEV_SEARCH Func)
 {
 	struct wifi_dev *wdev = (struct wifi_dev *)dev_hnd;
 	RTMP_ADAPTER *pAd;
@@ -573,13 +590,13 @@ int RTMPSendPackets(
 
 	if (pkt_total_len < 14) {
 		hex_dump("bad packet", GET_OS_PKT_DATAPTR(pPacket), pkt_total_len);
-		RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_FAILURE);
+		dev_kfree_skb_any(pPacket);
 		return 0;
 	}
 
 #ifdef RALINK_ATE
 	if (ATE_ON(pAd)) {
-		RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_SUCCESS);
+		dev_kfree_skb_any(pPacket);
 		return 0;
 	}
 #endif /* RALINK_ATE */
@@ -588,7 +605,7 @@ int RTMPSendPackets(
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
 		/* Drop send request since we are in monitor mode */
 		if (MONITOR_ON(pAd)) {
-			RELEASE_NDIS_PACKET(pAd, pPacket, NDIS_STATUS_SUCCESS);
+			dev_kfree_skb_any(pPacket);
 			return 0;
 		}
 	}
