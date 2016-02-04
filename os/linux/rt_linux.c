@@ -246,7 +246,8 @@ void RtmpFlashWrite(UCHAR * p, ULONG a, ULONG b)
 #endif /* defined(RTMP_RBUS_SUPPORT) || defined(RTMP_FLASH_SUPPORT) */
 
 
-PNDIS_PACKET RtmpOSNetPktAlloc(void *dummy, int size)
+#if 0 //JB removed
+static PNDIS_PACKET RtmpOSNetPktAlloc(void *dummy, int size)
 {
 	struct sk_buff *skb;
 	/* Add 2 more bytes for ip header alignment */
@@ -254,6 +255,7 @@ PNDIS_PACKET RtmpOSNetPktAlloc(void *dummy, int size)
 
 	return ((PNDIS_PACKET) skb);
 }
+#endif
 
 PNDIS_PACKET RTMP_AllocateFragPacketBuffer(void *dummy, ULONG len)
 {
@@ -271,7 +273,7 @@ PNDIS_PACKET RTMP_AllocateFragPacketBuffer(void *dummy, ULONG len)
 
 
 /*
-	The allocated NDIS PACKET must be freed via RTMPFreeNdisPacket()
+	The allocated NDIS PACKET must be freed via dev_kfree_skb_any()
 */
 NDIS_STATUS RTMPAllocateNdisPacket(void *pReserved, PNDIS_PACKET *ppPacket,
 	UCHAR *pHeader, UINT HeaderLen, UCHAR *pData, UINT DataLen)
@@ -301,19 +303,6 @@ NDIS_STATUS RTMPAllocateNdisPacket(void *pReserved, PNDIS_PACKET *ppPacket,
 	*ppPacket = (PNDIS_PACKET)pPacket;
 
 	return NDIS_STATUS_SUCCESS;
-}
-
-
-/*
-  ========================================================================
-  Description:
-	This routine frees a miniport internally allocated NDIS_PACKET and its
-	corresponding NDIS_BUFFER and allocated memory.
-  ========================================================================
-*/
-void RTMPFreeNdisPacket(void *pReserved, PNDIS_PACKET pPacket)
-{
-	dev_kfree_skb_any(RTPKT_TO_OSPKT(pPacket));
 }
 
 
@@ -1273,10 +1262,12 @@ static int RtmpOSNetDevRequestName(INT32 MC_RowID, UINT32 *pIoctlIF,
 	return Status;
 }
 
-void RtmpOSNetDevClose(PNET_DEV pNetDev)
+#if 0 //JB removed
+static void RtmpOSNetDevClose(PNET_DEV pNetDev)
 {
 	dev_close(pNetDev);
 }
+#endif
 
 void RtmpOSNetDevFree(PNET_DEV pNetDev)
 {
@@ -1330,9 +1321,8 @@ static void RtmpOSNetDeviceRefPut(PNET_DEV pNetDev)
 }
 
 #if 0 //JB removed
-static int RtmpOSNetDevDestory(void *pReserved, PNET_DEV pNetDev)
+static int RtmpOSNetDevDestroy(void *pReserved, PNET_DEV pNetDev)
 {
-
 	/* TODO: Need to fix this */
 	printk("WARNING: This function(%s) not implement yet!!!\n",
 			__FUNCTION__);
@@ -1460,7 +1450,6 @@ int RtmpOSNetDevAttach(UCHAR OpMode, PNET_DEV pNetDev,
 	pNetDev->validate_addr = NULL;
 #endif
 #endif
-
 	ASSERT_RTNL_UNLOCKED();
 	ret = register_netdev(pNetDev);
 	netif_stop_queue(pNetDev);
@@ -1495,7 +1484,6 @@ PNET_DEV RtmpOSNetDevCreate(INT32 MC_RowID, UINT32 *pIoctlIF, int devType,
 	if (status != NDIS_STATUS_SUCCESS) {
 		DBGPRINT(RT_DEBUG_TRACE, ("Allocate net device ops fail!\n"));
 		RtmpOSNetDevFree(pNetDev);
-
 		return NULL;
 	} else {
 		DBGPRINT(RT_DEBUG_TRACE, ("Allocate net device ops success!\n"));
@@ -1510,7 +1498,6 @@ PNET_DEV RtmpOSNetDevCreate(INT32 MC_RowID, UINT32 *pIoctlIF, int devType,
 				("Assign inf name (%s with suffix 0~32) failed\n",
 				pNamePrefix));
 		RtmpOSNetDevFree(pNetDev);
-
 		return NULL;
 	} else {
 		DBGPRINT(RT_DEBUG_TRACE,
@@ -1539,7 +1526,6 @@ UCHAR VLAN_8023_Header_Copy(USHORT VLAN_VID, USHORT VLAN_Priority, PUCHAR pHeade
 #ifndef RT_BIG_ENDIAN
 		TCI = SWAP16(TCI);
 #endif
-
 		/* copy dst + src MAC (12B) */
 		memcpy(pData, pHeader802_3, LENGTH_802_3_NO_TYPE);
 
@@ -1555,7 +1541,8 @@ UCHAR VLAN_8023_Header_Copy(USHORT VLAN_VID, USHORT VLAN_Priority, PUCHAR pHeade
 
 		/* copy tail if exist */
 		if (HdrLen > LENGTH_802_3)
-			memcpy(pData + LENGTH_802_3 + LENGTH_802_1Q, pHeader802_3 + LENGTH_802_3, HdrLen - LENGTH_802_3);
+			memcpy(pData + LENGTH_802_3 + LENGTH_802_1Q, pHeader802_3 
+					+ LENGTH_802_3, HdrLen - LENGTH_802_3);
 	} else {
 		/* no VLAN tag is needed to insert */
 		memcpy(pData, pHeader802_3, HdrLen);
@@ -1582,15 +1569,15 @@ Return Value:
 Note:
 ========================================================================
 */
-NDIS_STATUS AdapterBlockAllocateMemory(void *handle, void **ppAd, UINT32 SizeOfpAd)
-{
-	*ppAd = (PVOID) vmalloc(SizeOfpAd);
-	if (*ppAd) {
-		NdisZeroMemory(*ppAd, SizeOfpAd);
-		return NDIS_STATUS_SUCCESS;
-	} else
-		return NDIS_STATUS_FAILURE;
-}
+//NDIS_STATUS AdapterBlockAllocateMemory(void *handle, void **ppAd, UINT32 SizeOfpAd)
+//{
+//	*ppAd = (PVOID) vmalloc(SizeOfpAd);
+//	if (*ppAd) {
+//		NdisZeroMemory(*ppAd, SizeOfpAd);
+//		return NDIS_STATUS_SUCCESS;
+//	} else
+//		return NDIS_STATUS_FAILURE;
+//}
 
 
 /* ========================================================================== */
@@ -1800,10 +1787,10 @@ Note:
 	rt_linux.h, not rt_drv.h
 ========================================================================
 */
-INT32 RtmpOsFileIsErr(IN void *pFile)
-{
-	return IS_FILE_OPEN_ERR(pFile);
-}
+//static INT32 RtmpOsFileIsErr(IN void *pFile)
+//{
+//	return IS_FILE_OPEN_ERR(pFile);
+//}
 
 
 /*
@@ -1845,10 +1832,10 @@ Return Value:
 Note:
 ========================================================================
 */
-void *RtmpOsVmalloc(ULONG Size)
-{
-	return vmalloc(Size);
-}
+//void *RtmpOsVmalloc(ULONG Size)
+//{
+//	return vmalloc(Size);
+//}
 
 /*
 ========================================================================
@@ -1871,25 +1858,7 @@ void RtmpOsVfree(void *pMem)
 }
 
 
-/*
-========================================================================
-Routine Description:
-	Assign protocol to the packet.
 
-Arguments:
-	pPkt		- the packet
-
-Return Value:
-	None
-
-Note:
-========================================================================
-*/
-void RtmpOsPktProtocolAssign(PNDIS_PACKET pNetPkt)
-{
-	struct sk_buff *pRxPkt = RTPKT_TO_OSPKT(pNetPkt);
-	pRxPkt->protocol = eth_type_trans(pRxPkt, pRxPkt->dev);
-}
 
 
 BOOLEAN RtmpOsStatsAlloc(void **ppStats, void **ppIwStats)
