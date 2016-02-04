@@ -363,7 +363,7 @@ enum FREQ_CAL_INIT_MODE {
 	FREQ_CAL_INIT_MODE0,
 	FREQ_CAL_INIT_MODE1,
 	FREQ_CAL_INIT_MODE2,
-	FREQ_CAL_INIT_UNKNOW,
+	FREQ_CAL_INIT_UNKNOWN,
 };
 
 enum FREQ_CAL_MODE {
@@ -795,7 +795,7 @@ struct _RTMP_CHIP_CAP_ {
 #ifdef CONFIG_SWITCH_CHANNEL_OFFLOAD
 	UINT16 ChannelParamsSize;
 	UCHAR *ChannelParam;
-	INT XtalType;
+	int XtalType;
 #endif
 
 	UCHAR load_code_method;
@@ -934,7 +934,7 @@ struct _RTMP_CHIP_CAP_ {
 
 };
 
-typedef VOID (*CHIP_SPEC_FUNC)(VOID *pAd, VOID *pData, ULONG Data);
+typedef void (*CHIP_SPEC_FUNC)(void *pAd, void *pData, ULONG Data);
 
 /* The chip specific function ID */
 typedef enum _CHIP_SPEC_ID
@@ -943,7 +943,6 @@ typedef enum _CHIP_SPEC_ID
 } CHIP_SPEC_ID;
 
 #define CHIP_SPEC_ID_NUM 	CHIP_SPEC_RESV_FUNC
-
 
 struct _RTMP_CHIP_OP_ {
 	int (*sys_onoff)(struct _RTMP_ADAPTER *pAd, BOOLEAN on, BOOLEAN reser);
@@ -986,83 +985,82 @@ struct _RTMP_CHIP_OP_ {
 	/* Power save */
 	void (*EnableAPMIMOPS)(struct _RTMP_ADAPTER *pAd, IN BOOLEAN ReduceCorePower);
 	void (*DisableAPMIMOPS)(struct _RTMP_ADAPTER *pAd);
-	INT (*PwrSavingOP)(struct _RTMP_ADAPTER *pAd, UINT32 PwrOP, UINT32 PwrLevel,
+	int (*PwrSavingOP)(struct _RTMP_ADAPTER *pAd, UINT32 PwrOP, UINT32 PwrLevel,
 			UINT32 ListenInterval, UINT32 PreTBTTLeadTime,
 			UINT8 TIMByteOffset, UINT8 TIMBytePattern);
 
 	/* Chip tuning */
-	VOID (*RxSensitivityTuning)(IN struct _RTMP_ADAPTER *pAd);
+	void (*RxSensitivityTuning)(IN struct _RTMP_ADAPTER *pAd);
 
 	/* MAC */
-	VOID (*BeaconUpdate)(struct _RTMP_ADAPTER *pAd, USHORT Offset, UINT32 Value, UINT8 Unit);
+	void (*BeaconUpdate)(struct _RTMP_ADAPTER *pAd, USHORT Offset, UINT32 Value, UINT8 Unit);
 
 	/* BBP adjust */
-	VOID (*ChipBBPAdjust)(IN struct _RTMP_ADAPTER *pAd);
+	void (*ChipBBPAdjust)(IN struct _RTMP_ADAPTER *pAd);
 
 	/* AGC */
-	VOID (*ChipAGCInit)(struct _RTMP_ADAPTER *pAd, UCHAR bw);
+	void (*ChipAGCInit)(struct _RTMP_ADAPTER *pAd, UCHAR bw);
 	UCHAR (*ChipAGCAdjust)(struct _RTMP_ADAPTER *pAd, CHAR Rssi, UCHAR OrigR66Value);
 
 	/* Channel */
-	VOID (*ChipSwitchChannel)(struct _RTMP_ADAPTER *pAd, UCHAR ch, BOOLEAN bScan);
+	void (*ChipSwitchChannel)(struct _RTMP_ADAPTER *pAd, UCHAR ch, BOOLEAN bScan);
 
 	/* EDCCA */
-	VOID (*ChipSetEDCCA)(struct _RTMP_ADAPTER *pAd, BOOLEAN bOn);
+	void (*ChipSetEDCCA)(struct _RTMP_ADAPTER *pAd, BOOLEAN bOn);
 
 	/* IQ Calibration */
-	VOID (*ChipIQCalibration)(struct _RTMP_ADAPTER *pAd, UCHAR Channel);
+	void (*ChipIQCalibration)(struct _RTMP_ADAPTER *pAd, UCHAR Channel);
 
 	UINT32 (*ChipGetCurrentTemp)(struct _RTMP_ADAPTER *pAd);
 #ifdef THERMAL_PROTECT_SUPPORT
-	VOID (*ThermalProDefaultCond)(struct _RTMP_ADAPTER *pAd);
-	VOID (*ThermalPro1stCond)(struct _RTMP_ADAPTER *pAd);
-	VOID (*ThermalPro2ndCond)(struct _RTMP_ADAPTER *pAd);
+	void (*ThermalProDefaultCond)(struct _RTMP_ADAPTER *pAd);
+	void (*ThermalPro1stCond)(struct _RTMP_ADAPTER *pAd);
+	void (*ThermalPro2ndCond)(struct _RTMP_ADAPTER *pAd);
 #endif /* THERMAL_PROTECT_SUPPORT */
 
 	/* TX ALC */
 	UINT32 (*TSSIRatio)(INT32 delta_power);
-	VOID (*InitDesiredTSSITable)(IN struct _RTMP_ADAPTER *pAd);
+	void (*InitDesiredTSSITable)(IN struct _RTMP_ADAPTER *pAd);
 	int (*ATETssiCalibration)(struct _RTMP_ADAPTER *pAd, PSTRING arg);
 	int (*ATETssiCalibrationExtend)(struct _RTMP_ADAPTER *pAd, PSTRING arg);
 	int (*ATEReadExternalTSSI)(struct _RTMP_ADAPTER *pAd, PSTRING arg);
 
-	VOID (*AsicTxAlcGetAutoAgcOffset)(struct _RTMP_ADAPTER *pAd,
+	void (*AsicTxAlcGetAutoAgcOffset)(struct _RTMP_ADAPTER *pAd,
 			PCHAR pDeltaPwr, PCHAR pTotalDeltaPwr,
 			PCHAR pAgcCompensate, PCHAR pDeltaPowerByBbpR1);
 
-	VOID (*AsicGetTxPowerOffset)(struct _RTMP_ADAPTER *pAd, ULONG *TxPwr);
-	VOID (*AsicExtraPowerOverMAC)(struct _RTMP_ADAPTER *pAd);
-
-	VOID (*AsicAdjustTxPower)(struct _RTMP_ADAPTER *pAd);
+	void (*AsicGetTxPowerOffset)(struct _RTMP_ADAPTER *pAd, ULONG *TxPwr);
+	void (*AsicExtraPowerOverMAC)(struct _RTMP_ADAPTER *pAd);
+	void (*AsicAdjustTxPower)(struct _RTMP_ADAPTER *pAd);
 
 	/* Antenna */
-	VOID (*AsicAntennaDefaultReset)(struct _RTMP_ADAPTER *pAd, union _EEPROM_ANTENNA_STRUC *pAntenna);
-	VOID (*SetRxAnt)(struct _RTMP_ADAPTER *pAd, UCHAR Ant);
+	void (*AsicAntennaDefaultReset)(struct _RTMP_ADAPTER *pAd, union _EEPROM_ANTENNA_STRUC *pAntenna);
+	void (*SetRxAnt)(struct _RTMP_ADAPTER *pAd, UCHAR Ant);
 
 	/* EEPROM */
-	VOID (*NICInitAsicFromEEPROM)(IN struct _RTMP_ADAPTER *pAd);
+	void (*NICInitAsicFromEEPROM)(IN struct _RTMP_ADAPTER *pAd);
 
 	/* Temperature Compensation */
-	VOID (*InitTemperCompensation)(IN struct _RTMP_ADAPTER *pAd);
-	VOID (*TemperCompensation)(IN struct _RTMP_ADAPTER *pAd);
+	void (*InitTemperCompensation)(IN struct _RTMP_ADAPTER *pAd);
+	void (*TemperCompensation)(IN struct _RTMP_ADAPTER *pAd);
 
 	/* high power tuning */
-	VOID (*HighPowerTuning)(struct _RTMP_ADAPTER *pAd, struct _RSSI_SAMPLE *pRssi);
+	void (*HighPowerTuning)(struct _RTMP_ADAPTER *pAd, struct _RSSI_SAMPLE *pRssi);
 
 	/* Others */
-	VOID (*NetDevNickNameInit)(IN struct _RTMP_ADAPTER *pAd);
+	void (*NetDevNickNameInit)(IN struct _RTMP_ADAPTER *pAd);
 #ifdef CAL_FREE_IC_SUPPORT
 	BOOLEAN (*is_cal_free_ic)(IN struct _RTMP_ADAPTER *pAd);
-	VOID (*cal_free_data_get)(IN struct _RTMP_ADAPTER *pAd);
+	void (*cal_free_data_get)(IN struct _RTMP_ADAPTER *pAd);
 #endif /* CAL_FREE_IC_SUPPORT */
 
 	/* The chip specific function list */
 	CHIP_SPEC_FUNC ChipSpecFunc[CHIP_SPEC_ID_NUM];
 
-	VOID (*AsicResetBbpAgent)(IN struct _RTMP_ADAPTER *pAd);
-	VOID (*CckMrcStatusCtrl)(struct _RTMP_ADAPTER *pAd);
-	VOID (*RadarGLRTCompensate)(struct _RTMP_ADAPTER *pAd);
-	VOID (*SecondCCADetection)(struct _RTMP_ADAPTER *pAd);
+	void (*AsicResetBbpAgent)(IN struct _RTMP_ADAPTER *pAd);
+	void (*CckMrcStatusCtrl)(struct _RTMP_ADAPTER *pAd);
+	void (*RadarGLRTCompensate)(struct _RTMP_ADAPTER *pAd);
+	void (*SecondCCADetection)(struct _RTMP_ADAPTER *pAd);
 
 	/* MCU */
 	void (*MCUCtrlInit)(struct _RTMP_ADAPTER *ad);
@@ -1087,18 +1085,18 @@ struct _RTMP_CHIP_OP_ {
 	void (*AsicRadioOff)(struct _RTMP_ADAPTER *ad, u8 Stage);
 
 #ifdef MICROWAVE_OVEN_SUPPORT
-	VOID (*AsicMeasureFalseCCA)(IN struct _RTMP_ADAPTER *pAd);
+	void (*AsicMeasureFalseCCA)(IN struct _RTMP_ADAPTER *pAd);
 
-	VOID (*AsicMitigateMicrowave)(IN struct _RTMP_ADAPTER *pAd);
+	void (*AsicMitigateMicrowave)(IN struct _RTMP_ADAPTER *pAd);
 #endif /* MICROWAVE_OVEN_SUPPORT */
 
 #ifdef DYNAMIC_VGA_SUPPORT
-	VOID (*AsicDynamicVgaGainControl)(IN struct _RTMP_ADAPTER *pAd);
+	void (*AsicDynamicVgaGainControl)(IN struct _RTMP_ADAPTER *pAd);
 #endif /* DYNAMIC_VGA_SUPPORT */
 
 #if (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT)
-	VOID (*AsicWOWEnable)(struct _RTMP_ADAPTER *ad);
-	VOID (*AsicWOWDisable)(struct _RTMP_ADAPTER *ad);
+	void (*AsicWOWEnable)(struct _RTMP_ADAPTER *ad);
+	void (*AsicWOWDisable)(struct _RTMP_ADAPTER *ad);
 #endif /* (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT) */
 
 	void (*usb_cfg_read)(struct _RTMP_ADAPTER *ad, u32 *value);
@@ -1107,11 +1105,6 @@ struct _RTMP_CHIP_OP_ {
 	void (*cal_test)(struct _RTMP_ADAPTER *ad, UINT32 type);
 };
 
-#define RTMP_CHIP_ENABLE_AP_MIMOPS(__pAd, __ReduceCorePower)	\
-do {	\
-		if (__pAd->chipOps.EnableAPMIMOPS != NULL)	\
-			__pAd->chipOps.EnableAPMIMOPS(__pAd, __ReduceCorePower);	\
-} while (0)
 
 #define RTMP_CHIP_DISABLE_AP_MIMOPS(__pAd)	\
 do {	\
@@ -1120,7 +1113,7 @@ do {	\
 } while (0)
 
 #define PWR_SAVING_OP(__pAd, __PwrOP, __PwrLevel, __ListenInterval, \
-						__PreTBTTLeadTime, __TIMByteOffset, __TIMBytePattern)	\
+		__PreTBTTLeadTime, __TIMByteOffset, __TIMBytePattern)	\
 do {	\
 		if (__pAd->chipOps.PwrSavingOP != NULL)	\
 			__pAd->chipOps.PwrSavingOP(__pAd, __PwrOP, __PwrLevel,	\
@@ -1128,41 +1121,6 @@ do {	\
 			__TIMByteOffset, __TIMBytePattern);	\
 } while (0)
 
-#define RTMP_CHIP_RX_SENSITIVITY_TUNING(__pAd)	\
-do {	\
-		if (__pAd->chipOps.RxSensitivityTuning != NULL)	\
-			__pAd->chipOps.RxSensitivityTuning(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_AGC_ADJUST(__pAd, __Rssi, __R66)	\
-do {	\
-		if (__pAd->chipOps.ChipAGCAdjust != NULL)	\
-			__R66 = __pAd->chipOps.ChipAGCAdjust(__pAd, __Rssi, __R66);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_TSSI_TABLE_INIT(__pAd)	\
-do {	\
-		if (__pAd->chipOps.InitDesiredTSSITable != NULL)	\
-			__pAd->chipOps.InitDesiredTSSITable(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_ATE_TSSI_CALIBRATION(__pAd, __pData)	\
-do {	\
-		if (__pAd->chipOps.ATETssiCalibration != NULL)	\
-			__pAd->chipOps.ATETssiCalibration(__pAd, __pData);	\
-} while (0)
-
-#define RTMP_CHIP_ATE_TSSI_CALIBRATION_EXTEND(__pAd, __pData)	\
-do {	\
-		if (__pAd->chipOps.ATETssiCalibrationExtend != NULL)	\
-			__pAd->chipOps.ATETssiCalibrationExtend(__pAd, __pData);	\
-} while (0)
-
-#define RTMP_CHIP_ATE_READ_EXTERNAL_TSSI(__pAd, __pData)	\
-do {	\
-		if (__pAd->chipOps.ATEReadExternalTSSI != NULL)	\
-			__pAd->chipOps.ATEReadExternalTSSI(__pAd, __pData);	\
-} while (0)
 
 #define RTMP_CHIP_ASIC_TX_POWER_OFFSET_GET(__pAd, __pCfgOfTxPwrCtrlOverMAC)	\
 do {	\
@@ -1170,31 +1128,6 @@ do {	\
 			__pAd->chipOps.AsicGetTxPowerOffset(__pAd, __pCfgOfTxPwrCtrlOverMAC);	\
 } while (0)
 
-#define RTMP_CHIP_ASIC_AUTO_AGC_OFFSET_GET(	\
-		__pAd, __pDeltaPwr, __pTotalDeltaPwr, __pAgcCompensate, __pDeltaPowerByBbpR1)	\
-do {	\
-		if (__pAd->chipOps.AsicTxAlcGetAutoAgcOffset != NULL)	\
-			__pAd->chipOps.AsicTxAlcGetAutoAgcOffset(	\
-		__pAd, __pDeltaPwr, __pTotalDeltaPwr, __pAgcCompensate, __pDeltaPowerByBbpR1);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_EXTRA_POWER_OVER_MAC(__pAd)	\
-do {	\
-		if (__pAd->chipOps.AsicExtraPowerOverMAC != NULL)	\
-			__pAd->chipOps.AsicExtraPowerOverMAC(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_GET_TSSI_RATIO(__pAd, __DeltaPwr)	\
-do {	\
-		if (__pAd->chipOps.AsicFreqCalStop != NULL)	\
-			__pAd->chipOps.TSSIRatio(__DeltaPwr);	\
-} while (0)
-
-#define RTMP_CHIP_GET_CURRENT_TEMP(__pAd, __pCurrentTemp) \
-do {	\
-		if (__pAd->chipOps.ChipGetCurrentTemp != NULL) \
-			__pCurrentTemp = __pAd->chipOps.ChipGetCurrentTemp(__pAd); \
-} while (0)
 
 #ifdef THERMAL_PROTECT_SUPPORT
 #define RTMP_CHIP_THERMAL_PRO_DEFAULT_COND(__pAd)	\
@@ -1216,36 +1149,6 @@ do {	\
 } while (0)
 #endif /* THERMAL_PROTECT_SUPPORT */
 
-#define RTMP_CHIP_ASIC_FREQ_CAL_STOP(__pAd)	\
-do {	\
-		if (__pAd->chipOps.AsicFreqCalStop != NULL)	\
-			__pAd->chipOps.AsicFreqCalStop(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_IQ_CAL(__pAd, __pChannel)	\
-do {	\
-		if (__pAd->chipOps.ChipIQCalibration != NULL)	\
-			 __pAd->chipOps.ChipIQCalibration(__pAd, __pChannel);	\
-} while (0)
-
-#define RTMP_CHIP_HIGH_POWER_TUNING(__pAd, __pRssi)	\
-do {	\
-		if (__pAd->chipOps.HighPowerTuning != NULL)	\
-			__pAd->chipOps.HighPowerTuning(__pAd, __pRssi);	\
-} while (0)
-
-#define RTMP_CHIP_ANTENNA_INFO_DEFAULT_RESET(__pAd, __pAntenna)	\
-do {	\
-		if (__pAd->chipOps.AsicAntennaDefaultReset != NULL)	\
-			__pAd->chipOps.AsicAntennaDefaultReset(__pAd, __pAntenna);	\
-} while (0)
-
-#define RTMP_NET_DEV_NICKNAME_INIT(__pAd)	\
-do {	\
-		if (__pAd->chipOps.NetDevNickNameInit != NULL)	\
-			__pAd->chipOps.NetDevNickNameInit(__pAd);	\
-} while (0)
-
 #ifdef CAL_FREE_IC_SUPPORT
 #define RTMP_CAL_FREE_IC_CHECK(__pAd, __is_cal_free)	\
 do {	\
@@ -1262,38 +1165,6 @@ do {	\
 } while (0)
 #endif /* CAL_FREE_IC_SUPPORT */
 
-#define RTMP_EEPROM_ASIC_INIT(__pAd)	\
-do {	\
-		if (__pAd->chipOps.NICInitAsicFromEEPROM != NULL)	\
-			__pAd->chipOps.NICInitAsicFromEEPROM(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_INIT_TEMPERATURE_COMPENSATION(__pAd)		\
-do {	\
-		if (__pAd->chipOps.InitTemperCompensation != NULL)	\
-			__pAd->chipOps.InitTemperCompensation(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_SET_EDCCA(__pAd, __bOn)			\
-do {	\
-		if (__pAd->chipOps.ChipSetEDCCA != NULL)		\
-			__pAd->chipOps.ChipSetEDCCA(__pAd, __bOn);	\
-} while (0)
-
-#define RTMP_CHIP_ASIC_TEMPERATURE_COMPENSATION(__pAd)			\
-do {	\
-		if (__pAd->chipOps.TemperCompensation != NULL)		\
-			__pAd->chipOps.TemperCompensation(__pAd);	\
-} while (0)
-
-#define RTMP_CHIP_SPECIFIC(__pAd, __FuncId, __pData, __Data)	\
-do {	\
-		if ((__FuncId >= 0) && (__FuncId < CHIP_SPEC_RESV_FUNC))	\
-		{	\
-			if (__pAd->chipOps.ChipSpecFunc[__FuncId] != NULL)	\
-				__pAd->chipOps.ChipSpecFunc[__FuncId](__pAd, __pData, __Data);	\
-		}	\
-} while (0)
 
 #define RTMP_CHIP_UPDATE_BEACON(__pAd, Offset, Value, Unit)	\
 do {	\
@@ -1301,18 +1172,13 @@ do {	\
 			__pAd->chipOps.BeaconUpdate(__pAd, Offset, Value, Unit);	\
 } while (0)
 
-
-#define RTMP_CHIP_CCK_MRC_STATUS_CTRL(__pAd)	\
-do {	\
-		if(__pAd->chipOps.CckMrcStatusCtrl != NULL)	\
-			__pAd->chipOps.CckMrcStatusCtrl(__pAd);	\
-} while (0)
-
+#ifdef DFS_SUPPORT
 #define RTMP_CHIP_RADAR_GLRT_COMPENSATE(__pAd) \
 do {	\
 		if(__pAd->chipOps.RadarGLRTCompensate != NULL)	\
 			__pAd->chipOps.RadarGLRTCompensate(__pAd);	\
 } while (0)
+#endif
 
 
 #define CHIP_CALIBRATION(__pAd, __CalibrationID, param) \
@@ -1323,72 +1189,10 @@ do {	\
 		__pAd->chipOps.Calibration(__pAd, __CalibrationID, &calibration_param); \
 } while (0)
 
-#define BURST_WRITE(_pAd, _Offset, _pData, _Cnt)	\
-do {									\
-		if (_pAd->chipOps.BurstWrite != NULL)		\
-			_pAd->chipOps.BurstWrite(_pAd, _Offset, _pData, _Cnt);\
-} while (0)
-
-#define BURST_READ(_pAd, _Offset, _Cnt, _pData)	\
-do {									\
-		if (_pAd->chipOps.BurstRead != NULL)	\
-			_pAd->chipOps.BurstRead(_pAd, _Offset, _Cnt, _pData);	\
-} while (0)
-
-#define RANDOM_READ(_pAd, _RegPair, _Num)	\
-do {										\
-		if (_pAd->chipOps.RandomRead != NULL)	\
-			_pAd->chipOps.RandomRead(_pAd, _RegPair, _Num);	\
-} while (0)
-
-#define RF_RANDOM_READ(_pAd, _RegPair, _Num)	\
-do {									\
-		if (_pAd->chipOps.RFRandomRead != NULL)	\
-			_pAd->chipOps.RFRandomRead(_pAd, _RegPair, _Num); \
-} while (0)
-
-#define READ_MODIFY_WRITE(_pAd, _RegPair, _Num)	\
-do {	\
-		if (_pAd->chipOps.ReadModifyWrite != NULL)	\
-			_pAd->chipOps.ReadModifyWrite(_pAd, _RegPair, _Num);	\
-} while (0)
-
-#define RF_READ_MODIFY_WRITE(_pAd, _RegPair, _Num)	\
-do {	\
-		if (_pAd->chipOps.RFReadModifyWrite != NULL)	\
-			_pAd->chipOps.RFReadModifyWrite(_pAd, _RegPair, _Num);	\
-} while (0)
-
 #define RANDOM_WRITE(_pAd, _RegPair, _Num)	\
 do {	\
 		if (_pAd->chipOps.RandomWrite != NULL)	\
 			_pAd->chipOps.RandomWrite(_pAd, _RegPair, _Num);	\
-} while (0)
-
-#define RF_RANDOM_WRITE(_pAd, _RegPair, _Num)	\
-do {	\
-		if (_pAd->chipOps.RFRandomWrite != NULL)	\
-			_pAd->chipOps.RFRandomWrite(_pAd, _RegPair, _Num);	\
-} while (0)
-
-#define RTMP_SECOND_CCA_DETECTION(__pAd) \
-do {	\
-	if (__pAd->chipOps.SecondCCADetection != NULL)	\
-	{	\
-		__pAd->chipOps.SecondCCADetection(__pAd);	\
-	}	\
-} while (0)
-
-#define SC_RANDOM_WRITE(_ad, _table, _num, _flags)	\
-do {	\
-		if (_ad->chipOps.sc_random_write != NULL)	\
-			_ad->chipOps.sc_random_write(_ad, _table, _num, _flags);	\
-} while (0)
-
-#define SC_RF_RANDOM_WRITE(_ad, _table, _num, _flags)	\
-do {	\
-		if (_ad->chipOps.sc_rf_random_write != NULL)	\
-			_ad->chipOps.sc_rf_random_write(_ad, _table, _num, _flags);	\
 } while (0)
 
 #define DISABLE_TX_RX(_pAd, _Level)	\
@@ -1396,6 +1200,7 @@ do {	\
 	if (_pAd->chipOps.DisableTxRx != NULL)	\
 		_pAd->chipOps.DisableTxRx(_pAd, _Level);	\
 } while (0)
+
 
 #define ASIC_RADIO_ON(_pAd, _Stage)	\
 do {	\
@@ -1409,19 +1214,6 @@ do {	\
 		_pAd->chipOps.AsicRadioOff(_pAd, _Stage);	\
 } while (0)
 
-#ifdef MICROWAVE_OVEN_SUPPORT
-#define ASIC_MEASURE_FALSE_CCA(_pAd)	\
-do {	\
-	if (_pAd->chipOps.AsicMeasureFalseCCA != NULL)	\
-		_pAd->chipOps.AsicMeasureFalseCCA(_pAd);	\
-} while (0)
-
-#define ASIC_MITIGATE_MICROWAVE(_pAd)	\
-do {	\
-	if (_pAd->chipOps.AsicMitigateMicrowave != NULL)	\
-		_pAd->chipOps.AsicMitigateMicrowave(_pAd);	\
-} while (0)
-#endif /* MICROWAVE_OVEN_SUPPORT */
 
 #if (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT)
 #define ASIC_WOW_ENABLE(_pAd)	\
@@ -1461,34 +1253,27 @@ do {	\
 	}\
 } while (0)
 
-#ifdef DYNAMIC_VGA_SUPPORT
-#define RTMP_ASIC_DYNAMIC_VGA_GAIN_CONTROL(_pAd)	\
-		do {	\
-			if (_pAd->chipOps.AsicDynamicVgaGainControl != NULL)	\
-				_pAd->chipOps.AsicDynamicVgaGainControl(_pAd);	\
-		} while (0)
-#endif /* DYNAMIC_VGA_SUPPORT */
 
-int RtmpChipOpsHook(VOID *pCB);
-VOID RtmpChipBcnInit(struct _RTMP_ADAPTER *pAd);
+int RtmpChipOpsHook(void *pCB);
+void RtmpChipBcnInit(struct _RTMP_ADAPTER *pAd);
 
 #ifdef RLT_MAC
-VOID rlt_bcn_buf_init(struct _RTMP_ADAPTER *pAd);
+void rlt_bcn_buf_init(struct _RTMP_ADAPTER *pAd);
 #endif /* RLT_MAC */
 
-VOID RTMPReadChannelPwr(struct _RTMP_ADAPTER *pAd);
-VOID RTMPReadTxPwrPerRate(struct _RTMP_ADAPTER *pAd);
-VOID NetDevNickNameInit(IN struct _RTMP_ADAPTER *pAd);
+void RTMPReadChannelPwr(struct _RTMP_ADAPTER *pAd);
+void RTMPReadTxPwrPerRate(struct _RTMP_ADAPTER *pAd);
+void NetDevNickNameInit(IN struct _RTMP_ADAPTER *pAd);
 
 #ifdef GREENAP_SUPPORT
-VOID EnableAPMIMOPSv2(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower);
-VOID DisableAPMIMOPSv2(struct _RTMP_ADAPTER *pAd);
-VOID EnableAPMIMOPSv1(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower);
-VOID DisableAPMIMOPSv1(struct _RTMP_ADAPTER *pAd);
+void EnableAPMIMOPSv2(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower);
+void DisableAPMIMOPSv2(struct _RTMP_ADAPTER *pAd);
+void EnableAPMIMOPSv1(struct _RTMP_ADAPTER *pAd, BOOLEAN ReduceCorePower);
+void DisableAPMIMOPSv1(struct _RTMP_ADAPTER *pAd);
 #endif /* GREENAP_SUPPORT */
 
 #ifdef RTMP_MAC
-VOID RTxx_default_Init(struct _RTMP_ADAPTER *pAd);
+void RTxx_default_Init(struct _RTMP_ADAPTER *pAd);
 #endif /* RTMP_MAC */
 
 /* global variable */
@@ -1499,18 +1284,18 @@ extern FREQUENCY_ITEM *FreqItems3020;
 extern RTMP_RF_REGS RF2850RegTable[];
 extern UCHAR NUM_OF_2850_CHNL;
 
-BOOLEAN AsicWaitPDMAIdle(struct _RTMP_ADAPTER *pAd, INT round, INT wait_us);
+BOOLEAN AsicWaitPDMAIdle(struct _RTMP_ADAPTER *pAd, int round, int wait_us);
 BOOLEAN AsicSetPreTbttInt(struct _RTMP_ADAPTER *pAd, BOOLEAN enable);
 BOOLEAN AsicReadAggCnt(struct _RTMP_ADAPTER *pAd, ULONG *aggCnt, int cnt_len);
 
 BOOLEAN rtmp_asic_top_init(struct _RTMP_ADAPTER *pAd);
 
-INT StopDmaTx(struct _RTMP_ADAPTER *pAd, UCHAR Level);
-INT StopDmaRx(struct _RTMP_ADAPTER *pAd, UCHAR Level);
+int StopDmaTx(struct _RTMP_ADAPTER *pAd, UCHAR Level);
+int StopDmaRx(struct _RTMP_ADAPTER *pAd, UCHAR Level);
 
 #ifdef RT65xx
-BOOLEAN isExternalPAMode(struct _RTMP_ADAPTER *ad, INT channel);
-BOOLEAN is_external_lna_mode(struct _RTMP_ADAPTER *ad, INT channel);
+BOOLEAN isExternalPAMode(struct _RTMP_ADAPTER *ad, int channel);
+BOOLEAN is_external_lna_mode(struct _RTMP_ADAPTER *ad, int channel);
 #endif /* RT65xx */
 #endif /* __RTMP_CHIP_H__ */
 
