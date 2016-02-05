@@ -186,10 +186,6 @@ typedef struct _RT_ASIC_PROTECT_INFO {
 			&AsicProtectInfo, sizeof(RT_ASIC_PROTECT_INFO));\
 	} while(0)
 
-void usb_cfg_read_v1(struct _RTMP_ADAPTER *ad, u32 *value);
-void usb_cfg_write_v1(struct _RTMP_ADAPTER *ad, u32 value);
-void usb_cfg_read_v2(struct _RTMP_ADAPTER *ad, u32 *value);
-void usb_cfg_write_v2(struct _RTMP_ADAPTER *ad, u32 value);
 void usb_cfg_read_v3(struct _RTMP_ADAPTER *ad, u32 *value);
 void usb_cfg_write_v3(struct _RTMP_ADAPTER *ad, u32 value);
 int write_reg(struct _RTMP_ADAPTER *ad, UINT32 base, UINT16 offset, UINT32 val);
