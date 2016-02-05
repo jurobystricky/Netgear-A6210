@@ -58,9 +58,8 @@ extern UCHAR EpToQueue[6];
 }
 
 #define NT_SUCCESS(status)	(((status) >=0) ? (TRUE):(FALSE))
-
-
 #define PIRP			PVOID
+
 #ifndef USB_ST_NOERROR
 #define USB_ST_NOERROR		0
 #endif
@@ -100,9 +99,6 @@ NTSTATUS RTUSBWriteEEPROM(struct _RTMP_ADAPTER *pAd, USHORT Offset, UCHAR *buf, 
 NTSTATUS RTUSBFirmwareWrite(struct _RTMP_ADAPTER *pAd, UCHAR *pFwImage, ULONG FwLen);
 NTSTATUS RTUSBVendorReset(struct _RTMP_ADAPTER *pAd);
 
-NDIS_STATUS RTUSBEnqueueCmdFromNdis(struct _RTMP_ADAPTER *pAd, NDIS_OID Oid,
-	BOOLEAN SetInfo, PVOID pInfoBuf, UINT32 BufLen);
-
 void RTUSBDequeueCmd(PCmdQ cmdq, PCmdQElmt *pcmdqelmt);
 void RTUSBBssBeaconExit(struct _RTMP_ADAPTER *pAd);
 void RTUSBBssBeaconStop(struct _RTMP_ADAPTER *pAd);
@@ -122,8 +118,6 @@ void RtmpUSBDataKickOut(struct _RTMP_ADAPTER *pAd, struct _TX_BLK *pTxBlk, UCHAR
 int  RtmpUSBMgmtKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, PNDIS_PACKET pkt, UCHAR *pSrcBufVA, UINT SrcBufLen);
 void RtmpUSBNullFrameKickOut(struct _RTMP_ADAPTER *pAd, UCHAR QIdx, UCHAR *pNullFrm, UINT32 frmLen);
 void RTUSBWatchDog(struct _RTMP_ADAPTER *pAd);
-void RTUSBPutToSleep(struct _RTMP_ADAPTER *pAd);
-NTSTATUS RTUSBWakeUp(struct _RTMP_ADAPTER *pAd);
 void RtmpUsbStaAsicForceWakeupTimeout(PVOID arg1, PVOID FuncContext, PVOID arg2, PVOID arg3);
 void RT28xxUsbStaAsicForceWakeup(struct _RTMP_ADAPTER *pAd, BOOLEAN bFromTx);
 void RT28xxUsbStaAsicSleepThenAutoWakeup(struct _RTMP_ADAPTER *pAd, USHORT TbttNumToNextWakeUp);
