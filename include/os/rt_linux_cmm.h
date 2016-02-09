@@ -19,9 +19,6 @@
     Abstract:
 	Common OS structure/definition in LINUX whatever OS ABL.
 
-    Revision History:
-    Who          When          What
-    ---------    ----------    ----------------------------------------------
  */
 
 
@@ -71,10 +68,6 @@ typedef struct _OS_RSTRUC  {
 /*****************************************************************************
  * Timer related definitions and data structures.
  ******************************************************************************/
-
-/* rt_linux.h */
-#define NDIS_MINIPORT_TIMER		OS_NDIS_MINIPORT_TIMER
-#define RTMP_OS_TIMER			OS_TIMER
 
 #define RTMP_OS_FREE_TIMER(__pAd)
 #define RTMP_OS_FREE_LOCK(__pAd)
