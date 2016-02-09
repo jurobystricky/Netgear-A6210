@@ -135,15 +135,14 @@ BOOLEAN RtmpOSTaskWait(void *pReserved, RTMP_OS_TASK *pTaskOrg, INT32 *pStatus);
 void RtmpOsDCacheFlush(ULONG AddrStart, ULONG Size);
 
 /* OS Timer */
-void RTMP_SetPeriodicTimer(NDIS_MINIPORT_TIMER *pTimerOrg, unsigned long timeout);
+void RTMP_SetPeriodicTimer(struct timer_list *pTimerOrg, unsigned long timeout);
 
-void RTMP_OS_Init_Timer(void *pReserved, NDIS_MINIPORT_TIMER *pTimerOrg,
+void RTMP_OS_Init_Timer(void *pReserved, struct timer_list *pTimerOrg,
 	TIMER_FUNCTION function, PVOID data, LIST_HEADER *pTimerList);
 
-void RTMP_OS_Add_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, unsigned long timeout);
-void RTMP_OS_Mod_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, unsigned long timeout);
-void RTMP_OS_Del_Timer(NDIS_MINIPORT_TIMER *pTimerOrg, BOOLEAN *pCancelled);
-void RTMP_OS_Release_Timer(NDIS_MINIPORT_TIMER *pTimerOrg);
+void RTMP_OS_Add_Timer(struct timer_list *pTimerOrg, unsigned long timeout);
+void RTMP_OS_Mod_Timer(struct timer_list *pTimerOrg, unsigned long timeout);
+void RTMP_OS_Del_Timer(struct timer_list *pTimerOrg, BOOLEAN *pCancelled);
 
 /* OS Utility */
 void hex_dump(char *str, unsigned char *pSrcBufVA, unsigned int SrcBufLen);
