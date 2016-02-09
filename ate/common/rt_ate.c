@@ -21,6 +21,7 @@
 */
 #include "rt_config.h"
 
+
 #define ATE_BBP_REG_NUM	168
 
 
@@ -168,7 +169,7 @@ CHAR ATEGetDesiredTSSI(PRTMP_ADAPTER pAd)
 
 ==========================================================================
 */
-VOID ATEAsicAdjustTxPower(PRTMP_ADAPTER pAd)
+void ATEAsicAdjustTxPower(PRTMP_ADAPTER pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 
@@ -216,7 +217,7 @@ CHAR ATEConvertToRssi(PRTMP_ADAPTER pAd, CHAR Rssi, UCHAR RssiNumber)
 }
 
 
-VOID ATESampleRssi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI)
+void ATESampleRssi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	CHAR rssi[3] = {0};
@@ -279,7 +280,7 @@ VOID ATESampleRssi(RTMP_ADAPTER *pAd, RXWI_STRUC *pRxWI)
 }
 
 
-static VOID rt_ee_read_all(PRTMP_ADAPTER pAd, USHORT *Data)
+static void rt_ee_read_all(PRTMP_ADAPTER pAd, USHORT *Data)
 {
 	USHORT offset;
 	USHORT value;
@@ -292,7 +293,7 @@ static VOID rt_ee_read_all(PRTMP_ADAPTER pAd, USHORT *Data)
 }
 
 
-static VOID rt_ee_write_all(PRTMP_ADAPTER pAd, UCHAR *Data)
+static void rt_ee_write_all(PRTMP_ADAPTER pAd, UCHAR *Data)
 {
 	USHORT offset;
 	USHORT value, *ptr16;
@@ -313,7 +314,7 @@ static VOID rt_ee_write_all(PRTMP_ADAPTER pAd, UCHAR *Data)
 }
 
 #if 0 //JB removed
-static VOID rt_ee_write_bulk(PRTMP_ADAPTER pAd, USHORT *Data, USHORT offset, USHORT length)
+static void rt_ee_write_bulk(PRTMP_ADAPTER pAd, USHORT *Data, USHORT offset, USHORT length)
 {
 	USHORT pos, value, len = length;
 
@@ -326,7 +327,7 @@ static VOID rt_ee_write_bulk(PRTMP_ADAPTER pAd, USHORT *Data, USHORT offset, USH
 #endif //0
 
 #ifdef RT_RF
-VOID RtmpRfIoWrite(PRTMP_ADAPTER pAd)
+void RtmpRfIoWrite(PRTMP_ADAPTER pAd)
 {
 	/* Set RF value 1's set R3[bit2] = [0] */
 	RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R1);
@@ -354,7 +355,7 @@ VOID RtmpRfIoWrite(PRTMP_ADAPTER pAd)
 }
 #endif /* RT_RF */
 
-VOID ATEAsicSetTxRxPath(PRTMP_ADAPTER pAd)
+void ATEAsicSetTxRxPath(PRTMP_ADAPTER pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 
@@ -371,8 +372,7 @@ VOID ATEAsicSetTxRxPath(PRTMP_ADAPTER pAd)
 
 ==========================================================================
 */
-VOID ATEAsicSwitchChannel(
-	IN PRTMP_ADAPTER pAd)
+void ATEAsicSwitchChannel(PRTMP_ADAPTER pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 
@@ -381,7 +381,7 @@ VOID ATEAsicSwitchChannel(
 }
 
 
-static VOID BbpSoftReset(PRTMP_ADAPTER pAd)
+static void BbpSoftReset(PRTMP_ADAPTER pAd)
 {
 #ifdef RTMP_BBP
 	if (pAd->chipCap.hif_type == HIF_RTMP) {
@@ -400,7 +400,7 @@ static VOID BbpSoftReset(PRTMP_ADAPTER pAd)
 }
 
 #ifdef MT76x2
-static VOID ITxBfBbpInit(PRTMP_ADAPTER pAd)
+static void ITxBfBbpInit(PRTMP_ADAPTER pAd)
 {
 	RTMP_IO_WRITE32(pAd, AGC1_R0, 0x00007408);
 	RTMP_IO_WRITE32(pAd, TXO_R0,  0x00000020);
@@ -418,7 +418,7 @@ static VOID ITxBfBbpInit(PRTMP_ADAPTER pAd)
 #endif
 
 #ifdef RTMP_BBP
-static VOID BbpHardReset(PRTMP_ADAPTER pAd)
+static void BbpHardReset(PRTMP_ADAPTER pAd)
 {
 	UINT32 MacData = 0;
 
@@ -474,7 +474,7 @@ static int CheckMCSValid(PRTMP_ADAPTER pAd, UCHAR Mode, UCHAR Mcs)
 }
 
 
-INT ATETxPwrHandler(PRTMP_ADAPTER pAd, char index)
+int ATETxPwrHandler(PRTMP_ADAPTER pAd, char index)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 
@@ -495,7 +495,7 @@ INT ATETxPwrHandler(PRTMP_ADAPTER pAd, char index)
 
 ========================================================================
 */
-static VOID SetJapanFilter(RTMP_ADAPTER *pAd)
+static void SetJapanFilter(RTMP_ADAPTER *pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	UCHAR bw = 0, phy_mode = 0;
@@ -546,7 +546,7 @@ static VOID SetJapanFilter(RTMP_ADAPTER *pAd)
 		Disable protection for ATE.
 ========================================================================
 */
-static VOID ATEDisableAsicProtect(PRTMP_ADAPTER pAd)
+static void ATEDisableAsicProtect(PRTMP_ADAPTER pAd)
 {
 	PROT_CFG_STRUC ProtCfg, ProtCfg4;
 	UINT32 Protect[6];
@@ -644,11 +644,11 @@ static VOID ATEDisableAsicProtect(PRTMP_ADAPTER pAd)
 	Note:
 ==========================================================================
 */
-static VOID ATEAPStop(PRTMP_ADAPTER pAd)
+static void ATEAPStop(PRTMP_ADAPTER pAd)
 {
 	BOOLEAN Cancelled;
 	UINT32 Value = 0;
-	INT apidx;
+	int apidx;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("!!! ATEAPStop !!!\n"));
 
@@ -710,7 +710,7 @@ static VOID ATEAPStop(PRTMP_ADAPTER pAd)
 
 
 #ifdef CONFIG_STA_SUPPORT
-VOID RTMPStationStop(PRTMP_ADAPTER pAd)
+void RTMPStationStop(PRTMP_ADAPTER pAd)
 {
 	DBGPRINT(RT_DEBUG_TRACE, ("==> RTMPStationStop\n"));
 
@@ -720,7 +720,7 @@ VOID RTMPStationStop(PRTMP_ADAPTER pAd)
 }
 
 
-static VOID RTMPStationStart(PRTMP_ADAPTER pAd)
+static void RTMPStationStart(PRTMP_ADAPTER pAd)
 {
 	DBGPRINT(RT_DEBUG_TRACE, ("==> RTMPStationStart\n"));
 	DBGPRINT(RT_DEBUG_TRACE, ("<== RTMPStationStart\n"));
@@ -728,7 +728,7 @@ static VOID RTMPStationStart(PRTMP_ADAPTER pAd)
 #endif /* CONFIG_STA_SUPPORT */
 
 #ifdef RLT_BBP
-static INT ate_bbp_core_soft_reset(RTMP_ADAPTER *pAd, BOOLEAN set_bw, INT bw)
+static int ate_bbp_core_soft_reset(RTMP_ADAPTER *pAd, BOOLEAN set_bw, int bw)
 {
 	UINT32 bbp_val;
 
@@ -2258,7 +2258,7 @@ BOOLEAN Set_ATE_DA_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	PSTRING value;
-	INT octet;
+	int octet;
 
 	/* Mac address acceptable format 01:02:03:04:05:06 length 17 */
 	if (strlen(arg) != 17)
@@ -2321,7 +2321,7 @@ BOOLEAN Set_ATE_SA_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	PSTRING value;
-	INT octet;
+	int octet;
 
 	/* Mac address acceptable format 01:02:03:04:05:06 length 17 */
 	if (strlen(arg) != 17)
@@ -2383,7 +2383,7 @@ BOOLEAN Set_ATE_BSSID_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	PSTRING value;
-	INT octet;
+	int octet;
 
 	/* Mac address acceptable format 01:02:03:04:05:06 length 17 */
 	if (strlen(arg) != 17)
@@ -2534,12 +2534,12 @@ BOOLEAN Set_ATE_INIT_CHAN_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 		TRUE if all parameters are OK, FALSE otherwise
 ==========================================================================
 */
-static INT ATESetAntennaTxPower(PRTMP_ADAPTER pAd, PSTRING arg, INT Antenna)
+static int ATESetAntennaTxPower(PRTMP_ADAPTER pAd, PSTRING arg, int Antenna)
 
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	CHAR TxPower;
-	INT  index, maximun_index;
+	int  index, maximun_index;
 
 	pATEInfo = &(pAd->ate);
 	TxPower = simple_strtol(arg, 0, 10);
@@ -2692,7 +2692,7 @@ BOOLEAN Set_ATE_TX_Antenna_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	CHAR value;
-	INT maximun_index = pAd->Antenna.field.TxPath;
+	int maximun_index = pAd->Antenna.field.TxPath;
 
 	value = simple_strtol(arg, 0, 10);
 
@@ -2724,7 +2724,7 @@ BOOLEAN Set_ATE_RX_Antenna_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	CHAR value;
-	INT maximun_index = pAd->Antenna.field.RxPath;
+	int maximun_index = pAd->Antenna.field.RxPath;
 
 	value = simple_strtol(arg, 0, 10);
 
@@ -2743,7 +2743,7 @@ BOOLEAN Set_ATE_RX_Antenna_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 }
 
 #if 0 //JB removed
-static VOID DefaultATEAsicExtraPowerOverMAC(PRTMP_ADAPTER pAd)
+static void DefaultATEAsicExtraPowerOverMAC(PRTMP_ADAPTER pAd)
 {
 	UINT32 ExtraPwrOverMAC = 0;
 	UINT32 ExtraPwrOverTxPwrCfg7 = 0, ExtraPwrOverTxPwrCfg8 = 0, ExtraPwrOverTxPwrCfg9 = 0;
@@ -2775,7 +2775,7 @@ static VOID DefaultATEAsicExtraPowerOverMAC(PRTMP_ADAPTER pAd)
 }
 #endif //0
 
-VOID ATEAsicExtraPowerOverMAC(PRTMP_ADAPTER pAd)
+void ATEAsicExtraPowerOverMAC(PRTMP_ADAPTER pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 
@@ -2784,7 +2784,7 @@ VOID ATEAsicExtraPowerOverMAC(PRTMP_ADAPTER pAd)
 }
 
 
-VOID ATEAsicTemperCompensation(PRTMP_ADAPTER pAd)
+void ATEAsicTemperCompensation(PRTMP_ADAPTER pAd)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 
@@ -2876,7 +2876,7 @@ BOOLEAN Set_ATE_TX_FREQ_OFFSET_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 BOOLEAN Set_ATE_TX_BW_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
-	INT status = FALSE;
+	int status = FALSE;
 	UCHAR bw = 0;
 
 	if (pATEInfo->pChipStruct->Set_BW_Proc != NULL) {
@@ -2964,7 +2964,7 @@ BOOLEAN Set_ATE_TX_MCS_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 	PATE_INFO pATEInfo = &(pAd->ate);
 	UCHAR MCS, phy_mode = 0;
-	INT result;
+	int result;
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT)
@@ -3253,7 +3253,7 @@ BOOLEAN Set_ATE_Read_RF_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
 #ifdef RTMP_RF_RW_SUPPORT
 	UCHAR RFValue = 0;
-	INT index;
+	int index;
 
 	if (IS_RT30xx(pAd) || IS_RT3572(pAd)) {
 		for (index = 0; index < 32; index++) {
@@ -3334,7 +3334,7 @@ BOOLEAN Set_ATE_Load_E2P_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 	RTMP_OS_FD srcf;
 	INT32 retval;
 	static UCHAR WriteEEPROM8[EEPROM_SIZE];
-	INT FileLength = 0;
+	int FileLength = 0;
 	UINT32 value = (UINT32) simple_strtol(arg, 0, 10);
 	RTMP_OS_FS_INFO	osFSInfo;
 
@@ -5051,7 +5051,7 @@ BOOLEAN Set_ATE_READ_EXTERNAL_TSSI_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 #ifdef MT76x2
 BOOLEAN Set_ATE_DO_CALIBRATION_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
-	INT rv = 0;
+	int rv = 0;
 	UINT32 cal_id, param;
 
 	if (arg) {
@@ -5068,7 +5068,7 @@ BOOLEAN Set_ATE_DO_CALIBRATION_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 
 BOOLEAN Set_ATE_Load_CR_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 {
-	INT rv;
+	int rv;
 	UINT mode, temp_level, channel;
 
 	if (arg) {
@@ -5586,7 +5586,7 @@ BOOLEAN Set_ADCDump_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 
 
 /* 100ms periodic execution */
-VOID ATEPeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
+void ATEPeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3)
 {
 	PRTMP_ADAPTER pAd = (RTMP_ADAPTER *)FunctionContext;
