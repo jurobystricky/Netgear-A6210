@@ -1,17 +1,17 @@
 /*
  ***************************************************************************
  * Ralink Tech Inc.
- * 4F, No. 2 Technology	5th	Rd.
- * Science-based Industrial	Park
+ * 4F, No. 2 Technology 5th Rd.
+ * Science-based Industrial Park
  * Hsin-chu, Taiwan, R.O.C.
  *
  * (c) Copyright 2002-2008, Ralink Technology, Inc.
  *
- * All rights reserved.	Ralink's source code is an unpublished work and	the
- * use of a copyright notice does not imply	otherwise. This source code
+ * All rights reserved. Ralink's source code is an unpublished work and the
+ * use of a copyright notice does not imply otherwise. This source code
  * contains confidential trade secret material of Ralink Tech. Any attemp
- * or participation in deciphering,	decoding, reverse engineering or in any
- * way altering the	source code is stricitly prohibited, unless the prior
+ * or participation in deciphering, decoding, reverse engineering or in any
+ * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
@@ -24,8 +24,8 @@
     Revision History:
     Who         When            What
     --------    ----------      ----------------------------------------------
-    Name          Date            Modification logs
-    Shiang Tu	08-28-2008   init version
+    Name          Date          Modification logs
+    Shiang Tu     08-28-2008    init version
 
 */
 
@@ -48,7 +48,7 @@ BUILD_TIMER_FUNCTION(BeaconUpdateExec);
 #endif
 
 #ifdef CONFIG_AP_SUPPORT
-extern VOID APDetectOverlappingExec(PVOID SystemSpecific1, PVOID FunctionContext,
+extern void APDetectOverlappingExec(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3);
 
 BUILD_TIMER_FUNCTION(APDetectOverlappingExec);
@@ -84,11 +84,6 @@ BUILD_TIMER_FUNCTION(LinkDownExec);
 BUILD_TIMER_FUNCTION(StaQuickResponeForRateUpExec);
 BUILD_TIMER_FUNCTION(WpaDisassocApAndBlockAssoc);
 
-#ifdef PCIE_PS_SUPPORT
-BUILD_TIMER_FUNCTION(PsPollWakeExec);
-BUILD_TIMER_FUNCTION(RadioOnExec);
-#endif /* PCIE_PS_SUPPORT */
-
 #ifdef RTMP_MAC_USB
 BUILD_TIMER_FUNCTION(RtmpUsbStaAsicForceWakeupTimeout);
 #endif
@@ -103,7 +98,7 @@ BUILD_TIMER_FUNCTION(eTxBfProbeTimerExec);
 BUILD_TIMER_FUNCTION(CFG80211_P2PCTWindowTimer);
 BUILD_TIMER_FUNCTION(CFG80211_P2pSwNoATimeOut);
 BUILD_TIMER_FUNCTION(CFG80211_P2pPreAbsenTimeOut);
-#endif /* RT_CFG80211_P2P_SUPPORT */
+#endif
 
 #ifdef RALINK_ATE
 BUILD_TIMER_FUNCTION(ATEPeriodicExec);
@@ -173,14 +168,14 @@ static void RtmpTimerQHandle(RTMP_ADAPTER *pAd)
 }
 
 
-INT RtmpTimerQThread(ULONG Context)
+int RtmpTimerQThread(ULONG Context)
 {
 	RTMP_OS_TASK *pTask;
-	PRTMP_ADAPTER pAd = NULL;
+	PRTMP_ADAPTER pAd;
 
 	pTask = (RTMP_OS_TASK *)Context;
-	pAd = (PRTMP_ADAPTER)RTMP_OS_TASK_DATA_GET(pTask);
 
+	pAd = (PRTMP_ADAPTER)RTMP_OS_TASK_DATA_GET(pTask);
 	if (pAd == NULL) {
 		DBGPRINT(RT_DEBUG_ERROR,( "%s:: pAd is NULL!\n",__FUNCTION__));
 		return 0;
@@ -207,7 +202,6 @@ INT RtmpTimerQThread(ULONG Context)
 
 	DBGPRINT(RT_DEBUG_TRACE,( "<---%s\n",__FUNCTION__));
 	return 0;
-
 }
 
 
