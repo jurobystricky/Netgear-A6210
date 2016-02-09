@@ -133,9 +133,9 @@ NDIS_STATUS RTMPAllocAdapterBlock(void *handle, void **ppAdapter)
 
 #ifdef RESOURCE_PRE_ALLOC
 		/*
-			move this function from rt28xx_init() to here. 
+			move this function from rt28xx_init() to here.
 			now this function only allocate memory and
-			leave the initialization job to RTMPInitTxRxRingMemory() 
+			leave the initialization job to RTMPInitTxRxRingMemory()
 			which called in rt28xx_init().
 		*/
 		Status = RTMPAllocTxRxRingMemory(pAd);
@@ -312,7 +312,7 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 
 	/* Assign the actually working MAC Address */
 	if (pAd->bLocalAdminMAC) {
-		DBGPRINT(RT_DEBUG_TRACE, 
+		DBGPRINT(RT_DEBUG_TRACE,
 				("Use the MAC address what is assigned from Configuration file(.dat). \n"));
 #if defined(BB_SOC)&&!defined(NEW_MBSSID_MODE)
 		BBUPrepareMAC(pAd, pAd->CurrentAddress);
@@ -335,7 +335,7 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 				("Use the MAC address what is assigned from Moudle Parameter. \n"));
 	} else {
 		COPY_MAC_ADDR(pAd->CurrentAddress, pAd->PermanentAddress);
-		DBGPRINT(RT_DEBUG_TRACE, 
+		DBGPRINT(RT_DEBUG_TRACE,
 				("Use the MAC address what is assigned from EEPROM. \n"));
 	}
 
@@ -782,7 +782,7 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 	if (((UCHAR)pAd->ALNAGain2 == 0xFF) || (pAd->ALNAGain2 == 0x00))
 		pAd->ALNAGain2 = pAd->ALNAGain0;
 
-	DBGPRINT(RT_DEBUG_TRACE, 
+	DBGPRINT(RT_DEBUG_TRACE,
 			("ALNAGain0 = %d, ALNAGain1 = %d, ALNAGain2 = %d\n",
 			pAd->ALNAGain0, pAd->ALNAGain1, pAd->ALNAGain2));
 
@@ -873,9 +873,9 @@ void NICReadEEPROMParameters(RTMP_ADAPTER *pAd, PSTRING mac_addr)
 			pAd->TxPowerCtrl.bInternalTxALC));
 #endif /* RTMP_INTERNAL_TX_ALC */
 
-	DBGPRINT(RT_DEBUG_TRACE, 
+	DBGPRINT(RT_DEBUG_TRACE,
 			("%s: pAd->Antenna.field.BoardType = %d, IS_MINI_CARD(pAd) = %d, IS_RT5390U(pAd) = %d\n",
-			__FUNCTION__, pAd->Antenna.field.BoardType, 
+			__FUNCTION__, pAd->Antenna.field.BoardType,
 			IS_MINI_CARD(pAd), IS_RT5390U(pAd)));
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<-- NICReadEEPROMParameters\n"));
@@ -1165,8 +1165,8 @@ static NDIS_STATUS NICInitializeAsic(RTMP_ADAPTER *pAd, BOOLEAN bHardReset)
 			if ((mac_val & 0x03) == 0)	/* if BB.RF is stable*/
 				break;
 
-			DBGPRINT(RT_DEBUG_TRACE, 
-					("Check if MAC_STATUS_CFG is busy(=%x)\n", 
+			DBGPRINT(RT_DEBUG_TRACE,
+					("Check if MAC_STATUS_CFG is busy(=%x)\n",
 					mac_val));
 			RtmpusecDelay(1000);
 		} while (Index++ < 100);
@@ -1605,9 +1605,9 @@ void NICUpdateFifoStaCounters(RTMP_ADAPTER *pAd)
 
 			}
 		} else if(PhyMode == 4) {
-  	    		succMCS = StaFifo.field.SuccessRate & 0xF;
+			succMCS = StaFifo.field.SuccessRate & 0xF;
 			succMCS += ((StaFifo.field.SuccessRate & 0x10) ? 10 : 0);
-			//DBGPRINT(0, ("%s()Succ MCS :TxMCS(%d):PHYMode(%d)\n", __FUNCTION__, pid, PhyMode));
+
 			if (StaFifo.field.TxSuccess) {
 				pEntry->TXMCSExpected[pid]++;
 
@@ -2501,8 +2501,8 @@ void UserCfgInit(RTMP_ADAPTER *pAd)
 	OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_INFRA_ON);
 
 	/* PHY specification*/
-	pAd->CommonCfg.PhyMode = (WMODE_B | WMODE_G);		/* default PHY mode*/
-	OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_SHORT_PREAMBLE_INUSED);  /* CCK use LONG preamble*/
+	pAd->CommonCfg.PhyMode = (WMODE_B | WMODE_G);			/* default PHY mode*/
+	OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_SHORT_PREAMBLE_INUSED);  	/* CCK use LONG preamble*/
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
@@ -2791,7 +2791,8 @@ void UserCfgInit(RTMP_ADAPTER *pAd)
 	pAd->WOW_Cfg.nSelectedGPIO = 1;
 	pAd->WOW_Cfg.nDelay = 3; /* (3+1)*3 = 12 sec */
 	pAd->WOW_Cfg.nHoldTime = 1; /* 1*10 = 10 ms */
-	DBGPRINT(RT_DEBUG_OFF, ("WOW Enable %d, WOWFirmware %d\n", pAd->WOW_Cfg.bEnable, pAd->WOW_Cfg.bWOWFirmware));
+	DBGPRINT(RT_DEBUG_OFF, ("WOW Enable %d, WOWFirmware %d\n",
+			pAd->WOW_Cfg.bEnable, pAd->WOW_Cfg.bWOWFirmware));
 #endif /* (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT) */
 
 	/* 802.11H and DFS related params*/
@@ -2901,8 +2902,8 @@ void AtoH(PSTRING src, PUCHAR dest, int destlen)
 	destTemp = (PUCHAR) dest;
 
 	while (destlen--) {
-		*destTemp = BtoH(*srcptr++) << 4;    /* Put 1st ascii byte in upper nibble.*/
-		*destTemp += BtoH(*srcptr++);      /* Add 2nd ascii byte to above.*/
+		*destTemp = BtoH(*srcptr++) << 4;	/* Put 1st ascii byte in upper nibble.*/
+		*destTemp += BtoH(*srcptr++);		/* Add 2nd ascii byte to above.*/
 		destTemp++;
 	}
 }
@@ -2941,12 +2942,14 @@ static void RTMP_TimerListAdd(RTMP_ADAPTER *pAd, void *pRsc)
 	/* allocate a timer record entry */
 	pObj = os_alloc_mem(sizeof(LIST_RESOURCE_OBJ_ENTRY));
 	if (pObj == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: alloc timer obj fail!\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: alloc timer obj fail!\n",
+				__FUNCTION__));
 		return;
 	} else {
 		pObj->pRscObj = pRsc;
 		insertTailList(pRscList, (LIST_ENTRY *)pObj);
-		DBGPRINT(RT_DEBUG_WARN, ("%s: added timer obj %lx \n", __FUNCTION__, (ULONG)pRsc));
+		DBGPRINT(RT_DEBUG_WARN, ("%s: added timer obj %lx \n",
+				__FUNCTION__, (ULONG)pRsc));
 	}
 }
 
@@ -2974,7 +2977,8 @@ static void RTMP_TimerListRelease(RTMP_ADAPTER *pAd, void *pRsc)
 		delEntryList(pRscList, pListEntry);
 
 		/* free a timer record entry */
-		DBGPRINT(RT_DEBUG_ERROR, ("%s: release timer obj %lx!\n", __FUNCTION__, (ULONG)pRsc));
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: release timer obj %lx!\n",
+				__FUNCTION__, (ULONG)pRsc));
 		os_free_mem(pObj);
 	}
 }
@@ -3053,7 +3057,8 @@ void RTMPInitTimer(RTMP_ADAPTER *pAd, RALINK_TIMER_STRUCT *pTimer,
 	pTimer->cookie = (ULONG) pData;
 	pTimer->pAd = pAd;
 
-	RTMP_OS_Init_Timer(pAd, &pTimer->TimerObj, pTimerFunc, (PVOID) pTimer, &pAd->RscTimerMemList);
+	RTMP_OS_Init_Timer(pAd, &pTimer->TimerObj, pTimerFunc, (PVOID) pTimer,
+			&pAd->RscTimerMemList);
 	DBGPRINT(RT_DEBUG_TRACE,("%s: %lx\n",__FUNCTION__, (ULONG)pTimer));
 
 	RTMP_SEM_UNLOCK(&TimerSemLock);
@@ -3191,14 +3196,15 @@ void RTMPCancelTimer(RALINK_TIMER_STRUCT *pTimer, BOOLEAN *pCancelled)
 			pTimer->State = TRUE;
 
 #ifdef RTMP_TIMER_TASK_SUPPORT
-		/* We need to go-through the TimerQ to findout this timer handler and remove it if */
-		/*		it's still waiting for execution.*/
+		/* We need to go-through the TimerQ to findout this timer handler
+		   and remove it if it's still waiting for execution.*/
 		RtmpTimerQRemove(pTimer->pAd, pTimer);
 #endif /* RTMP_TIMER_TASK_SUPPORT */
 
 		DBGPRINT(RT_DEBUG_INFO,("%s: %lx\n",__FUNCTION__, (ULONG)pTimer));
 	} else {
-		DBGPRINT(RT_DEBUG_WARN,("RTMPCancelTimer failed, Timer hasn't been initialized!\n"));
+		DBGPRINT(RT_DEBUG_WARN,
+				("RTMPCancelTimer failed, Timer hasn't been initialized!\n"));
 	}
 
 	RTMP_SEM_UNLOCK(&TimerSemLock);
@@ -3219,21 +3225,18 @@ void RTMPReleaseTimer(RALINK_TIMER_STRUCT *pTimer, BOOLEAN *pCancelled)
 			pTimer->State = TRUE;
 
 #ifdef RTMP_TIMER_TASK_SUPPORT
-		/* We need to go-through the TimerQ to findout this timer handler and remove it if */
-		/*		it's still waiting for execution.*/
+		/* We need to go-through the TimerQ to findout this timer handler
+		  and remove it if it's still waiting for execution.*/
 		RtmpTimerQRemove(pTimer->pAd, pTimer);
 #endif /* RTMP_TIMER_TASK_SUPPORT */
 
-		/* release timer */
-		RTMP_OS_Release_Timer(&pTimer->TimerObj);
-
 		pTimer->Valid = FALSE;
-
 		RTMP_TimerListRelease(pTimer->pAd, pTimer);
 
 		DBGPRINT(RT_DEBUG_INFO,("%s: %p\n",__FUNCTION__, pTimer));
 	} else {
-		DBGPRINT(RT_DEBUG_WARN,("RTMPReleasTimer failed, Timer hasn't been initialized!\n"));
+		DBGPRINT(RT_DEBUG_WARN,
+				("RTMPReleasTimer failed, Timer hasn't been initialized!\n"));
 	}
 
 	RTMP_SEM_UNLOCK(&TimerSemLock);
@@ -3513,7 +3516,7 @@ extern UINT8  MC_CardUsed[MAX_NUM_OF_MULTIPLE_CARD];
 #ifdef DOT11N_DRAFT3
 static void RTMP_11N_D3_TimerInit(RTMP_ADAPTER *pAd)
 {
-	RTMPInitTimer(pAd, &pAd->CommonCfg.Bss2040CoexistTimer, 
+	RTMPInitTimer(pAd, &pAd->CommonCfg.Bss2040CoexistTimer,
 			GET_TIMER_FUNCTION(Bss2040CoexistTimeOut), pAd, FALSE);
 }
 #endif /* DOT11N_DRAFT3 */
