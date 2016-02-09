@@ -15,18 +15,18 @@
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
-    Module Name:
+	Module Name:
 	rtmp_timer.h
 
-    Abstract:
+	Abstract:
 	Ralink Wireless Driver timer related data structures and delcarations
-	
-    Revision History:
+
+	Revision History:
 	Who           When                What
 	--------    ----------      ----------------------------------------------
-	Name          Date                 Modification logs
-	Shiang Tu    Aug-28-2008	init version
-	
+	Name          Date            Modification logs
+	Shiang Tu    Aug-28-2008      init version
+
 */
 
 #ifndef __RTMP_TIMER_H__
@@ -37,35 +37,35 @@
 #define DECLARE_TIMER_FUNCTION(_func)			\
 	void rtmp_timer_##_func(unsigned long data)
 
-#define GET_TIMER_FUNCTION(_func)				\
+#define GET_TIMER_FUNCTION(_func)			\
 	(PVOID)rtmp_timer_##_func
 
 /* ----------------- Timer Related MARCO ---------------*/
 /* In some os or chipset, we have a lot of timer functions and will read/write register, */
-/*   it's not allowed in Linux USB sub-system to do it ( because of sleep issue when */
-/*  submit to ctrl pipe). So we need a wrapper function to take care it. */
+/* it's not allowed in Linux USB sub-system to do it ( because of sleep issue when */
+/* submit to ctrl pipe). So we need a wrapper function to take care it. */
 
 #ifdef RTMP_TIMER_TASK_SUPPORT
-typedef VOID(
+typedef void(
 	*RTMP_TIMER_TASK_HANDLE) (
-	IN PVOID SystemSpecific1,
-	IN PVOID FunctionContext,
-	IN PVOID SystemSpecific2,
-	IN PVOID SystemSpecific3);
+	PVOID SystemSpecific1,
+	PVOID FunctionContext,
+	PVOID SystemSpecific2,
+	PVOID SystemSpecific3);
 #endif /* RTMP_TIMER_TASK_SUPPORT */
 
 typedef struct _RALINK_TIMER_STRUCT {
-	RTMP_OS_TIMER TimerObj;	/* Ndis Timer object */
-	BOOLEAN Valid;		/* Set to True when call RTMPInitTimer */
-	BOOLEAN State;		/* True if timer cancelled */
-	BOOLEAN PeriodicType;	/* True if timer is periodic timer */
-	BOOLEAN Repeat;		/* True if periodic timer */
-	ULONG TimerValue;	/* Timer value in milliseconds */
-	ULONG cookie;		/* os specific object */
+	struct timer_list TimerObj;	/* Ndis Timer object */
+	BOOLEAN Valid;			/* Set to True when call RTMPInitTimer */
+	BOOLEAN State;			/* True if timer cancelled */
+	BOOLEAN PeriodicType;		/* True if timer is periodic timer */
+	BOOLEAN Repeat;			/* True if periodic timer */
+	ULONG TimerValue;		/* Timer value in milliseconds */
+	ULONG cookie;			/* os specific object */
 	void *pAd;
 #ifdef RTMP_TIMER_TASK_SUPPORT
 	RTMP_TIMER_TASK_HANDLE handle;
-#endif				/* RTMP_TIMER_TASK_SUPPORT */
+#endif
 } RALINK_TIMER_STRUCT, *PRALINK_TIMER_STRUCT;
 
 
@@ -84,28 +84,28 @@ typedef struct _RTMP_TIMER_TASK_QUEUE_ {
 	RTMP_TIMER_TASK_ENTRY *pQTail;
 } RTMP_TIMER_TASK_QUEUE;
 
-#define BUILD_TIMER_FUNCTION(_func)										\
-void rtmp_timer_##_func(unsigned long data)										\
-{																			\
-	PRALINK_TIMER_STRUCT	_pTimer = (PRALINK_TIMER_STRUCT)data;				\
-	RTMP_TIMER_TASK_ENTRY	*_pQNode;										\
-	RTMP_ADAPTER			*_pAd;											\
-																			\
-	_pTimer->handle = _func;													\
-	_pAd = (RTMP_ADAPTER *)_pTimer->pAd;										\
-	_pQNode = RtmpTimerQInsert(_pAd, _pTimer); 								\
+#define BUILD_TIMER_FUNCTION(_func)							\
+void rtmp_timer_##_func(unsigned long data)						\
+{											\
+	PRALINK_TIMER_STRUCT	_pTimer = (PRALINK_TIMER_STRUCT)data;			\
+	RTMP_TIMER_TASK_ENTRY	*_pQNode;						\
+	RTMP_ADAPTER *_pAd;								\
+											\
+	_pTimer->handle = _func;							\
+	_pAd = (RTMP_ADAPTER *)_pTimer->pAd;						\
+	_pQNode = RtmpTimerQInsert(_pAd, _pTimer); 					\
 	if ((_pQNode == NULL) && (_pAd->TimerQ.status & RTMP_TASK_CAN_DO_INSERT))	\
-		RTMP_OS_Add_Timer(&_pTimer->TimerObj, OS_HZ);               					\
+		RTMP_OS_Add_Timer(&_pTimer->TimerObj, OS_HZ);				\
 }
 #else /* !RTMP_TIMER_TASK_SUPPORT */
-#define BUILD_TIMER_FUNCTION(_func)										\
-void rtmp_timer_##_func(unsigned long data)										\
-{																			\
-	PRALINK_TIMER_STRUCT	pTimer = (PRALINK_TIMER_STRUCT) data;				\
-																			\
-	_func(NULL, (PVOID) pTimer->cookie, NULL, pTimer); 							\
-	if (pTimer->Repeat)														\
-		RTMP_OS_Add_Timer(&pTimer->TimerObj, pTimer->TimerValue);			\
+#define BUILD_TIMER_FUNCTION(_func)							\
+void rtmp_timer_##_func(unsigned long data)						\
+{											\
+	PRALINK_TIMER_STRUCT pTimer = (PRALINK_TIMER_STRUCT) data;			\
+											\
+	_func(NULL, (PVOID) pTimer->cookie, NULL, pTimer); 				\
+	if (pTimer->Repeat)								\
+		RTMP_OS_Add_Timer(&pTimer->TimerObj, pTimer->TimerValue);		\
 }
 #endif /* RTMP_TIMER_TASK_SUPPORT */
 
@@ -114,39 +114,38 @@ DECLARE_TIMER_FUNCTION(MlmeRssiReportExec);
 DECLARE_TIMER_FUNCTION(AsicRxAntEvalTimeout);
 DECLARE_TIMER_FUNCTION(APSDPeriodicExec);
 DECLARE_TIMER_FUNCTION(EnqueueStartForPSKExec);
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef DOT11W_PMF_SUPPORT
 DECLARE_TIMER_FUNCTION(PMF_SAQueryTimeOut);
 DECLARE_TIMER_FUNCTION(PMF_SAQueryConfirmTimeOut);
-#endif /* DOT11W_PMF_SUPPORT */
+#endif
 
 #ifdef RTMP_MAC_USB
 DECLARE_TIMER_FUNCTION(BeaconUpdateExec);
-#endif /* RTMP_MAC_USB */
+#endif
 
 #ifdef CONFIG_AP_SUPPORT
 DECLARE_TIMER_FUNCTION(APDetectOverlappingExec);
 
 #ifdef DOT11N_DRAFT3
 DECLARE_TIMER_FUNCTION(Bss2040CoexistTimeOut);
-#endif /* DOT11N_DRAFT3 */
+#endif
 
 DECLARE_TIMER_FUNCTION(GREKEYPeriodicExec);
 DECLARE_TIMER_FUNCTION(CMTimerExec);
 DECLARE_TIMER_FUNCTION(WPARetryExec);
+
 #ifdef AP_SCAN_SUPPORT
 DECLARE_TIMER_FUNCTION(APScanTimeout);
-#endif /* AP_SCAN_SUPPORT */
-DECLARE_TIMER_FUNCTION(APQuickResponeForRateUpExec);
+#endif
 
+DECLARE_TIMER_FUNCTION(APQuickResponeForRateUpExec);
 
 #ifdef DROP_MASK_SUPPORT
 DECLARE_TIMER_FUNCTION(drop_mask_timer_action);
-#endif /* DROP_MASK_SUPPORT */
+#endif
 
-#endif /* CONFIG_AP_SUPPORT */
+#endif
 
 #ifdef CONFIG_STA_SUPPORT
 DECLARE_TIMER_FUNCTION(BeaconTimeout);
@@ -159,41 +158,33 @@ DECLARE_TIMER_FUNCTION(LinkDownExec);
 DECLARE_TIMER_FUNCTION(StaQuickResponeForRateUpExec);
 DECLARE_TIMER_FUNCTION(WpaDisassocApAndBlockAssoc);
 
-
-
-
 #ifdef RTMP_MAC_USB
 DECLARE_TIMER_FUNCTION(RtmpUsbStaAsicForceWakeupTimeout);
-#endif /* RTMP_MAC_USB */
+#endif
 
 #endif /* CONFIG_STA_SUPPORT */
 
 #ifdef TXBF_SUPPORT
 DECLARE_TIMER_FUNCTION(eTxBfProbeTimerExec);
-#endif // TXBF_SUPPORT //
-
-
-
-
-
+#endif
 
 #ifdef RT_CFG80211_P2P_SUPPORT
 DECLARE_TIMER_FUNCTION(CFG80211_P2PCTWindowTimer);
 DECLARE_TIMER_FUNCTION(CFG80211_P2pSwNoATimeOut);
 DECLARE_TIMER_FUNCTION(CFG80211_P2pPreAbsenTimeOut);
-#endif /* RT_CFG80211_P2P_SUPPORT */
+#endif
 
 #ifdef RALINK_ATE
 DECLARE_TIMER_FUNCTION(ATEPeriodicExec);
-#endif /* RALINK_ATE */
+#endif
 
 #ifdef PEER_DELBA_TX_ADAPT
 DECLARE_TIMER_FUNCTION(PeerDelBATxAdaptTimeOut);
-#endif /* PEER_DELBA_TX_ADAPT */
+#endif
 
 #ifdef APCLI_SUPPORT
 DECLARE_TIMER_FUNCTION(ApCliWpaDisassocApAndBlockAssoc);
-#endif /* APCLI_SUPPORT */
+#endif
 
 #endif /* __RTMP_TIMER_H__ */
 
