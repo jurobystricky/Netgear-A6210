@@ -1,28 +1,23 @@
 /*
  ***************************************************************************
  * Ralink Tech Inc.
- * 4F, No. 2 Technology	5th	Rd.
- * Science-based Industrial	Park
+ * 4F, No. 2 Technology 5th Rd.
+ * Science-based Industrial Park
  * Hsin-chu, Taiwan, R.O.C.
  *
  * (c) Copyright 2002-2004, Ralink Technology, Inc.
  *
- * All rights reserved.	Ralink's source	code is	an unpublished work	and	the
- * use of a	copyright notice does not imply	otherwise. This	source code
- * contains	confidential trade secret material of Ralink Tech. Any attemp
- * or participation	in deciphering,	decoding, reverse engineering or in	any
- * way altering	the	source code	is stricitly prohibited, unless	the	prior
+ * All rights reserved. Ralink's source code is an unpublished work and the
+ * use of a copyright notice does not imply otherwise. This source code
+ * contains confidential trade secret material of Ralink Tech. Any attemp
+ * or participation in deciphering, decoding, reverse engineering or in	any
+ * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
 	Module Name:
 	mlme.c
 
-	Abstract:
-
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
 */
 
 #include "rt_config.h"
@@ -38,7 +33,10 @@ static BOOLEAN  MlmeQueueEmpty(MLME_QUEUE *Queue);
 static BOOLEAN  MlmeQueueFull(MLME_QUEUE *Queue, UCHAR SendId);
 static void MlmeQueueDestroy(MLME_QUEUE *Queue);
 static void AsicEvaluateRxAnt(RTMP_ADAPTER *pAd);
-//static BOOLEAN RTMPAutoRateSwitchCheck(RTMP_ADAPTER *pAd);
+
+static void MlmeCalculateChannelQuality(RTMP_ADAPTER *pAd,
+	PMAC_TABLE_ENTRY pMacEntry, ULONG Now);
+
 
 #ifdef CONFIG_STA_SUPPORT
 static void AsicStaBbpTuning(RTMP_ADAPTER *pAd);
@@ -985,15 +983,15 @@ NDIS_STATUS MlmeInit(RTMP_ADAPTER *pAd)
 			/* state machine init*/
 			MlmeCntlInit(pAd, &pAd->Mlme.CntlMachine, NULL);
 
-#ifdef PCIE_PS_SUPPORT
-			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_ADVANCE_POWER_SAVE_PCIE_DEVICE)) {
-				/* only PCIe cards need these two timers*/
-				RTMPInitTimer(pAd, &pAd->Mlme.PsPollTimer,
-						GET_TIMER_FUNCTION(PsPollWakeExec), pAd, FALSE);
-				RTMPInitTimer(pAd, &pAd->Mlme.RadioOnOffTimer,
-						GET_TIMER_FUNCTION(RadioOnExec), pAd, FALSE);
-			}
-#endif /* PCIE_PS_SUPPORT */
+//#ifdef PCIE_PS_SUPPORT
+//			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_ADVANCE_POWER_SAVE_PCIE_DEVICE)) {
+//				/* only PCIe cards need these two timers*/
+//				RTMPInitTimer(pAd, &pAd->Mlme.PsPollTimer,
+//						GET_TIMER_FUNCTION(PsPollWakeExec), pAd, FALSE);
+//				RTMPInitTimer(pAd, &pAd->Mlme.RadioOnOffTimer,
+//						GET_TIMER_FUNCTION(RadioOnExec), pAd, FALSE);
+//			}
+//#endif /* PCIE_PS_SUPPORT */
 
 			RTMPInitTimer(pAd, &pAd->Mlme.LinkDownTimer,
 					GET_TIMER_FUNCTION(LinkDownExec), pAd, FALSE);
@@ -1942,9 +1940,9 @@ void STAMlmePeriodicExec(RTMP_ADAPTER *pAd)
 		if (pAd->StaCfg.UapsdInfo.bAPSDCapable && pAd->CommonCfg.APEdcaParm.bAPSDCapable) {
 			/* When APSD is enabled, the period changes as 20 sec*/
 			if ((pAd->Mlme.OneSecPeriodicRound % 20) == 8) {
-				RTMPSendNullFrame(pAd, pAd->CommonCfg.TxRate, 
-						TRUE, 
-						pAd->CommonCfg.bAPSDForcePowerSave ? 
+				RTMPSendNullFrame(pAd, pAd->CommonCfg.TxRate,
+						TRUE,
+						pAd->CommonCfg.bAPSDForcePowerSave ?
 						PWR_SAVE : pAd->StaCfg.Psm);
 			}
 		} else {
@@ -3020,7 +3018,7 @@ void MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
 				wdev = &pAd->ApCfg.ApCliTab[idx].wdev;
 				break;
 			} else {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s(): invalid idx(%d)\n",
 						__FUNCTION__, idx));
 				return;
@@ -3032,7 +3030,7 @@ void MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
 			if ((apidx < pAd->ApCfg.BssidNum) && (apidx < HW_BEACON_MAX_NUM)) {
 				wdev = &pAd->ApCfg.MBSSID[apidx].wdev;
 			} else {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 						("%s(): invalid apidx(%d)\n",
 						__FUNCTION__, apidx));
 			}
@@ -3067,7 +3065,7 @@ void MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
 		StbcMcs = (UCHAR)pAd->MlmeAux.AddHtInfo.AddHtInfo3.StbcMcs;
 		BasicMCS =pAd->MlmeAux.AddHtInfo.MCSSet[0]+
 				(pAd->MlmeAux.AddHtInfo.MCSSet[1]<<8)+(StbcMcs<<16);
-		if ((pAd->CommonCfg.DesiredHtPhy.TxSTBC) && 
+		if ((pAd->CommonCfg.DesiredHtPhy.TxSTBC) &&
 			(pRtHtCap->RxSTBC) && (pAd->Antenna.field.TxPath == 2)) {
 			pMaxHtPhy->field.STBC = STBC_USE;
 		} else {
@@ -3159,12 +3157,12 @@ void MlmeUpdateHtTxRates(RTMP_ADAPTER *pAd, UCHAR apidx)
 	else
 		*auto_rate_cur_p = TRUE;
 
-	DBGPRINT(RT_DEBUG_TRACE, (" %s():<---.AMsduSize = %d  \n", 
+	DBGPRINT(RT_DEBUG_TRACE, (" %s():<---.AMsduSize = %d  \n",
 			__FUNCTION__, pAd->CommonCfg.DesiredHtPhy.AmsduSize ));
 	DBGPRINT(RT_DEBUG_TRACE,
-			("TX: MCS[0] = %x (choose %d), BW = %d, ShortGI = %d, MODE = %d,  \n", 
+			("TX: MCS[0] = %x (choose %d), BW = %d, ShortGI = %d, MODE = %d,  \n",
 			pActiveHtPhy->MCSSet[0],pHtPhy->field.MCS,
-			pHtPhy->field.BW, pHtPhy->field.ShortGI, 
+			pHtPhy->field.BW, pHtPhy->field.ShortGI,
 			pHtPhy->field.MODE));
 	DBGPRINT(RT_DEBUG_TRACE,("%s():<=== \n", __FUNCTION__));
 }
@@ -3356,7 +3354,7 @@ void BssTableDeleteEntry(BSS_TABLE *Tab, UCHAR *pBssid, UCHAR Channel)
 
 			for (j = i; j < Tab->BssNr - 1; j++) {
 				pOldAddr = Tab->BssEntry[j].pVarIeFromProbRsp;
-				NdisMoveMemory(&(Tab->BssEntry[j]), 
+				NdisMoveMemory(&(Tab->BssEntry[j]),
 						&(Tab->BssEntry[j + 1]), sizeof(BSS_ENTRY));
 				if (pOldAddr) {
 					RTMPZeroMemory(pOldAddr, MAX_VIE_LEN);
@@ -3460,13 +3458,13 @@ void BssEntrySet(RTMP_ADAPTER *pAd, BSS_ENTRY *pBss, BCN_IE_LIST *ie_list,
 #ifdef DOT11_N_SUPPORT
 	if (ie_list->HtCapabilityLen> 0) {
 		pBss->HtCapabilityLen = ie_list->HtCapabilityLen;
-		NdisMoveMemory(&pBss->HtCapability, &ie_list->HtCapability, 
+		NdisMoveMemory(&pBss->HtCapability, &ie_list->HtCapability,
 				ie_list->HtCapabilityLen);
 		if (ie_list->AddHtInfoLen > 0) {
 			pBss->AddHtInfoLen = ie_list->AddHtInfoLen;
 			NdisMoveMemory(&pBss->AddHtInfo, &ie_list->AddHtInfo,
 					ie_list->AddHtInfoLen);
-			pBss->CentralChannel = get_cent_ch_by_htinfo(pAd, 
+			pBss->CentralChannel = get_cent_ch_by_htinfo(pAd,
 					&ie_list->AddHtInfo,
 					&ie_list->HtCapability);
 		}
@@ -3490,10 +3488,10 @@ void BssEntrySet(RTMP_ADAPTER *pAd, BSS_ENTRY *pBss, BCN_IE_LIST *ie_list,
 				UCHAR cent_ch;
 
 				cent_ch = vht_cent_ch_freq(pAd, ie_list->AddHtInfo.ControlChan);
-				DBGPRINT(RT_DEBUG_TRACE, 
+				DBGPRINT(RT_DEBUG_TRACE,
 						("%s():VHT cent_ch=%d, vht_op_info->center_freq_1=%d, Bss->CentCh=%d, change from CentralChannel to cent_ch!\n",
-						__FUNCTION__, cent_ch, 
-						vht_op->vht_op_info.center_freq_1, 
+						__FUNCTION__, cent_ch,
+						vht_op->vht_op_info.center_freq_1,
 						pBss->CentralChannel));
 				pBss->CentralChannel = vht_op->vht_op_info.center_freq_1;
 			}
@@ -3765,7 +3763,7 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 		}
 
 		if ((pInBss->BssType == pAd->StaCfg.BssType) &&
-			(SSID_EQUAL(Ssid, SsidLen, pInBss->Ssid, pInBss->SsidLen) || 
+			(SSID_EQUAL(Ssid, SsidLen, pInBss->Ssid, pInBss->SsidLen) ||
 			bIsHiddenApIncluded)) {
 			BSS_ENTRY *pOutBss = &OutTab->BssEntry[OutTab->BssNr];
 
@@ -3805,7 +3803,7 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 #endif /* DOT11_N_SUPPORT */
 
 #ifdef DOT11W_PMF_SUPPORT
-			if (((wdev->AuthMode == Ndis802_11AuthModeWPA2) || 
+			if (((wdev->AuthMode == Ndis802_11AuthModeWPA2) ||
 				(wdev->AuthMode == Ndis802_11AuthModeWPA2PSK))
 				&& (pInBss)) {
 				CLIENT_STATUS_CLEAR_FLAG(pInBss, fCLIENT_STATUS_PMF_CAPABLE);
@@ -3816,12 +3814,12 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 				if ((pAd->StaCfg.PmfCfg.MFPR) && (RsnCap.field.MFPC == FALSE))
 					continue;
 
-				if (((pAd->StaCfg.PmfCfg.MFPC == FALSE) && 
-					(RsnCap.field.MFPC == FALSE)) || 
-					(pAd->StaCfg.PmfCfg.MFPC && RsnCap.field.MFPC && 
-					(pAd->StaCfg.PmfCfg.MFPR == FALSE) && 
+				if (((pAd->StaCfg.PmfCfg.MFPC == FALSE) &&
+					(RsnCap.field.MFPC == FALSE)) ||
+					(pAd->StaCfg.PmfCfg.MFPC && RsnCap.field.MFPC &&
+					(pAd->StaCfg.PmfCfg.MFPR == FALSE) &&
 					(RsnCap.field.MFPR == FALSE))) {
-					if ((pAd->StaCfg.PmfCfg.PMFSHA256) && 
+					if ((pAd->StaCfg.PmfCfg.PMFSHA256) &&
 						(pInBss->IsSupportSHA256KeyDerivation == FALSE))
 						continue;
 				}
@@ -3841,13 +3839,13 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 			/* Check the Authmode first*/
 			if (wdev->AuthMode >= Ndis802_11AuthModeWPA) {
 				/* Check AuthMode and AuthModeAux for matching, in case AP support dual-mode*/
-				if ((wdev->AuthMode != pInBss->AuthMode) && 
+				if ((wdev->AuthMode != pInBss->AuthMode) &&
 					(wdev->AuthMode != pInBss->AuthModeAux))
 					/* None matched*/
 					continue;
 
 				/* Check cipher suite, AP must have more secured cipher than station setting*/
-				if ((wdev->AuthMode == Ndis802_11AuthModeWPA) || 
+				if ((wdev->AuthMode == Ndis802_11AuthModeWPA) ||
 					(wdev->AuthMode == Ndis802_11AuthModeWPAPSK)) {
 					/* If it's not mixed mode, we should only let BSS pass with the same encryption*/
 					if (pInBss->WPA.bMixMode == FALSE)
@@ -3867,7 +3865,7 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 						(wdev->WepStatus != pInBss->WPA.PairCipher) &&
 						(wdev->WepStatus != pInBss->WPA.PairCipherAux))
 						continue;
-				} else if ((wdev->AuthMode == Ndis802_11AuthModeWPA2) || 
+				} else if ((wdev->AuthMode == Ndis802_11AuthModeWPA2) ||
 					(wdev->AuthMode == Ndis802_11AuthModeWPA2PSK)) {
 					/* If it's not mixed mode, we should only let BSS pass with the same encryption*/
 					if (pInBss->WPA2.bMixMode == FALSE)
@@ -3938,7 +3936,7 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 					continue;
 
 				/* Check cipher suite, AP must have more secured cipher than station setting*/
-				if ((wdev->AuthMode == Ndis802_11AuthModeWPA) || 
+				if ((wdev->AuthMode == Ndis802_11AuthModeWPA) ||
 					(wdev->AuthMode == Ndis802_11AuthModeWPAPSK)) {
 					/* If it's not mixed mode, we should only let BSS pass with the same encryption*/
 					if (pInBss->WPA.bMixMode == FALSE)
@@ -3956,7 +3954,7 @@ void BssTableSsidSort(RTMP_ADAPTER *pAd, BSS_TABLE *OutTab, CHAR Ssid[],
 						(wdev->WepStatus != pInBss->WPA.PairCipher) &&
 						(wdev->WepStatus != pInBss->WPA.PairCipherAux))
 						continue;
-				} else if ((wdev->AuthMode == Ndis802_11AuthModeWPA2) || 
+				} else if ((wdev->AuthMode == Ndis802_11AuthModeWPA2) ||
 					(wdev->AuthMode == Ndis802_11AuthModeWPA2PSK)) {
 					/* If it's not mixed mode, we should only let BSS pass with the same encryption*/
 					if (pInBss->WPA2.bMixMode == FALSE)
@@ -4069,7 +4067,7 @@ static void BssCipherParse(BSS_ENTRY *pBss)
 		pEid = (PEID_STRUCT) pTmp;
 		switch (pEid->Eid) {
 		case IE_WPA:
-			if (NdisEqualMemory(pEid->Octet, SES_OUI, 3) && 
+			if (NdisEqualMemory(pEid->Octet, SES_OUI, 3) &&
 				(pEid->Len == 7)) {
 				pBss->bSES = TRUE;
 				break;
@@ -4585,9 +4583,9 @@ BOOLEAN MlmeEnqueueForRecv(RTMP_ADAPTER *pAd, ULONG Wcid, ULONG TimeStampHigh,
 	Do nothing if the driver is starting halt state.
 	This might happen when timer already been fired before cancel timer with mlmehalt
 	*/
-	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS | 
+	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS |
 		fRTMP_ADAPTER_NIC_NOT_EXIST)) {
-		DBGPRINT_ERR(("%s(): fRTMP_ADAPTER_HALT_IN_PROGRESS\n", 
+		DBGPRINT_ERR(("%s(): fRTMP_ADAPTER_HALT_IN_PROGRESS\n",
 		__FUNCTION__));
 		return FALSE;
 	}
@@ -4629,7 +4627,7 @@ BOOLEAN MlmeEnqueueForRecv(RTMP_ADAPTER *pAd, ULONG Wcid, ULONG TimeStampHigh,
 							when ApCli on idle state.
 			*/
 			for (i = 0; i < pAd->ApCfg.ApCliNum; i++) {
-				if (MAC_ADDR_EQUAL(pAd->ApCfg.ApCliTab[i].MlmeAux.Bssid, 
+				if (MAC_ADDR_EQUAL(pAd->ApCfg.ApCliTab[i].MlmeAux.Bssid,
 					pFrame->Hdr.Addr2)) {
 					bToApCli = TRUE;
 					break;
@@ -4649,7 +4647,7 @@ BOOLEAN MlmeEnqueueForRecv(RTMP_ADAPTER *pAd, ULONG Wcid, ULONG TimeStampHigh,
 			}
 
 			DBGPRINT_ERR(("%s(): un-recongnized mgmt->subtype=%d, STA-%02x:%02x:%02x:%02x:%02x:%02x\n",
-					__FUNCTION__, pFrame->Hdr.FC.SubType, 
+					__FUNCTION__, pFrame->Hdr.FC.SubType,
 					PRINT_MAC(pFrame->Hdr.Addr2)));
 			return FALSE;
 
@@ -4855,7 +4853,7 @@ static void MlmeQueueDestroy(MLME_QUEUE *pQueue)
 
  */
 #ifdef CONFIG_STA_SUPPORT
-BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, int *Machine, 
+BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, int *Machine,
 	int *MsgType)
 {
 	USHORT Seq, Alg;
@@ -4935,7 +4933,7 @@ BOOLEAN MsgTypeSubst(RTMP_ADAPTER *pAd, FRAME_802_11 *pFrame, int *Machine,
 	case SUBTYPE_ACTION:
 	case SUBTYPE_ACTION_NO_ACK:
 		*Machine = ACTION_STATE_MACHINE;
-		/*  Sometimes Sta will return with category bytes with MSB = 1, 
+		/*  Sometimes Sta will return with category bytes with MSB = 1,
 		 * if they receive catogory out of their support*/
 		if ((pFrame->Octet[0]&0x7F) > MAX_PEER_CATE_MSG) {
 			*MsgType = MT2_ACT_INVALID;
@@ -5000,7 +4998,7 @@ void StateMachineInit(STATE_MACHINE *S, STATE_MACHINE_FUNC Trans[], ULONG StNr,
  IRQL = PASSIVE_LEVEL
 
  */
-void StateMachineSetAction(STATE_MACHINE *S, ULONG St, ULONG Msg, 
+void StateMachineSetAction(STATE_MACHINE *S, ULONG St, ULONG Msg,
 	STATE_MACHINE_FUNC Func)
 {
 	ULONG MsgIdx;
@@ -5294,10 +5292,11 @@ BOOLEAN RTMPCheckHt(
 		Verify the support rate for HT phy type
 
 	Arguments:
-		pAd 				Pointer to our adapter
+		pAd 	Pointer to our adapter
 
 	Return Value:
-		FALSE if pAd->CommonCfg.SupportedHtPhy doesn't accept the pHtCapability.  (AP Mode)
+		FALSE 	if pAd->CommonCfg.SupportedHtPhy doesn't accept
+			the pHtCapability.  (AP Mode)
 
 	IRQL = PASSIVE_LEVEL
 
