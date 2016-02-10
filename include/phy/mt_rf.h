@@ -14,29 +14,33 @@ enum {
 	CHL_GRP_MAX = CHL_GRP7,
 };
 
-#define RFDIGI_TOP0 0x000
-#define RFDIGI_TOP1 0x004
-#define RFDIGI_TOP2 0x008
-#define RFDIGI_TOP3 0x00C
-#define RFDIGI_TOP4 0x010
-#define RG_WF0_RXG_TOP 0x44
+#define RG_WF0_RXG_TOP		0x44
+
+#define RFDIGI_TOP0		0x000
+#define RFDIGI_TOP1		0x004
+#define RFDIGI_TOP2		0x008
+#define RFDIGI_TOP3		0x00C
+#define RFDIGI_TOP4		0x010
+
+#define A_BAND_PA		0x058
 #define A_BAND_IQM_TSSI_DIV_LPF 0x054
-#define A_BAND_PA 0x058
-#define RFDIGI_ABB_TO_AFE5 0x114
-#define RF_ABB 0x130
-#define RFDIGI_TO_SX2 0x144
-#define SX2_FCAL_TARGET_MASK (0x3fff << 11)
-#define SX2_FCAL_TARGET(p) (((p) & 0x3fff) << 11)
-#define RFDIGI_TO_SX5 0x150
-#define RFDIGI_TO_SX7 0x158
-#define SX7_INTCS_MASK (0x3ff)
-#define SX7_INTCS(p) (((p) & 0x3ff))
-#define SX7_FRACES_MASK (0xfffff << 12)
-#define SX7_FRACES(p) (((p) & 0xfffff) << 12)
+
+#define RFDIGI_ABB_TO_AFE5	0x114
+#define RF_ABB			0x130
+#define RFDIGI_TO_SX2		0x144
+#define SX2_FCAL_TARGET_MASK 	(0x3fff << 11)
+#define SX2_FCAL_TARGET(p) 	(((p) & 0x3fff) << 11)
+#define RFDIGI_TO_SX5		0x150
+#define RFDIGI_TO_SX7		0x158
+#define SX7_INTCS_MASK		(0x3ff)
+#define SX7_INTCS(p)		(((p) & 0x3ff))
+#define SX7_FRACES_MASK		(0xfffff << 12)
+#define SX7_FRACES(p)		(((p) & 0xfffff) << 12)
 #define SX5_REPA_NRBIAS_2_0_MASK (0x7 << 9)
 #define SX5_REPA_NRBIAS_2_0(p) (((p) & 0x07) << 9)
-#define RFDIGI_TRX0  0x200
+#define RFDIGI_TRX0		0x200
 #define TRX0_SW_TXIQ_CANCEL_EN (0x1 << 10)
+
 #define RFDIGI_TRX4  0x210
 #define RFDIGI_TRX5  0x214
 #define RFDIGI_TRX7  0x21C
@@ -47,6 +51,7 @@ enum {
 #define RFDIGI_TRX19 0x24C
 #define RFDIGI_TRX20 0x250
 #define RFDIGI_TRX21 0x254
+
 #define TRX21_LNA_OUTCAP_A_HG_MASK (0x07 << 0)
 #define TRX21_LNA_OUTCAP_A_HG(p) (((p) & 0x07) << 0)
 #define TRX21_LNA_OUTCAP_A_MG_MASK (0x07 << 4)
@@ -63,8 +68,10 @@ enum {
 #define TRX21_TZ_GCR_A_LG(p) (((p) & 0x07) << 24)
 #define TRX21_TZ_GCR_A_ULG_MASK (0x07 << 28)
 #define TRX21_TZ_GCR_A_ULG(p) (((p) & 0x07) << 28)
+
 #define RFDIGI_TRX24 0x260
 #define RFDIGI_TRX25 0x264
+
 #define TRX24_GM_GC_A_HG_MASK (0x0f << 0)
 #define TRX24_GM_GC_A_HG(p) (((p) & 0x0f) << 0)
 #define TRX24_GM_GC_A_MG_MASK (0x0f << 4)
@@ -81,6 +88,7 @@ enum {
 #define TRX24_TZ_FBC_A_LG(p) (((p) & 0x0f) << 24)
 #define TRX24_TZ_FBC_A_ULG_MASK (0x0f << 28)
 #define TRX24_TZ_FBC_A_ULG(p) (((p) & 0x0f) << 28)
+
 #define RFDIGI_TRX27 0x26C
 #define RFDIGI_TRX28 0x270
 #define RFDIGI_TRX29 0x274
@@ -94,10 +102,9 @@ enum {
 #define RFDIGI_SX13  0x334
 #define RFDIGI_ID    0xFFF
 
-
 typedef struct _MT_RF_REG {
 	u8 rf_idx;
-	u16 offset;	
+	u16 offset;
 	u32 data;
 } MT_RF_REG, *PMT_RF_REG;
 
