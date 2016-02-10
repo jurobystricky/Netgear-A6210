@@ -15,17 +15,9 @@
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
-	Module Name:
-
-	Abstract:
-
-	Revision History:
-	Who 		When			What
-	--------	----------		----------------------------------------------
 */
 
 #include "rt_config.h"
-
 
 /*
 	========================================================================
@@ -53,29 +45,18 @@
 
 	========================================================================
 */
-VOID RTMPWriteTxWI(
-	IN RTMP_ADAPTER *pAd,
-	IN TXWI_STRUC *pOutTxWI,
-	IN BOOLEAN FRAG,
-	IN BOOLEAN CFACK,
-	IN BOOLEAN InsTimestamp,
-	IN BOOLEAN AMPDU,
-	IN BOOLEAN Ack,
-	IN BOOLEAN NSeq,		/* HW new a sequence.*/
-	IN UCHAR BASize,
-	IN UCHAR WCID,
-	IN ULONG Length,
-	IN UCHAR PID,
-	IN UCHAR TID,
-	IN UCHAR TxRate,
-	IN UCHAR Txopmode,
-	IN HTTRANSMIT_SETTING *pTransmit)
+void RTMPWriteTxWI(RTMP_ADAPTER *pAd, TXWI_STRUC *pOutTxWI, BOOLEAN FRAG,
+	BOOLEAN CFACK, BOOLEAN InsTimestamp, BOOLEAN AMPDU, BOOLEAN Ack,
+	BOOLEAN NSeq,		/* HW new a sequence.*/
+	UCHAR BASize, UCHAR WCID, ULONG Length, UCHAR PID, UCHAR TID,
+	UCHAR TxRate, UCHAR Txopmode, HTTRANSMIT_SETTING *pTransmit)
 {
 	PMAC_TABLE_ENTRY pMac = NULL;
 	TXWI_STRUC TxWI, *pTxWI;
 	UINT8 TXWISize = pAd->chipCap.TXWISize;
 	UINT TxEAPId_Cal;
-	UCHAR eTxBf, iTxBf, sounding, ndp_rate, stbc, bw, mcs, sgi, phy_mode, mpdu_density = 0, mimops = 0, ldpc = 0;
+	UCHAR eTxBf, iTxBf, sounding, ndp_rate, stbc, bw, mcs, sgi;
+	UCHAR phy_mode, mpdu_density = 0, mimops = 0, ldpc = 0;
 	UCHAR tx_stream_mode = 0;
 
 	if (WCID < MAX_LEN_OF_MAC_TABLE)
@@ -98,8 +79,10 @@ VOID RTMPWriteTxWI(
 	bw = (pTransmit->field.MODE <= MODE_OFDM) ? (BW_20) : (pTransmit->field.BW);
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-	if (bw)
-		bw = (pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth == 0) ? (BW_20) : (pTransmit->field.BW);
+	if (bw) {
+		bw = (pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth == 0) ? 
+				(BW_20) : (pTransmit->field.BW);
+	}
 #endif /* DOT11N_DRAFT3 */
 #endif /* DOT11_N_SUPPORT */
 
@@ -118,12 +101,14 @@ VOID RTMPWriteTxWI(
 #ifdef DOT11_N_SUPPORT
 	if (pMac) {
 		if (pAd->CommonCfg.bMIMOPSEnable) {
-			if ((pMac->MmpsMode == MMPS_DYNAMIC) && (pTransmit->field.MCS > 7)) {
+			if ((pMac->MmpsMode == MMPS_DYNAMIC) && 
+				(pTransmit->field.MCS > 7)) {
 				/* Dynamic MIMO Power Save Mode*/
 				mimops = 1;
 			} else if (pMac->MmpsMode == MMPS_STATIC) {
 				/* Static MIMO Power Save Mode*/
-				if (pTransmit->field.MODE >= MODE_HTMIX && pTransmit->field.MCS > 7) {
+				if (pTransmit->field.MODE >= MODE_HTMIX && 
+					pTransmit->field.MCS > 7) {
 					mcs = 7;
 					mimops = 0;
 				}
@@ -134,7 +119,6 @@ VOID RTMPWriteTxWI(
 	}
 #endif /* DOT11_N_SUPPORT */
 
-
 #ifdef TXBF_SUPPORT
 	eTxBf = pTransmit->field.eTxBF;
 	iTxBf = pTransmit->field.iTxBF;
@@ -144,8 +128,9 @@ VOID RTMPWriteTxWI(
 	TxEAPId_Cal -= ((TxEAPId_Cal >> 9) << 9);
 
 	if (pMac && pAd->chipCap.FlgHwTxBfCap) {
-		if (pMac->TxSndgType == SNDG_TYPE_NDP  || pMac->TxSndgType == SNDG_TYPE_SOUNDING) {
-			stbc  = FALSE;
+		if (pMac->TxSndgType == SNDG_TYPE_NDP || 
+			pMac->TxSndgType == SNDG_TYPE_SOUNDING) {
+			stbc = FALSE;
 			eTxBf = FALSE;
 			iTxBf = FALSE;
 			sounding = FALSE;
@@ -153,8 +138,13 @@ VOID RTMPWriteTxWI(
 			//phy_mode = 1;
 			//mcs = MCS_RATE_24;
 
-			DBGPRINT(RT_DEBUG_TRACE, ("%s : NDP Sounding and NDPSndRate = %d\n", __FUNCTION__, ndp_rate));
-			DBGPRINT(RT_DEBUG_TRACE, ("%s : BSSID[5] = %x, txwi_n->TxEAPId = %d\n", __FUNCTION__, pAd->CommonCfg.Bssid[5], TxEAPId_Cal));
+			DBGPRINT(RT_DEBUG_TRACE, 
+					("%s : NDP Sounding and NDPSndRate = %d\n", 
+					__FUNCTION__, ndp_rate));
+			DBGPRINT(RT_DEBUG_TRACE, 
+					("%s : BSSID[5] = %x, txwi_n->TxEAPId = %d\n", 
+					__FUNCTION__, pAd->CommonCfg.Bssid[5],
+					 TxEAPId_Cal));
 		}
 	}
 
@@ -189,13 +179,12 @@ VOID RTMPWriteTxWI(
 #ifdef CONFIG_AP_SUPPORT
 		txwi_n->GroupID = TRUE;
 		txwi_n->TxEAPId = TxEAPId_Cal;
-#endif /*CONFIG_AP_SUPPORT*/
+#endif
 
 #ifdef CONFIG_STA_SUPPORT
 		txwi_n->GroupID = FALSE;
 		txwi_n->TxEAPId = pAd->CommonCfg.Bssid[5];
-#endif /*CONFIG_STA_SUPPORT*/
-
+#endif
 		txwi_n->TxStreamMode = tx_stream_mode;
 #ifdef TXBF_SUPPORT
 		txwi_n->Sounding = sounding;
@@ -205,7 +194,6 @@ VOID RTMPWriteTxWI(
 		txwi_n->NDPSndBW = bw;
 		txwi_n->TXBF_PT_SCA = (eTxBf | iTxBf) ? TRUE : FALSE;
 #endif /* TXBF_SUPPORT */
-
 	}
 #endif /* RLT_MAC */
 
@@ -234,18 +222,10 @@ VOID RTMPWriteTxWI(
 #endif /* RTMP_MAC */
 
 	NdisMoveMemory(pOutTxWI, &TxWI, TXWISize);
-//+++Add by shiang for debug
-if (0){
-#ifdef DBG
-	hex_dump("TxWI", (UCHAR *)pOutTxWI, TXWISize);
-	dump_txwi(pAd, pOutTxWI);
-#endif
-}
-//---Add by shiang for debug
 }
 
 
-VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
+void RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 {
 	HTTRANSMIT_SETTING *pTransmit;
 	MAC_TABLE_ENTRY *pMacEntry;
@@ -254,14 +234,14 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 	UCHAR sgi, mcs, bw, stbc, phy_mode, ldpc;
 #ifdef DOT11_N_SUPPORT
 	UCHAR basize, ampdu, mimops = 0, mpdu_density = 0;
-#endif /* DOT11_N_SUPPORT */
+#endif
 #ifdef TXBF_SUPPORT
 	UCHAR iTxBf, eTxBf, sounding, ndp_rate, ndp_bw;
-#endif /* TXBF_SUPPORT */
+#endif
 #ifdef MCS_LUT_SUPPORT
 	BOOLEAN lut_enable = 0;
 	UCHAR mbc_wcid;
-#endif /* MCS_LUT_SUPPORT */
+#endif
 	UCHAR tx_stream_mode = 0;
 
 	ASSERT(pTxWI);
@@ -276,10 +256,7 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 	OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_SHORT_PREAMBLE_INUSED);
 	NdisZeroMemory(pTxWI, TXWISize);
 
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
-		wcid = pTxBlk->Wcid;
-
+	wcid = pTxBlk->Wcid;
 	sgi = pTransmit->field.ShortGI;
 	stbc = pTransmit->field.STBC;
 	ldpc = pTransmit->field.ldpc;
@@ -297,8 +274,10 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-	if (bw)
-		bw = (pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth == 0) ? (BW_20) : (pTransmit->field.BW);
+	if (bw) {
+		bw = (pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth == 0) ? 
+				(BW_20) : (pTransmit->field.BW);
+	}
 #endif /* DOT11N_DRAFT3 */
 
 	ampdu = ((pTxBlk->TxFrameType == TX_AMPDU_FRAME) ? TRUE : FALSE);
@@ -309,8 +288,10 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
  		 * reduce BASize to 7 to add one bulk A-MPDU during one TXOP
  		 * to improve throughput
  		 */
-		if ((pAd->CommonCfg.BBPCurrentBW == BW_20) && (pAd->Antenna.field.TxPath == 2)
-			&& (pMacEntry->bIAmBadAtheros) && (pMacEntry->WepStatus == Ndis802_11EncryptionDisabled)) {
+		if ((pAd->CommonCfg.BBPCurrentBW == BW_20) && 
+			(pAd->Antenna.field.TxPath == 2) && 
+			(pMacEntry->bIAmBadAtheros) && 
+			(pMacEntry->WepStatus == Ndis802_11EncryptionDisabled)) {
 			basize = 7;
 		} else {
 			UCHAR RABAOriIdx = pTxBlk->pMacEntry->BAOriWcidArray[pTxBlk->UserPriority];
@@ -328,8 +309,9 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 		iTxBf = FALSE;
 		eTxBf = FALSE;
 		stbc = FALSE;
-		DBGPRINT(RT_DEBUG_TRACE, ("ETxBF in %s(): sending normal sounding, eTxBF=%d\n",
-					__FUNCTION__, pTransmit->field.eTxBF));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("ETxBF in %s(): sending normal sounding, eTxBF=%d\n",
+				__FUNCTION__, pTransmit->field.eTxBF));
 		iTxBf = 0;
 	} else if (pTxBlk->TxSndgPkt == SNDG_TYPE_NDP) {
 		ndp_bw = pTransmit->field.BW;
@@ -343,8 +325,9 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 		else
 			ndp_rate = 0;
 
-		DBGPRINT(RT_DEBUG_TRACE, ("ETxBF in %s(): NDP sounding, eTxBF=%d, ndp_rate = %d\n",
-					__FUNCTION__, eTxBf, ndp_rate));
+		DBGPRINT(RT_DEBUG_TRACE, 
+				("ETxBF in %s(): NDP sounding, eTxBF=%d, ndp_rate = %d\n",
+				__FUNCTION__, eTxBf, ndp_rate));
 	} else {
 #ifdef MFB_SUPPORT
 		if (pMacEntry && (pMacEntry->mrqCnt >0) && (pMacEntry->toTxMrq == TRUE))
@@ -402,14 +385,13 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 	pkt_id = mcs;
 
 #ifdef INF_AMAZON_SE
-	/*Iverson patch for WMM A5-T07 ,WirelessStaToWirelessSta do not bulk out aggregate */
+	/*Iverson patch for WMM A5-T07 ,WirelessStaToWirelessSta do 
+	  not bulk out aggregate */
 	if (RTMP_GET_PACKET_NOBULKOUT(pTxBlk->pPacket)) {
 		if (phy_mode == MODE_CCK)
 			pkt_id = 6;
 	}
 #endif /* INF_AMAZON_SE */
-
-
 
 #ifdef MCS_LUT_SUPPORT
 	if ((RTMP_TEST_MORE_FLAG(pAd, fASIC_CAP_MCS_LUT)) &&
@@ -443,7 +425,8 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 #ifdef TXBF_SUPPORT
 #ifdef MCS_LUT_SUPPORT
 	if (pMacEntry && pAd->chipCap.FlgHwTxBfCap) {
-		if (pTxBlk->TxSndgPkt == SNDG_TYPE_NDP || pTxBlk->TxSndgPkt == SNDG_TYPE_SOUNDING)
+		if (pTxBlk->TxSndgPkt == SNDG_TYPE_NDP ||
+			pTxBlk->TxSndgPkt == SNDG_TYPE_SOUNDING)
 			lut_enable = FALSE;
 	}
 #endif /* MCS_LUT_SUPPORT */
@@ -457,10 +440,12 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 		txwi_n->ACK = TX_BLK_TEST_FLAG(pTxBlk, fTX_bAckRequired);
 		if (RTMP_GET_PACKET_TDLS_WAIT_ACK(pTxBlk->pPacket)) {
 			txwi_n->TxPktId |= 0x80;
-			DBGPRINT(RT_DEBUG_INFO,("PktID |= 0x80 : [%x]\n",txwi_n->TxPktId));
+			DBGPRINT(RT_DEBUG_INFO,("PktID |= 0x80 : [%x]\n",
+					txwi_n->TxPktId));
 		} else {
 			txwi_n->TxPktId &= 0x7f;
-			DBGPRINT(RT_DEBUG_INFO,("PktID : [%x]\n",txwi_n->TxPktId));
+			DBGPRINT(RT_DEBUG_INFO,("PktID : [%x]\n",
+					txwi_n->TxPktId));
 		}
 #ifdef WFA_VHT_PF
 		if (pAd->force_noack == TRUE)
@@ -551,10 +536,9 @@ VOID RTMPWriteTxWI_Data(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 }
 
 
-VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
+void RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 {
 	HTTRANSMIT_SETTING *pTransmit = pTxBlk->pTransmit;
-//JB removed	HTTRANSMIT_SETTING tmpTransmit;
 	MAC_TABLE_ENTRY *pMacEntry = pTxBlk->pMacEntry;
 	UCHAR pkt_id;
 	UCHAR bw, mcs, stbc, phy_mode, sgi, ldpc;
@@ -593,17 +577,21 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 #endif /* TXBF_SUPPORT */
 
 #ifdef DOT11N_DRAFT3
-	if (bw)
-		bw = (pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth == 0) ? (BW_20) : (pTransmit->field.BW);
+	if (bw) {
+		bw = (pAd->CommonCfg.AddHTInfo.AddHtInfo.RecomWidth == 0) ? 
+				(BW_20) : (pTransmit->field.BW);
+	}
 #endif /* DOT11N_DRAFT3 */
 
 	mimops = 0;
 	if (pAd->CommonCfg.bMIMOPSEnable) {
 		/* MIMO Power Save Mode*/
-		if ((pMacEntry->MmpsMode == MMPS_DYNAMIC) && (pTransmit->field.MCS > 7)) {
+		if ((pMacEntry->MmpsMode == MMPS_DYNAMIC) && 
+			(pTransmit->field.MCS > 7)) {
 			mimops = 1;
 		} else if (pMacEntry->MmpsMode == MMPS_STATIC) {
-			if ((pTransmit->field.MODE >= MODE_HTMIX) && (pTransmit->field.MCS > 7)) {
+			if ((pTransmit->field.MODE >= MODE_HTMIX) && 
+				(pTransmit->field.MCS > 7)) {
 				mcs = 7;
 				mimops = 0;
 			}
@@ -616,7 +604,8 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
  		 * reduce BASize to 7 to add one bulk A-MPDU during one TXOP
  		 * to improve throughput
  		 */
-		if ((pAd->CommonCfg.BBPCurrentBW == BW_20) && (pMacEntry->bIAmBadAtheros)) {
+		if ((pAd->CommonCfg.BBPCurrentBW == BW_20) && 
+			(pMacEntry->bIAmBadAtheros)) {
 			mpdu_density = 7;
 			if ((pAd->Antenna.field.TxPath == 2) &&
 				(pMacEntry->WepStatus == Ndis802_11EncryptionDisabled)) {
@@ -640,8 +629,9 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 	if (pTxBlk->TxSndgPkt == SNDG_TYPE_SOUNDING) {
 		sounding = 1;
 		stbc = FALSE;
-		DBGPRINT(RT_DEBUG_TRACE, ("ETxBF in %s(): sending normal sounding, eTxBF=%d\n",
-					__FUNCTION__, pTransmit->field.eTxBF));
+		DBGPRINT(RT_DEBUG_TRACE, 
+				("ETxBF in %s(): sending normal sounding, eTxBF=%d\n",
+				__FUNCTION__, pTransmit->field.eTxBF));
 	} else if (pTxBlk->TxSndgPkt == SNDG_TYPE_NDP) {
 		stbc = FALSE;
 		if (pTxBlk->TxNDPSndgMcs>=16)
@@ -652,13 +642,15 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 			ndp_rate = 0;
 		ndp_bw = pTransmit->field.BW;
 
-		DBGPRINT(RT_DEBUG_TRACE, ("ETxBF in %s(): NDP sounding, eTxBF=%d, ndp_rate = %d\n",
-					__FUNCTION__, eTxBf, ndp_rate));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("ETxBF in %s(): NDP sounding, eTxBF=%d, ndp_rate = %d\n",
+				__FUNCTION__, eTxBf, ndp_rate));
 	} else {
 #ifdef MFB_SUPPORT
 		if (pMacEntry && pMacEntry->mrqCnt >0 && pMacEntry->toTxMrq == 1) {
 			eTxBf = ~(pTransmit->field.eTxBF);
-			DBGPRINT(RT_DEBUG_TRACE,("ETxBF in AP_AMPDU_Frame_Tx(): invert eTxBF\n"));
+			DBGPRINT(RT_DEBUG_TRACE,
+					("ETxBF in AP_AMPDU_Frame_Tx(): invert eTxBF\n"));
 		} else
 #endif	/* MFB_SUPPORT */
 			eTxBf = pTransmit->field.eTxBF;
@@ -724,7 +716,7 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 #ifdef WFA_VHT_PF
 		if (pAd->force_noack == TRUE)
 			txwi_n->ACK = 0;
-#endif /* WFA_VHT_PF */
+#endif
 
 #ifdef DOT11_N_SUPPORT
 		txwi_n->AMPDU = ampdu;
@@ -794,45 +786,47 @@ VOID RTMPWriteTxWI_Cache(RTMP_ADAPTER *pAd, TXWI_STRUC *pTxWI, TX_BLK *pTxBlk)
 }
 
 
-INT get_pkt_rssi_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi, INT size, CHAR *rssi)
+int get_pkt_rssi_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi, int size, 
+		CHAR *rssi)
 {
-	INT status = 0;
+	int status = 0;
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT)
 		status = rlt_get_rxwi_rssi(rxwi, size, rssi);
-#endif /* RLT_MAC */
+#endif
 
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP)
 		status = rtmp_get_rxwi_rssi(rxwi, size, rssi);
-#endif /* RTMP_MAC */
+#endif
 
 	return status;
 }
 
 
-INT get_pkt_snr_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi, INT size, UCHAR *snr)
+int get_pkt_snr_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi, int size, 
+		UCHAR *snr)
 {
-	INT status = 0;
+	int status = 0;
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT)
 		status = rlt_get_rxwi_snr(pAd, rxwi, size, snr);
-#endif /* RLT_MAC */
+#endif
 
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP)
 		status = rtmp_get_rxwi_snr(rxwi, size, snr);
-#endif /* RTMP_MAC */
+#endif
 
 	return status;
 }
 
 
-INT get_pkt_phymode_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi)
+int get_pkt_phymode_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi)
 {
-	INT status = 0;
+	int status = 0;
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT)
@@ -849,10 +843,8 @@ INT get_pkt_phymode_by_rxwi(RTMP_ADAPTER *pAd, RXWI_STRUC *rxwi)
 }
 
 #ifdef MCS_LUT_SUPPORT
-INT set_lut_phy_rate(
-	RTMP_ADAPTER *pAd, UINT8 wcid,
-	UINT8 mcs, UINT8 bw, 	UINT8 gi,
-	UINT8 stbc, UINT8 mode)
+BOOLEAN set_lut_phy_rate(RTMP_ADAPTER *pAd, UINT8 wcid, UINT8 mcs, UINT8 bw,
+	UINT8 gi, UINT8 stbc, UINT8 mode)
 {
 	UINT32 mac_reg = 0;
 	USHORT reg_id = 0x1C00 + (wcid << 3);
@@ -861,14 +853,13 @@ INT set_lut_phy_rate(
 	if (pAd->chipCap.hif_type == HIF_RLT) {
 		mac_reg = (mcs | (bw << 7) | (gi << 9) | (stbc << 10) | (mode << 13));
 	}
-#endif /* RLT_MAC */
+#endif
 
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP) {
 		mac_reg = (mcs | (bw << 7) | (gi << 8) | (stbc << 9) | (mode << 14));
 	}
-#endif /* RTMP_MAC */
-
+#endif
 	if (mac_reg)
 		RTMP_IO_WRITE32(pAd, reg_id, mac_reg);
 
@@ -876,20 +867,20 @@ INT set_lut_phy_rate(
 }
 #endif /* MCS_LUT_SUPPORT */
 
-INT rtmp_mac_set_band(RTMP_ADAPTER *pAd, int  band)
+BOOLEAN rtmp_mac_set_band(RTMP_ADAPTER *pAd, int  band)
 {
 	UINT32 val, band_cfg;
 
 	RTMP_IO_READ32(pAd, TX_BAND_CFG, &band_cfg);
 	val = band_cfg & (~0x6);
 	switch (band) {
-		case BAND_5G:
-			val |= 0x02;
-			break;
-		case BAND_24G:
-		default:
-			val |= 0x4;
-			break;
+	case BAND_5G:
+		val |= 0x02;
+		break;
+	case BAND_24G:
+	default:
+		val |= 0x4;
+		break;
 	}
 
 	if (val != band_cfg)
@@ -899,22 +890,23 @@ INT rtmp_mac_set_band(RTMP_ADAPTER *pAd, int  band)
 }
 
 
-INT rtmp_mac_set_ctrlch(RTMP_ADAPTER *pAd, UINT8 extch)
+BOOLEAN rtmp_mac_set_ctrlch(RTMP_ADAPTER *pAd, UINT8 extch)
 {
 	UINT32 val, band_cfg;
 
 	RTMP_IO_READ32(pAd, TX_BAND_CFG, &band_cfg);
 	val = band_cfg & (~0x1);
+
 	switch (extch) {
-		case EXTCHA_ABOVE:
-			val &= (~0x1);
-			break;
-		case EXTCHA_BELOW:
-			val |= (0x1);
-			break;
-		case EXTCHA_NONE:
-			val &= (~0x1);
-			break;
+	case EXTCHA_ABOVE:
+		val &= (~0x1);
+		break;
+	case EXTCHA_BELOW:
+		val |= (0x1);
+		break;
+	case EXTCHA_NONE:
+		val &= (~0x1);
+		break;
 	}
 
 	if (val != band_cfg)
@@ -924,7 +916,7 @@ INT rtmp_mac_set_ctrlch(RTMP_ADAPTER *pAd, UINT8 extch)
 }
 
 
-INT rtmp_mac_set_mmps(RTMP_ADAPTER *pAd, INT ReduceCorePower)
+BOOLEAN rtmp_mac_set_mmps(RTMP_ADAPTER *pAd, int ReduceCorePower)
 {
 	UINT32 mac_val, org_val;
 
@@ -944,7 +936,7 @@ INT rtmp_mac_set_mmps(RTMP_ADAPTER *pAd, INT ReduceCorePower)
 
 
 #define BCN_TBTT_OFFSET		64	/*defer 64 us*/
-VOID ReSyncBeaconTime(RTMP_ADAPTER *pAd)
+void ReSyncBeaconTime(RTMP_ADAPTER *pAd)
 {
 	UINT32  Offset;
 	BCN_TIME_CFG_STRUC csr;
@@ -970,25 +962,27 @@ VOID ReSyncBeaconTime(RTMP_ADAPTER *pAd)
 }
 
 
-VOID rtmp_mac_bcn_buf_init(IN RTMP_ADAPTER *pAd)
+void rtmp_mac_bcn_buf_init(IN RTMP_ADAPTER *pAd)
 {
 	int idx, tb_size;
 	RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
 
 	for (idx = 0; idx < pChipCap->BcnMaxHwNum; idx++)
 		pAd->BeaconOffset[idx] = pChipCap->BcnBase[idx];
-
+#ifdef DBG
 	DBGPRINT(RT_DEBUG_TRACE, ("< Beacon Information: >\n"));
-	DBGPRINT(RT_DEBUG_TRACE, ("\tFlgIsSupSpecBcnBuf = %s\n", pChipCap->FlgIsSupSpecBcnBuf ? "TRUE" : "FALSE"));
+	DBGPRINT(RT_DEBUG_TRACE, ("\tFlgIsSupSpecBcnBuf = %s\n",
+			pChipCap->FlgIsSupSpecBcnBuf ? "TRUE" : "FALSE"));
 	DBGPRINT(RT_DEBUG_TRACE, ("\tBcnMaxHwNum = %d\n", pChipCap->BcnMaxHwNum));
 	DBGPRINT(RT_DEBUG_TRACE, ("\tBcnMaxNum = %d\n", pChipCap->BcnMaxNum));
-	DBGPRINT(RT_DEBUG_TRACE, ("\tBcnMaxHwSize = 0x%x\n", pChipCap->BcnMaxHwSize));
+	DBGPRINT(RT_DEBUG_TRACE, ("\tBcnMaxHwSize = 0x%x\n",
+			pChipCap->BcnMaxHwSize));
 	DBGPRINT(RT_DEBUG_TRACE, ("\tWcidHwRsvNum = %d\n", pChipCap->WcidHwRsvNum));
 	for (idx = 0; idx < pChipCap->BcnMaxHwNum; idx++) {
 		DBGPRINT(RT_DEBUG_TRACE, ("\t\tBcnBase[%d] = 0x%x, pAd->BeaconOffset[%d]=0x%x\n",
 					idx, pChipCap->BcnBase[idx], idx, pAd->BeaconOffset[idx]));
 	}
-
+#endif
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP) {
 		RTMP_REG_PAIR bcn_legacy_reg_tb[] = {
@@ -1004,7 +998,7 @@ VOID rtmp_mac_bcn_buf_init(IN RTMP_ADAPTER *pAd)
 		tb_size = (sizeof(bcn_legacy_reg_tb) / sizeof(RTMP_REG_PAIR));
 		for (idx = 0; idx < tb_size; idx++) {
 			RTMP_IO_WRITE32(pAd, (USHORT)bcn_legacy_reg_tb[idx].Register,
-							bcn_legacy_reg_tb[idx].Value);
+					bcn_legacy_reg_tb[idx].Value);
 		}
 	}
 #endif /* RTMP_MAC */
@@ -1021,21 +1015,21 @@ VOID rtmp_mac_bcn_buf_init(IN RTMP_ADAPTER *pAd)
 		tb_size = (sizeof(bcn_mac_reg_tb) / sizeof(RTMP_REG_PAIR));
 		for (idx = 0; idx < tb_size; idx ++) {
 			RTMP_IO_WRITE32(pAd, (USHORT)bcn_mac_reg_tb[idx].Register,
-									bcn_mac_reg_tb[idx].Value);
+					bcn_mac_reg_tb[idx].Value);
 		}
 	}
 #endif /* RLT_MAC */
 }
 
 
-INT rtmp_mac_pbf_init(RTMP_ADAPTER *pAd)
+static BOOLEAN rtmp_mac_pbf_init(RTMP_ADAPTER *pAd)
 {
-	INT idx, tb_size = 0;
+	int idx, tb_size = 0;
 	RTMP_REG_PAIR *pbf_regs = NULL;
 #ifdef RLT_MAC
 	RTMP_REG_PAIR rlt_pbf_regs[]={
-		{TX_MAX_PCNT,		0xefef3f1f},
-		{RX_MAX_PCNT,		0xfebf},
+		{TX_MAX_PCNT, 0xefef3f1f},
+		{RX_MAX_PCNT, 0xfebf},
 	};
 #endif /* RLT_MAC */
 
@@ -1047,9 +1041,9 @@ INT rtmp_mac_pbf_init(RTMP_ADAPTER *pAd)
 			6F + 6F < total page count FE
 			so that RX doesn't occupy TX's buffer space when WMM congestion.
 		*/
-		{PBF_MAX_PCNT,			0x1F3F6F6F},
+		{PBF_MAX_PCNT, 0x1F3F6F6F},
 #else
-		{PBF_MAX_PCNT,			0x1F3FBF9F}, 	/* 0x1F3f7f9f},		Jan, 2006/04/20 */
+		{PBF_MAX_PCNT, 0x1F3FBF9F}, 	/* 0x1F3f7f9f},		Jan, 2006/04/20 */
 #endif /* INF_AMAZON_SE */
 	};
 #endif /* RTMP_MAC */
@@ -1082,38 +1076,37 @@ INT rtmp_mac_pbf_init(RTMP_ADAPTER *pAd)
 	ASIC register initialization sets
 */
 static RTMP_REG_PAIR MACRegTable[] = {
-	{LEGACY_BASIC_RATE,		0x0000013f}, /*  Basic rate set bitmap*/
-	{HT_BASIC_RATE,		0x00008003}, /* Basic HT rate set , 20M, MCS=3, MM. Format is the same as in TXWI.*/
-	{MAC_SYS_CTRL,		0x00}, /* 0x1004, , default Disable RX*/
-	{RX_FILTR_CFG,		0x17f97}, /*0x1400  , RX filter control,  */
-	{BKOFF_SLOT_CFG,	0x209}, /* default set short slot time, CC_DELAY_TIME should be 2	 */
-	{TX_SW_CFG1,		0x80606}, /* Gary,2006-08-23 */
-	{TX_LINK_CFG,		0x1020},		/* Gary,2006-08-23 */
-	/*{TX_TIMEOUT_CFG,	0x00182090},	 CCK has some problem. So increase timieout value. 2006-10-09 MArvek RT*/
+	{LEGACY_BASIC_RATE,	0x0000013f}, 	/*  Basic rate set bitmap*/
+	{HT_BASIC_RATE,		0x00008003}, 	/* Basic HT rate set , 20M, MCS=3, MM. Format is the same as in TXWI.*/
+	{MAC_SYS_CTRL,		0x00}, 		/* 0x1004, , default Disable RX*/
+	{RX_FILTR_CFG,		0x17f97}, 	/*0x1400  , RX filter control,  */
+	{BKOFF_SLOT_CFG,	0x209}, 	/* default set short slot time, CC_DELAY_TIME should be 2	 */
+	{TX_SW_CFG1,		0x80606}, 	/* Gary,2006-08-23 */
+	{TX_LINK_CFG,		0x1020},	/* Gary,2006-08-23 */
+	/*{TX_TIMEOUT_CFG,	0x00182090},	 CCK has some problem. So increase timeout value. 2006-10-09 MArvek RT*/
 	{TX_TIMEOUT_CFG,	0x000a2090},	/* CCK has some problem. So increase timieout value. 2006-10-09 MArvek RT , Modify for 2860E ,2007-08-01*/
 
 	// TODO: shiang-usw, why MT7601 don't need to set this register??
-	{LED_CFG,		0x7f031e46}, /* Gary, 2006-08-23*/
+	{LED_CFG,		0x7f031e46}, 	/* Gary, 2006-08-23*/
 
 	/*{TX_RTY_CFG,			0x6bb80408},	 Jan, 2006/11/16*/
 /* WMM_ACM_SUPPORT*/
 /*	{TX_RTY_CFG,		0x6bb80101},	 sample*/
 	{TX_RTY_CFG,		0x47d01f0f},	/* Jan, 2006/11/16, Set TxWI->ACK =0 in Probe Rsp Modify for 2860E ,2007-08-03*/
-
 	{AUTO_RSP_CFG,		0x00000013},	/* Initial Auto_Responder, because QA will turn off Auto-Responder*/
-	{CCK_PROT_CFG,		0x05740003 /*0x01740003*/},	/* Initial Auto_Responder, because QA will turn off Auto-Responder. And RTS threshold is enabled. */
-	{OFDM_PROT_CFG,		0x05740003 /*0x01740003*/},	/* Initial Auto_Responder, because QA will turn off Auto-Responder. And RTS threshold is enabled. */
+	{CCK_PROT_CFG,		0x05740003 	/*0x01740003*/},	/* Initial Auto_Responder, because QA will turn off Auto-Responder. And RTS threshold is enabled. */
+	{OFDM_PROT_CFG,		0x05740003 	/*0x01740003*/},	/* Initial Auto_Responder, because QA will turn off Auto-Responder. And RTS threshold is enabled. */
 
 #ifdef RTMP_MAC_USB
-	{MM40_PROT_CFG,		0x3F44084},		/* Initial Auto_Responder, because QA will turn off Auto-Responder*/
+	{MM40_PROT_CFG,		0x3F44084},	/* Initial Auto_Responder, because QA will turn off Auto-Responder*/
 	// TODO: shiang-usw, why MT7601 don't need to set this register??
 	{WPDMA_GLO_CFG,		0x00000030},
 #endif /* RTMP_MAC_USB */
 
-	{GF20_PROT_CFG,		0x01744004},    /* set 19:18 --> Short NAV for MIMO PS*/
+	{GF20_PROT_CFG,		0x01744004},	/* set 19:18 --> Short NAV for MIMO PS*/
 	{GF40_PROT_CFG,		0x03F44084},
 	{MM20_PROT_CFG,		0x01744004},
-	{TXOP_CTRL_CFG,		0x0000583f, /*0x0000243f*/ /*0x000024bf*/},	/*Extension channel backoff.*/
+	{TXOP_CTRL_CFG,		0x0000583f, 	/*0x0000243f*/ /*0x000024bf*/},	/*Extension channel backoff.*/
 	{TX_RTS_CFG,		0x00092b20},
 	{EXP_ACK_TIME,		0x002400ca},	/* default value */
 	{TXOP_HLDR_ET, 		0x00000002},
@@ -1126,10 +1119,10 @@ static RTMP_REG_PAIR MACRegTable[] = {
 };
 
 #ifdef RTMP_MAC
-RTMP_REG_PAIR MACRegTable_RTMP[] = {
+static RTMP_REG_PAIR MACRegTable_RTMP[] = {
 #ifdef RTMP_MAC_USB
-	{PBF_CFG, 			0xf40006}, /* Only enable Queue 2*/
-#endif /* RTMP_MAC_USB */
+	{PBF_CFG, 		0xf40006}, /* Only enable Queue 2*/
+#endif
 	{MAX_LEN_CFG,		MAX_AGGREGATION_SIZE | 0x00001000},	/* 0x3018, MAX frame length. Max PSDU = 16kbytes.*/
 	{PWR_PIN_CFG,		0x3},	/* patch for 2880-E*/
 	/*{TX_SW_CFG0,		0x40a06},  Gary,2006-08-23 */
@@ -1138,7 +1131,7 @@ RTMP_REG_PAIR MACRegTable_RTMP[] = {
 #endif /* RTMP_MAC */
 
 #ifdef CONFIG_AP_SUPPORT
-RTMP_REG_PAIR APMACRegTable[] = {
+static RTMP_REG_PAIR APMACRegTable[] = {
 	{WMM_AIFSN_CFG,	0x00001173},
 	{WMM_CWMIN_CFG,	0x00002344},
 	{WMM_CWMAX_CFG,	0x000034a6},
@@ -1146,14 +1139,14 @@ RTMP_REG_PAIR APMACRegTable[] = {
 	{WMM_TXOP1_CFG,	0x002F0038},
 	{TBTT_SYNC_CFG,	0x00012000},
 #ifdef STREAM_MODE_SUPPORT
-	{TX_CHAIN_ADDR0_L,	0xFFFFFFFF},	/* Broadcast frames are in stream mode*/
-	{TX_CHAIN_ADDR0_H,	0x3FFFF},
-#endif /* STREAM_MODE_SUPPORT */
+	{TX_CHAIN_ADDR0_L,0xFFFFFFFF},	/* Broadcast frames are in stream mode*/
+	{TX_CHAIN_ADDR0_H,0x3FFFF},
+#endif
 };
 #endif /* CONFIG_AP_SUPPORT */
 
 #ifdef CONFIG_STA_SUPPORT
-RTMP_REG_PAIR STAMACRegTable[] = {
+static RTMP_REG_PAIR STAMACRegTable[] = {
 	{WMM_AIFSN_CFG,	0x00002273},
 	{WMM_CWMIN_CFG,	0x00002344},
 	{WMM_CWMAX_CFG,	0x000034aa},
@@ -1161,9 +1154,9 @@ RTMP_REG_PAIR STAMACRegTable[] = {
 #endif /* CONFIG_STA_SUPPORT */
 
 
-#define NUM_MAC_REG_PARMS			(sizeof(MACRegTable) / sizeof(RTMP_REG_PAIR))
+#define NUM_MAC_REG_PARMS	(sizeof(MACRegTable) / sizeof(RTMP_REG_PAIR))
 #ifdef CONFIG_AP_SUPPORT
-#define NUM_AP_MAC_REG_PARMS		(sizeof(APMACRegTable) / sizeof(RTMP_REG_PAIR))
+#define NUM_AP_MAC_REG_PARMS	(sizeof(APMACRegTable) / sizeof(RTMP_REG_PAIR))
 #endif /* CONFIG_AP_SUPPORT */
 #ifdef CONFIG_STA_SUPPORT
 #define NUM_STA_MAC_REG_PARMS	(sizeof(STAMACRegTable) / sizeof(RTMP_REG_PAIR))
@@ -1172,9 +1165,9 @@ RTMP_REG_PAIR STAMACRegTable[] = {
 #define NUM_RTMP_MAC_REG_PARAMS	(sizeof(MACRegTable_RTMP)/ sizeof(RTMP_REG_PAIR))
 #endif /* RTMP_MAC */
 
-INT rtmp_mac_init(RTMP_ADAPTER *pAd)
+BOOLEAN rtmp_mac_init(RTMP_ADAPTER *pAd)
 {
-	INT idx;
+	int idx;
 
 	for (idx = 0; idx < NUM_MAC_REG_PARMS; idx++) {
 		RTMP_IO_WRITE32(pAd, MACRegTable[idx].Register, MACRegTable[idx].Value);
