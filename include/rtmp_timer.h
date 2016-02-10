@@ -34,6 +34,9 @@
 
 #include "rtmp_os.h"
 
+void GREKEYPeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
+	PVOID SystemSpecific2, PVOID SystemSpecific3);
+
 #define DECLARE_TIMER_FUNCTION(_func)			\
 	void rtmp_timer_##_func(unsigned long data)
 
