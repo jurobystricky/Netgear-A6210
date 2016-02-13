@@ -14,15 +14,13 @@
 
 
 /****************************************************************************
-    Module Name:
-    RC4
+	Module Name:
+	crypt_arc4
 
-    Abstract:
-    
-    Revision History:
-    Who         When            What
-    --------    ----------      ------------------------------------------
-    Eddy        2009/05/13      ARC4
+	Revision History:
+	Who         When            What
+	--------    ----------      ------------------------------------------
+	Eddy        2009/05/13      ARC4
 ***************************************************************************/
 
 #include "crypt_arc4.h"
@@ -31,109 +29,101 @@
 /*
 ========================================================================
 Routine Description:
-    ARC4 initialize the key block
+	ARC4 initialize the key block
 
 Arguments:
-    pARC4_CTX        Pointer to ARC4 CONTEXT
-    Key              Cipher key, it may be 16, 24, or 32 bytes (128, 192, or 256 bits)
-    KeyLength        The length of cipher key in bytes
+	pARC4_CTX	Pointer to ARC4 CONTEXT
+	Key		Cipher key, it may be 16, 24,
+			or 32 bytes (128, 192, or 256 bits)
+	KeyLength	The length of cipher key in bytes
 
 ========================================================================
 */
-VOID ARC4_INIT (
-    IN ARC4_CTX_STRUC *pARC4_CTX,
-    IN PUCHAR pKey,
-	IN UINT KeyLength)
+void ARC4_INIT(ARC4_CTX_STRUC *pARC4_CTX, PUCHAR pKey, UINT KeyLength)
 {
-    UINT BlockIndex = 0, SWAPIndex = 0, KeyIndex = 0;
-    UINT8 TempValue = 0;
+	UINT BlockIndex, SWAPIndex, KeyIndex;
+	UINT8 TempValue;
 
-    /*Initialize the block value*/
-    pARC4_CTX->BlockIndex1 = 0;
-    pARC4_CTX->BlockIndex2 = 0;
-    for (BlockIndex = 0; BlockIndex < ARC4_KEY_BLOCK_SIZE; BlockIndex++)
-        pARC4_CTX->KeyBlock[BlockIndex] = (UINT8) BlockIndex;
+	/*Initialize the block value*/
+	pARC4_CTX->BlockIndex1 = 0;
+	pARC4_CTX->BlockIndex2 = 0;
+	for (BlockIndex = 0; BlockIndex < ARC4_KEY_BLOCK_SIZE; BlockIndex++)
+		pARC4_CTX->KeyBlock[BlockIndex] = (UINT8) BlockIndex;
 
-    /*Key schedule*/
-    for (BlockIndex = 0; BlockIndex < ARC4_KEY_BLOCK_SIZE; BlockIndex++)
-    {
-        TempValue = pARC4_CTX->KeyBlock[BlockIndex];
-        KeyIndex = BlockIndex % KeyLength;
-        SWAPIndex = (SWAPIndex + TempValue + pKey[KeyIndex]) & 0xff;
-        pARC4_CTX->KeyBlock[BlockIndex] = pARC4_CTX->KeyBlock[SWAPIndex];
-        pARC4_CTX->KeyBlock[SWAPIndex] = TempValue;                
-    } /* End of for */
-
-} /* End of ARC4_INIT */
+	/*Key schedule*/
+	SWAPIndex = 0;
+	for (BlockIndex = 0; BlockIndex < ARC4_KEY_BLOCK_SIZE; BlockIndex++) {
+		TempValue = pARC4_CTX->KeyBlock[BlockIndex];
+		KeyIndex = BlockIndex % KeyLength;
+		SWAPIndex = (SWAPIndex + TempValue + pKey[KeyIndex]) & 0xff;
+		pARC4_CTX->KeyBlock[BlockIndex] = pARC4_CTX->KeyBlock[SWAPIndex];
+		pARC4_CTX->KeyBlock[SWAPIndex] = TempValue;
+	}
+}
 
 
 /*
 ========================================================================
 Routine Description:
-    ARC4 encryption/decryption
+	ARC4 encryption/decryption
 
 Arguments:
-    pARC4_CTX       Pointer to ARC4 CONTEXT
-    InputText       Input text
-    InputTextLength The length of input text in bytes
+	pARC4_CTX	Pointer to ARC4 CONTEXT
+	InputText	Input text
+	InputTextLength	The length of input text in bytes
 
 Return Value:
-    OutputBlock       Return output text
+	OutputBlock	Return output text
  ========================================================================
 */
-VOID ARC4_Compute (
-    IN ARC4_CTX_STRUC *pARC4_CTX,
-    IN UINT8 InputBlock[],
-    IN UINT InputBlockSize,
-    OUT UINT8 OutputBlock[])
+void ARC4_Compute(ARC4_CTX_STRUC *pARC4_CTX, UINT8 InputBlock[],
+	UINT InputBlockSize, UINT8 OutputBlock[])
 {
-    UINT InputIndex = 0;
-    UINT8 TempValue = 0;
+	UINT InputIndex;
+	UINT8 TempValue;
 
-    for (InputIndex = 0; InputIndex < InputBlockSize; InputIndex++)
-    {
-        pARC4_CTX->BlockIndex1 = (pARC4_CTX->BlockIndex1 + 1) & 0xff;
-        TempValue = pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1];
-        pARC4_CTX->BlockIndex2 = (pARC4_CTX->BlockIndex2 + TempValue) & 0xff;
-        
-        pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1] = pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2];
-        pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2] = TempValue;
-        
-        TempValue = (TempValue + pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1]) & 0xff;
-        OutputBlock[InputIndex] = InputBlock[InputIndex]^pARC4_CTX->KeyBlock[TempValue];
+	for (InputIndex = 0; InputIndex < InputBlockSize; InputIndex++) {
+		pARC4_CTX->BlockIndex1 = (pARC4_CTX->BlockIndex1 + 1) & 0xff;
+		TempValue = pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1];
+		pARC4_CTX->BlockIndex2 = (pARC4_CTX->BlockIndex2 + TempValue) & 0xff;
 
-    } /* End of for */
-} /* End of ARC4_Compute */
+		pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1] = 
+				pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2];
+		pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2] = TempValue;
+
+		TempValue = (TempValue + 
+				pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1]) & 0xff;
+		OutputBlock[InputIndex] = 
+				InputBlock[InputIndex]^pARC4_CTX->KeyBlock[TempValue];
+	}
+}
 
 
 /*
 ========================================================================
 Routine Description:
-    Discard the key length
+	Discard the key length
 
 Arguments:
-    pARC4_CTX   Pointer to ARC4 CONTEXT
-    Length      Discard the key length
+	pARC4_CTX	Pointer to ARC4 CONTEXT
+	Length		Discard the key length
 
 ========================================================================
 */
-VOID ARC4_Discard_KeyLength (
-    IN ARC4_CTX_STRUC *pARC4_CTX,
-    IN UINT Length)    
+void ARC4_Discard_KeyLength (ARC4_CTX_STRUC *pARC4_CTX, UINT Length)
 {
-    UINT Index = 0;
-    UINT8 TempValue = 0;
-    
-    for (Index = 0; Index < Length; Index++)
-    {
-        pARC4_CTX->BlockIndex1 = (pARC4_CTX->BlockIndex1 + 1) & 0xff;
-        TempValue = pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1];
-        pARC4_CTX->BlockIndex2 = (pARC4_CTX->BlockIndex2 + TempValue) & 0xff;
-        
-        pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1] = pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2];
-        pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2] = TempValue;
-    } /* End of for */
+	UINT Index;
+	UINT8 TempValue;
 
-} /* End of ARC4_Discard_KeyLength */
+	for (Index = 0; Index < Length; Index++) {
+		pARC4_CTX->BlockIndex1 = (pARC4_CTX->BlockIndex1 + 1) & 0xff;
+		TempValue = pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1];
+		pARC4_CTX->BlockIndex2 = (pARC4_CTX->BlockIndex2 + TempValue) & 0xff;
+
+		pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex1] = 
+				pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2];
+		pARC4_CTX->KeyBlock[pARC4_CTX->BlockIndex2] = TempValue;
+	}
+}
 
 
