@@ -796,7 +796,7 @@ void RtmpUSB_FinalWriteTxResource(RTMP_ADAPTER *pAd,TX_BLK *pTxBlk,
 			pWirelessPacket = (PUCHAR)(&pHTTXContext->TransferBuffer->field.WirelessPacket[fillOffset]);
 
 		/* Update TxInfo->USBDMApktLen , */
-		/*		the length = TXWI_SIZE + 802.11_hdr + 802.11_hdr_pad + payload_of_all_batch_frames + Bulk-Out-padding*/
+		/* the length = TXWI_SIZE + 802.11_hdr + 802.11_hdr_pad + payload_of_all_batch_frames + Bulk-Out-padding*/
 
 		pTxInfo = (TXINFO_STRUC *)(pWirelessPacket);
 
@@ -876,13 +876,6 @@ void RtmpUSB_FinalWriteTxResource(RTMP_ADAPTER *pAd,TX_BLK *pTxBlk,
 }
 
 
-#if 0 //JB removed
-void RtmpUSBDataLastTxIdx(RTMP_ADAPTER *pAd, UCHAR QueIdx, USHORT TxIdx)
-{
-	/* DO nothing for USB.*/
-}
-#endif
-
 /*
 	When can do bulk-out:
 		1. TxSwFreeIdx < TX_RING_SIZE;
@@ -917,7 +910,8 @@ int RtmpUSBMgmtKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx, PNDIS_PACKET pPacket,
 
 	/* Build our URB for USBD*/
 	BulkOutSize = (SrcBufLen + 3) & (~3);
-	rlt_usb_write_txinfo(pAd, pTxInfo, (USHORT)(BulkOutSize - TXINFO_SIZE), TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
+	rlt_usb_write_txinfo(pAd, pTxInfo, (USHORT)(BulkOutSize - TXINFO_SIZE), 
+			TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
 	BulkOutSize += 4; /* Always add 4 extra bytes at every packet.*/
 
 /* WY , it cause Tx hang on Amazon_SE , Max said the padding is useless*/
@@ -1009,18 +1003,18 @@ void RtmpUSBNullFrameKickOut(RTMP_ADAPTER *pAd, UCHAR QueIdx, UCHAR *pNullFrame,
 		RTMPZeroMemory(&pWirelessPkt[0], 100);
 		pTxInfo = (TXINFO_STRUC *)&pWirelessPkt[0];
 		rlt_usb_write_txinfo(pAd, pTxInfo, (USHORT)(frameLen + TXWISize + TSO_SIZE),
-					TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
+				TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
 		pTxWI = (TXWI_STRUC *)&pWirelessPkt[TXINFO_SIZE];
 		RTMPWriteTxWI(pAd, pTxWI, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, 0, BSSID_WCID, frameLen,
-					0, 0, (UCHAR)pAd->CommonCfg.MlmeTransmit.field.MCS, IFS_HTTXOP,
-					&pAd->CommonCfg.MlmeTransmit);
+				0, 0, (UCHAR)pAd->CommonCfg.MlmeTransmit.field.MCS, IFS_HTTXOP,
+				&pAd->CommonCfg.MlmeTransmit);
 #ifdef RT_BIG_ENDIAN
 		RTMPWIEndianChange(pAd, (PUCHAR)pTxWI, TYPE_TXWI);
-#endif /* RT_BIG_ENDIAN */
+#endif
 		RTMPMoveMemory(&pWirelessPkt[TXWISize + TXINFO_SIZE + TSO_SIZE], pNullFrame, frameLen);
 #ifdef RT_BIG_ENDIAN
 		RTMPFrameEndianChange(pAd, (PUCHAR)&pWirelessPkt[TXINFO_SIZE + TXWISize + TSO_SIZE], DIR_WRITE, FALSE);
-#endif /* RT_BIG_ENDIAN */
+#endif
 		pAd->NullContext.BulkOutSize =  TXINFO_SIZE + TXWISize + TSO_SIZE + frameLen + 4;
 		pAd->NullContext.BulkOutSize = ( pAd->NullContext.BulkOutSize + 3) & (~3);
 
@@ -1087,7 +1081,8 @@ PNDIS_PACKET GetPacketFromRxRing(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
 
 	pData = &pRxContext->TransferBuffer[pAd->ReadPosition];
 
-	/* The RXDMA field is 4 bytes, now just use the first 2 bytes. The Length including the (RXWI + MSDU + Padding) */
+	/* The RXDMA field is 4 bytes, now just use the first 2 bytes. 
+	 * The Length including the (RXWI + MSDU + Padding) */
 	ThisFrameLen = *pData + (*(pData+1)<<8);
 	if (ThisFrameLen == 0) {
 		DBGPRINT(RT_DEBUG_TRACE,
@@ -1183,7 +1178,8 @@ PNDIS_PACKET GetPacketFromRxRing(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
 	RTMPWIEndianChange(pAd, pData, TYPE_RXWI);
 #endif
 	if (pRxBlk->MPDUtotalByteCnt > ThisFrameLen) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s():pRxWIMPDUtotalByteCount(%d) large than RxDMALen(%ld)\n",
+		DBGPRINT(RT_DEBUG_ERROR, 
+				("%s():pRxWIMPDUtotalByteCount(%d) large than RxDMALen(%ld)\n",
 				__FUNCTION__, pRxBlk->MPDUtotalByteCnt, ThisFrameLen));
 		goto label_null;
 	}
@@ -1191,11 +1187,12 @@ PNDIS_PACKET GetPacketFromRxRing(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
 #ifdef RT_BIG_ENDIAN
 	RTMPWIEndianChange(pAd, pData, TYPE_RXWI);
 #endif
-
 	/* allocate a rx packet*/
 	pNetPkt = RTMP_AllocateFragPacketBuffer(pAd, ThisFrameLen);
 	if (pNetPkt == NULL) {
-		DBGPRINT(RT_DEBUG_ERROR,("%s():Cannot Allocate sk buffer for this Bulk-In buffer!\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("%s():Cannot Allocate sk buffer for this Bulk-In buffer!\n", 
+				__FUNCTION__));
 		goto label_null;
 	}
 
@@ -1210,7 +1207,8 @@ PNDIS_PACKET GetPacketFromRxRing(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT) {
-		NdisMoveMemory((void *)&pRxBlk->hw_rx_info[0], (void *)pRxFceInfo, sizeof(RXFCE_INFO));
+		NdisMoveMemory((void *)&pRxBlk->hw_rx_info[0], (void *)pRxFceInfo,
+				sizeof(RXFCE_INFO));
 		pRxBlk->pRxFceInfo = (RXFCE_INFO *)&pRxBlk->hw_rx_info[0];
 	}
 #endif /* RLT_MAC */
