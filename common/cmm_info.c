@@ -4074,6 +4074,7 @@ int Show_SSID_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	return 0;
 }
 
+#ifdef DBG
 static int Show_WirelessMode_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
 	switch (pAd->CommonCfg.PhyMode) {
@@ -4123,7 +4124,6 @@ static int Show_WirelessMode_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	return 0;
 }
 
-
 static int Show_TxBurst_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
 	snprintf(pBuf, BufLen, "\t%s", pAd->CommonCfg.bEnableTxBurst ?
@@ -4151,6 +4151,7 @@ static int Show_TxPreamble_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 
 	return 0;
 }
+#endif //DBG
 
 int Show_TxPower_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
@@ -4260,6 +4261,7 @@ int Show_HtOpMode_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	return 0;
 }
 
+#ifdef DBG
 static int Show_HtExtcha_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
 	switch(pAd->CommonCfg.RegTransmitSetting.field.EXTCHA) {
@@ -4276,7 +4278,7 @@ static int Show_HtExtcha_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	}
 	return 0;
 }
-
+#endif // DBG
 
 int Show_HtMpduDensity_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
@@ -4327,6 +4329,7 @@ int Show_CountryCode_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	return 0;
 }
 
+#ifdef DBG
 #ifdef AGGREGATION_SUPPORT
 static int Show_PktAggregate_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
@@ -4352,12 +4355,12 @@ static int Show_WmmCapable_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	return 0;
 }
 
-
 static int Show_IEEE80211H_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
 	snprintf(pBuf, BufLen, "\t%s", pAd->CommonCfg.bIEEE80211H ? "TRUE":"FALSE");
 	return 0;
 }
+
 
 #ifdef CONFIG_STA_SUPPORT
 static int Show_NetworkType_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
@@ -4381,7 +4384,6 @@ static int Show_NetworkType_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	}
 	return 0;
 }
-
 
 static int Show_WPAPSK_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
@@ -4421,7 +4423,6 @@ static int Show_AuthMode_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		wdev = &pAd->StaCfg.wdev;
-
 #endif /* CONFIG_STA_SUPPORT */
 
 	if (!wdev)
@@ -4487,7 +4488,6 @@ static int Show_DefaultKeyID_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 	snprintf(pBuf, BufLen, "\t%d", wdev->DefaultKeyId);
 	return 0;
 }
-
 
 static int Show_WepKey_Proc(PRTMP_ADAPTER pAd, int KeyIdx, PSTRING pBuf, ULONG BufLen)
 {
@@ -4562,7 +4562,7 @@ static int Show_PMK_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 
 	return 0;
 }
-
+#endif //DBG
 
 static int Show_STA_RAInfo_Proc(PRTMP_ADAPTER pAd, PSTRING pBuf, ULONG BufLen)
 {
@@ -7241,9 +7241,7 @@ static struct {
 #ifdef AGGREGATION_SUPPORT
 	{"PktAggregate",			Show_PktAggregate_Proc},
 #endif
-
 	{"WmmCapable",				Show_WmmCapable_Proc},
-
 	{"IEEE80211H",				Show_IEEE80211H_Proc},
 #ifdef CONFIG_STA_SUPPORT
 	{"NetworkType",				Show_NetworkType_Proc},
