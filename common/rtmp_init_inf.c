@@ -31,7 +31,7 @@ static NDIS_STATUS WriteDatThread(RTMP_ADAPTER *pAd);
 #endif /* PROFILE_STORE */
 #endif /* CONFIG_STA_SUPPORT */
 
-int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
+BOOLEAN rt28xx_init(void *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 	NDIS_STATUS Status;
@@ -46,8 +46,6 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 
 	DBGPRINT(RT_DEBUG_TRACE, ("MAC[Ver:Rev=0x%08x : 0x%08x]\n",
 			pAd->MACVersion, pAd->ChipID));
-
-//	RT28XXDMADisable(pAd);
 
 	if (mcu_sys_init(pAd) != TRUE)
 		goto err1;
@@ -237,7 +235,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 
 	if (pAd->chipCap.bTempCompTxALC && pAd->bAutoTxAgcG)
 		InitLookupTable(pAd);
-#endif /* RTMP_TEMPERATURE_COMPENSATION */
+#endif
 
 #ifdef RTMP_FREQ_CALIBRATION_SUPPORT
 #ifdef CONFIG_STA_SUPPORT
@@ -261,7 +259,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 			pAd->CommonCfg.HtCapability.MCSSet[2],
 			pAd->CommonCfg.HtCapability.MCSSet[3],
 			pAd->CommonCfg.HtCapability.MCSSet[4]));
-#endif /* DOT11_N_SUPPORT */
+#endif
 
 #ifdef WIN_NDIS
 	/* Patch cardbus controller if EEPROM said so. */
@@ -284,8 +282,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 		AsicSendCommandToMcu(pAd, 0x31, 0xff, 0x00, 0x02, FALSE);
 		RtmpusecDelay(10000);
 	}
-#endif /* RTMP_MAC_USB */
-
+#endif
 	/*
 		Some modules init must be called before APStartUp().
 		Or APStartUp() will make up beacon content and call
@@ -385,7 +382,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 			RTUSBBulkReceive(pAd);
 			DBGPRINT(RT_DEBUG_TRACE, ("RTUSBBulkReceive!\n" ));
 		}
-#endif /* RTMP_MAC_USB */
+#endif
 	}
 
 	/* Set up the Mac address*/
@@ -397,7 +394,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 	RtmpOSNetDevAddrSet(pAd->OpMode, pAd->net_dev, &pAd->CurrentAddress[0],
 			(PUCHAR)(pAd->StaCfg.dev_name));
 	NdisMoveMemory(&pAd->StaCfg.wdev.if_addr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
-#endif /* CONFIG_STA_SUPPORT */
+#endif
 
 #ifdef UAPSD_SUPPORT
 	UAPSD_Init(pAd);
@@ -407,7 +404,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
 	}
-#endif /* CONFIG_AP_SUPPORT */
+#endif
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
@@ -433,7 +430,7 @@ int rt28xx_init(VOID *pAdSrc, PSTRING pDefaultMac, PSTRING pHostName)
 
 #ifdef STREAM_MODE_SUPPORT
 	RtmpStreamModeInit(pAd);
-#endif /* STREAM_MODE_SUPPORT */
+#endif
 
 #ifdef DOT11_N_SUPPORT
 #ifdef TXBF_SUPPORT
@@ -502,7 +499,7 @@ err1:
 }
 
 
-VOID RTMPDrvOpen(VOID *pAdSrc)
+void RTMPDrvOpen(void *pAdSrc)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 
@@ -588,7 +585,7 @@ VOID RTMPDrvOpen(VOID *pAdSrc)
 }
 
 
-VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
+void RTMPDrvClose(void *pAdSrc, void *net_dev)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 	UINT32 i;
@@ -788,7 +785,7 @@ VOID RTMPDrvClose(VOID *pAdSrc, VOID *net_dev)
 }
 
 
-VOID RTMPInfClose(VOID *pAdSrc)
+void RTMPInfClose(void *pAdSrc)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 
@@ -865,7 +862,7 @@ VOID RTMPInfClose(VOID *pAdSrc)
 }
 
 
-PNET_DEV RtmpPhyNetDevMainCreate(VOID *pAdSrc)
+PNET_DEV RtmpPhyNetDevMainCreate(void *pAdSrc)
 {
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)pAdSrc;
 	PNET_DEV pDevNew;
