@@ -21,9 +21,6 @@
 	Abstract:
 	IOCTL related subroutines
 
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
 */
 
 #include "rt_config.h"
@@ -45,11 +42,9 @@ static BOOLEAN Set_ForceTxBurst_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 static void RTMPAddKey(RTMP_ADAPTER *pAd, PNDIS_802_11_KEY pKey);
 static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, int cmd);
 static int RTMPQueryInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, int cmd);
-//static void RTMPIoctlShow(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, 
-//	UINT32 subcmd, void *pData, ULONG Data);
 
 #ifdef DBG
-#ifdef RTMP_RF_RW_SUPPORT 
+#ifdef RTMP_RF_RW_SUPPORT
 static void RTMPIoctlRF(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq);
 #endif
 #endif
@@ -60,7 +55,7 @@ static BOOLEAN Set_TGnWifiTest_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 
 #ifdef EXT_BUILD_CHANNEL_LIST
 static BOOLEAN Set_Ieee80211dClientMode_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
-#endif 
+#endif
 
 #ifdef DYNAMIC_VGA_SUPPORT
 static BOOLEAN Set_DyncVgaEnable_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
@@ -101,19 +96,17 @@ static struct {
 	{"HtDisallowTKIP",		Set_HtDisallowTKIP_Proc},
 #ifdef DOT11N_DRAFT3
 	{"HtBssCoex",			Set_HT_BssCoex_Proc},
-#endif /* DOT11N_DRAFT3 */
+#endif
 #endif /* DOT11_N_SUPPORT */
 
 #ifdef DOT11_VHT_AC
 	{"VhtBw",			Set_VhtBw_Proc},
 	{"VhtStbc",			Set_VhtStbc_Proc},
 	{"VhtBwSignal",			set_VhtBwSignal_Proc},
-#endif /* DOT11_VHT_AC */
-
+#endif
 #ifdef AGGREGATION_SUPPORT
 	{"PktAggregate",		Set_PktAggregate_Proc},
-#endif /* AGGREGATION_SUPPORT */
-
+#endif
 	{"WmmCapable",			Set_WmmCapable_Proc},
 	{"IEEE80211H",			Set_IEEE80211H_Proc},
 	{"NetworkType",			Set_NetworkType_Proc},
@@ -227,7 +220,7 @@ static struct {
 	{"ATETSSICBA",			Set_ATE_TSSI_CALIBRATION_Proc},
 	{"ATETSSICBAEX",		Set_ATE_TSSI_CALIBRATION_EX_Proc},
 #if defined(RT3350) || defined(RT3352)
-	{"ATETSSICALBRENABLE",	RT335x_Set_ATE_TSSI_CALIBRATION_ENABLE_Proc},
+	{"ATETSSICALBRENABLE",		RT335x_Set_ATE_TSSI_CALIBRATION_ENABLE_Proc},
 #endif /* defined(RT3350) || defined(RT3352) */
 #endif /* RTMP_INTERNAL_TX_ALC */
 #ifdef  RTMP_TEMPERATURE_COMPENSATION
@@ -313,7 +306,7 @@ static struct {
 #ifdef RALINK_ATE
 	{"bufferLoadFromEfuse",		Set_LoadEepromBufferFromEfuse_Proc},
 	{"efuseBufferModeWriteBack",	set_eFuseBufferModeWriteBack_Proc}, /* For backward compatible, the usage is the same as bufferWriteBack */
-#endif /* RALINK_ATE */
+#endif
 #endif /* RTMP_EFUSE_SUPPORT */
 	{"bufferLoadFromBin",		Set_LoadEepromBufferFromBin_Proc},
 	{"bufferWriteBack",		Set_EepromBufferWriteBack_Proc},
@@ -325,8 +318,7 @@ static struct {
 	{"AdhocN",			Set_AdhocN_Proc},
 #ifdef AGS_SUPPORT
 	{"Ags",				Show_AGS_Proc},
-#endif /* AGS_SUPPORT */
-
+#endif
 #if (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(NEW_WOW_SUPPORT)
 	{"wow_enable",			Set_WOW_Enable},
 	{"wow_gpio",			Set_WOW_GPIO},
@@ -338,8 +330,7 @@ static struct {
 
 #ifdef SINGLE_SKU
 	{"ModuleTxpower",		Set_ModuleTxpower_Proc},
-#endif /* SINGLE_SKU */
-
+#endif
 #ifdef DOT11W_PMF_SUPPORT
 	{"PMFMFPC",			Set_PMFMFPC_Proc},
 	{"PMFMFPR",			Set_PMFMFPR_Proc},
@@ -348,10 +339,10 @@ static struct {
 	{"rf",				set_rf},
 #ifdef DYNAMIC_VGA_SUPPORT
 	{"DyncVgaEnable",		Set_DyncVgaEnable_Proc},
-#endif /* DYNAMIC_VGA_SUPPORT */
+#endif
 #ifdef MICROWAVE_OVEN_SUPPORT
 	{"MO_FalseCCATh",		Set_MO_FalseCCATh_Proc},
-#endif /* MICROWAVE_OVEN_SUPPORT */
+#endif
 	{"tssi_enable",			set_tssi_enable},
 	{"fw_debug",			set_fw_debug},
 #ifdef RT_CFG80211_SUPPORT
@@ -492,7 +483,7 @@ static BOOLEAN Set_WmmCapable_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 	if ((bWmmCapable == 1)
 #ifdef RTMP_MAC_USB
 		&& (pAd->NumberOfPipes >= 5)
-#endif /* RTMP_MAC_USB */
+#endif
 		)
 		pAd->CommonCfg.bWmmCapable = TRUE;
 	else if (bWmmCapable == 0)
@@ -543,7 +534,7 @@ BOOLEAN Set_NetworkType_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 			}
 #ifdef DOT11_N_SUPPORT
 			SetCommonHT(pAd);
-#endif /* DOT11_N_SUPPORT */
+#endif
 		}
 		pAd->StaCfg.BssType = BSS_ADHOC;
 		RTMP_OS_NETDEV_SET_TYPE(pAd->net_dev, pAd->StaCfg.OriDevType);
@@ -608,13 +599,13 @@ BOOLEAN Set_NetworkType_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 			if (WMODE_EQUAL(pAd->CommonCfg.PhyMode, WMODE_A | WMODE_AN))
 				pAd->CommonCfg.CentralChannel = 36;
 			else
-#endif /* DOT11_N_SUPPORT */
+#endif
 				pAd->CommonCfg.CentralChannel = 6;
 		}
 #ifdef DOT11_N_SUPPORT
 		else
 			N_ChannelCheck(pAd);
-#endif /* DOT11_N_SUPPORT */
+#endif
 
 		/* same procedure with window driver */
 #ifdef DOT11_N_SUPPORT
@@ -1343,7 +1334,7 @@ static BOOLEAN Show_Adhoc_MacTable_Proc(PRTMP_ADAPTER pAd, PSTRING extra, UINT32
 #ifdef DOT11_N_SUPPORT
 	sprintf(extra, "%sHT Operating Mode : %d\n", extra,
 			pAd->CommonCfg.AddHTInfo.AddHtInfo2.OperaionMode);
-#endif /* DOT11_N_SUPPORT */
+#endif
 
 	sprintf(extra + strlen(extra), "\n%-19s%-4s%-4s%-7s%-7s%-7s%-10s%-6s%-6s%-6s%-6s\n",
 			"MAC", "AID", "BSS", "RSSI0", "RSSI1", "RSSI2", "PhMd", "BW", "MCS", "SGI", "STBC");
@@ -1650,7 +1641,7 @@ static BOOLEAN Set_AdhocN_Proc(PRTMP_ADAPTER pAd, PSTRING arg)
 
 	DBGPRINT(RT_DEBUG_TRACE, ("IF Set_AdhocN_Proc::(bAdhocN=%d)\n",
 			pAd->StaCfg.bAdhocN));
-#endif /* DOT11_N_SUPPORT */
+#endif
 	return TRUE;
 }
 
@@ -1774,20 +1765,18 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 	 PNDIS_802_11_PASSPHRASE ppassphrase = NULL;
 #ifdef DOT11_N_SUPPORT
 	OID_SET_HT_PHYMODE HT_PhyMode;	/*11n */
-#endif /* DOT11_N_SUPPORT */
+#endif
 #ifdef WPA_SUPPLICANT_SUPPORT
 	PNDIS_802_11_PMKID pPmkId = NULL;
 	BOOLEAN IEEE8021xState = FALSE;
 	BOOLEAN IEEE8021x_required_keys = FALSE;
 	UCHAR wpa_supplicant_enable = 0;
-#endif /* WPA_SUPPLICANT_SUPPORT */
-
+#endif
 #ifdef SNMP_SUPPORT
 	TX_RTY_CFG_STRUC tx_rty_cfg;
 	ULONG ShortRetryLimit, LongRetryLimit;
 	UCHAR ctmp;
-#endif /* SNMP_SUPPORT */
-
+#endif
 	struct wifi_dev *wdev = &pAd->StaCfg.wdev;
 
 #ifdef DOT11_N_SUPPORT
@@ -1963,7 +1952,8 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 						if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) {
 							if (pAd->Mlme.CntlMachine.CurrState != CNTL_IDLE) {
 								RTMP_MLME_RESET_STATE_MACHINE(pAd);
-								DBGPRINT(RT_DEBUG_TRACE, ("!!! MLME busy, reset MLME state machine !!!\n"));
+								DBGPRINT(RT_DEBUG_TRACE,
+										("!!! MLME busy, reset MLME state machine !!!\n"));
 							}
 						}
 
@@ -1985,7 +1975,9 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 				pAd->CommonCfg.cfg_wmode = PhyMode;
 				RTMPSetPhyMode(pAd, PhyMode);
 			}
-			DBGPRINT(RT_DEBUG_TRACE, ("Set::RT_OID_802_11_PHY_MODE (=%d)\n", PhyMode));
+			DBGPRINT(RT_DEBUG_TRACE,
+					("Set::RT_OID_802_11_PHY_MODE (=%d)\n",
+					PhyMode));
 		}
 		break;
 	case RT_OID_802_11_STA_CONFIG:
@@ -2094,7 +2086,9 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 				wdev->AuthMode = AuthMode;
 			}
 			wdev->PortSecured = WPA_802_1X_PORT_NOT_SECURED;
-			DBGPRINT(RT_DEBUG_TRACE, ("Set::OID_802_11_AUTHENTICATION_MODE (=%d) \n", wdev->AuthMode));
+			DBGPRINT(RT_DEBUG_TRACE,
+					("Set::OID_802_11_AUTHENTICATION_MODE (=%d) \n",
+					wdev->AuthMode));
 		}
 		break;
 	case OID_802_11_INFRASTRUCTURE_MODE:
@@ -2311,13 +2305,15 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 		} else {
 			if (wdev->AuthMode >= Ndis802_11AuthModeWPA) {
 				RTMPWPARemoveKeyProc(pAd, pRemoveKey);
-				DBGPRINT(RT_DEBUG_TRACE, ("Set::OID_802_11_REMOVE_KEY, Remove WPA Key!!\n"));
+				DBGPRINT(RT_DEBUG_TRACE,
+						("Set::OID_802_11_REMOVE_KEY, Remove WPA Key!!\n"));
 			} else {
 				KeyIdx = pRemoveKey->KeyIndex;
 				if (KeyIdx & 0x80000000) {
 					/* Should never set default bit when remove key */
 					Status = -EINVAL;
-					DBGPRINT(RT_DEBUG_TRACE, ("Set::OID_802_11_REMOVE_KEY, Failed!!(Should never set default bit when remove key)\n"));
+					DBGPRINT(RT_DEBUG_TRACE,
+							("Set::OID_802_11_REMOVE_KEY, Failed!!(Should never set default bit when remove key)\n"));
 				} else {
 					KeyIdx = KeyIdx & 0x0fffffff;
 					if (KeyIdx > 3) {
@@ -2430,7 +2426,8 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 			pAd->CommonCfg.bAPSDAC_VO = ((apsd & 0x00000010) >> 4) ? TRUE : FALSE;
 			pAd->CommonCfg.MaxSPLength = (UCHAR)((apsd & 0x00000060) >> 5);
 
-			DBGPRINT(RT_DEBUG_TRACE, ("Set::RT_OID_802_11_SET_APSD_SETTING (apsd=0x%lx, APSDCap=%d, [BE,BK,VI,VO]=[%d/%d/%d/%d], MaxSPLen=%d)\n",
+			DBGPRINT(RT_DEBUG_TRACE,
+					("Set::RT_OID_802_11_SET_APSD_SETTING (apsd=0x%lx, APSDCap=%d, [BE,BK,VI,VO]=[%d/%d/%d/%d], MaxSPLen=%d)\n",
 					apsd, pAd->StaCfg.UapsdInfo.bAPSDCapable,
 					pAd->CommonCfg.bAPSDAC_BE,
 					pAd->CommonCfg.bAPSDAC_BK,
@@ -2999,7 +2996,6 @@ static int RTMPSetInformation(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *rq, in
 		Status = -EOPNOTSUPP;
 		break;
 	}
-
 
 	return Status;
 }
@@ -4352,9 +4348,9 @@ next:
 		}
 
 	}
+
 	if (strlen(msg) == 1)
 		sprintf(msg+strlen(msg), "===>Error command format!");
-
 
 	/* Copy the information into the user buffer */
 	wrq->u.data.length = strlen(msg);
@@ -4584,8 +4580,7 @@ Arguments:
 */
 static void RTMPIoctlRF(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 {
-	CHAR *this_char;
-	CHAR *value;
+	CHAR *this_char, *value;
 	UCHAR regRF = 0;
 	CHAR *mpool, *msg; /*msg[2048]; */
 	CHAR *arg; /*arg[255]; */
@@ -4608,7 +4603,6 @@ static void RTMPIoctlRF(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq)
 		return;
 	}
 #endif
-
 	maxRFIdx = pAd->chipCap.MaxNumOfRfId;
 
 	mpool = os_alloc_mem(sizeof(CHAR)*(2048+256+12));
@@ -4811,7 +4805,7 @@ next:
 #endif /* RT65xx */
 
 
-static void RTMPIoctlBbp(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq, 
+static void RTMPIoctlBbp(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq,
 	CHAR *extra, UINT32 size)
 {
 #ifdef RTMP_BBP
@@ -4821,14 +4815,14 @@ static void RTMPIoctlBbp(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq,
 	UINT32 bbpId;
 	UINT32 bbpValue;
 	BOOLEAN bIsPrintAllBBP = FALSE;
-#endif /* RTMP_BBP */
+#endif
 
 #ifdef RT65xx
 	if (IS_RT65XX(pAd)) {
 		RTMPIoctlBbp32(pAd, wrq, extra, size);
 		return;
 	}
-#endif /* RT65xx */
+#endif
 
 #ifdef RTMP_BBP
 	if (wrq->u.data.length > 1) {
@@ -4854,7 +4848,7 @@ static void RTMPIoctlBbp(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq,
 					if (ATE_ON(pAd)) {
 						ATE_BBP_IO_READ8_BY_REG_ID(pAd, bbpId, &regBBP);
 					} else
-#endif /* RALINK_ATE */
+#endif
 					{
 					RTMP_BBP_IO_READ8_BY_REG_ID(pAd, bbpId, &regBBP);
 					}
@@ -4882,7 +4876,7 @@ static void RTMPIoctlBbp(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq,
 						/* read it back for showing */
 						ATE_BBP_IO_READ8_BY_REG_ID(pAd, bbpId, &regBBP);
 					} else
-#endif /* RALINK_ATE */
+#endif
 					{
 						RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, bbpId, bbpValue);
 						/* read it back for showing */
@@ -5005,7 +4999,7 @@ static void RTMPIoctlShow(PRTMP_ADAPTER pAd, RTMP_IOCTL_INPUT_STRUCT *wrq, UINT3
 				pAd->CommonCfg.RegTransmitSetting.field.BW)
 				snprintf(extra, size, "Monitor Mode(CentralChannel %d)\n", pAd->CommonCfg.CentralChannel);
 			else
-#endif /* DOT11_N_SUPPORT */
+#endif
 				snprintf(extra, size, "Monitor Mode(Channel %d)\n", pAd->CommonCfg.Channel);
 		} else {
 			if (pAd->IndicateMediaState == NdisMediaStateConnected) {
@@ -5449,7 +5443,7 @@ static int RtmpIoctl_rt_ioctl_giwap(RTMP_ADAPTER *pAd, void *pData, ULONG Data)
 	/* Add for RT2870 */
 	else if (pAd->StaCfg.wpa_supplicant_info.WpaSupplicantUP != WPA_SUPPLICANT_DISABLE)
 		NdisMoveMemory(pData, pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-#endif /* WPA_SUPPLICANT_SUPPORT */
+#endif
 	else
 		return NDIS_STATUS_FAILURE;
 	return NDIS_STATUS_SUCCESS;
@@ -6181,7 +6175,7 @@ int RtmpIoctl_rt_ioctl_siwauth(RTMP_ADAPTER *pAd, void *pData, ULONG Data)
 			pAd->StaCfg.PairCipher = Ndis802_11WEPEnabled;
 #ifdef WPA_SUPPLICANT_SUPPORT
 			pAd->StaCfg.wdev.IEEE8021X = FALSE;
-#endif /* WPA_SUPPLICANT_SUPPORT */
+#endif
 		} else if (pIoctlWpa->value == RT_CMD_STA_IOCTL_WPA_PAIRWISE_TKIP) {
 			wdev->WepStatus = Ndis802_11TKIPEnable;
 			pAd->StaCfg.PairCipher = Ndis802_11TKIPEnable;
@@ -6542,8 +6536,8 @@ static int RtmpIoctl_rt_ioctl_giwencodeext(RTMP_ADAPTER *pAd, void *pData, ULONG
 	}
 
 	pIoctlSec->KeyIdx = idx + 1;
-
 	pIoctlSec->length = 0;
+
 	switch (wdev->WepStatus) {
 	case Ndis802_11WEPDisabled:
 		pIoctlSec->Alg = RT_CMD_STA_IOCTL_SECURITY_ALG_NONE;
@@ -6868,8 +6862,10 @@ static int RtmpIoctl_rt_ioctl_giwrate(RTMP_ADAPTER *pAd, void *pData, ULONG Data
 		ht_setting.word = pAd->MacTab.Content[BSSID_WCID].HTPhyMode.word;
 	}
 
-	RtmpDrvRateGet(NULL,ht_setting.field.MODE,ht_setting.field.ShortGI,ht_setting.field.BW,
-	ht_setting.field.MCS,newRateGetAntenna(ht_setting.field.MCS),pData);
+	RtmpDrvRateGet(NULL,ht_setting.field.MODE,ht_setting.field.ShortGI,
+			ht_setting.field.BW,
+			ht_setting.field.MCS,newRateGetAntenna(ht_setting.field.MCS),
+			pData);
 
 	return NDIS_STATUS_SUCCESS;
 }
@@ -6919,33 +6915,6 @@ static int RtmpIoctl_rt_ioctl_rssi(RTMP_ADAPTER *pAd, void *pData, ULONG Data)
 	return NDIS_STATUS_SUCCESS;
 }
 
-
-/*
-========================================================================
-Routine Description:
-	Handler for CMD_RTPRIV_IOCTL_STA_IW_SET_PARAM_PRE.
-
-Arguments:
-	pAd		- WLAN control block pointer
-	*pData		- the communication data pointer
-	Data		- the communication data
-
-Return Value:
-	NDIS_STATUS_SUCCESS or NDIS_STATUS_FAILURE
-
-Note:
-========================================================================
-*/
-#if 0 //JB removed
-static int RtmpIoctl_rt_ioctl_setparam(RTMP_ADAPTER *pAd, void *pData, ULONG Data)
-{
-	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
-	pObj->ioctl_if_type = INT_MAIN;
-	pObj->ioctl_if = MAIN_MBSSID;
-
-	return NDIS_STATUS_SUCCESS;
-}
-#endif
 
 /*
 ========================================================================
@@ -7171,12 +7140,12 @@ Routine Description:
 	Communication with DRIVER module, whatever IOCTL.
 
 Arguments:
-	pAdSrc			- WLAN control block pointer
-	*pRequest		- the request from IOCTL
-	Command			- communication command
-	Subcmd			- communication sub-command
-	*pData			- the communication data pointer
-	Data			- the communication data
+	pAdSrc		- WLAN control block pointer
+	*pRequest	- the request from IOCTL
+	Command		- communication command
+	Subcmd		- communication sub-command
+	*pData		- the communication data pointer
+	Data		- the communication data
 
 Return Value:
 	NDIS_STATUS_SUCCESS or NDIS_STATUS_FAILURE
