@@ -16,11 +16,6 @@
 	Module Name:
 	rt_profile.c
 
-	Abstract:
-
-	Revision History:
-	Who          When          What
-	---------    ----------    ----------------------------------------------
  */
 
 #include "rt_config.h"
@@ -35,17 +30,22 @@ struct dev_type_name_map{
 	PSTRING prefix[2];
 };
 
+
 #define SECOND_INF_MAIN_DEV_NAME		"rai"
+
+#if 0
 #define SECOND_INF_MBSSID_DEV_NAME		"rai"
 #define SECOND_INF_WDS_DEV_NAME			"wdsi"
 #define SECOND_INF_APCLI_DEV_NAME		"apclii"
 #define SECOND_INF_MESH_DEV_NAME		"meshi"
 #define SECOND_INF_P2P_DEV_NAME			"p2pi"
 #define SECOND_INF_MONITOR_DEV_NAME		"moni"
+#endif
 
 #define xdef_to_str(s)   def_to_str(s)
 #define def_to_str(s)    #s
 
+#if 0
 #define FIRST_EEPROM_FILE_PATH	"/etc_ro/Wireless/RT2860/"
 #define FIRST_AP_PROFILE_PATH	"/etc/Wireless/RT2860/RT2860.dat"
 #define FIRST_CHIP_ID	xdef_to_str(CONFIG_RT_FIRST_CARD)
@@ -53,13 +53,14 @@ struct dev_type_name_map{
 #define SECOND_EEPROM_FILE_PATH	"/etc_ro/Wireless/iNIC/"
 #define SECOND_AP_PROFILE_PATH	"/etc/Wireless/iNIC/iNIC_ap.dat"
 #define SECOND_CHIP_ID	xdef_to_str(CONFIG_RT_SECOND_CARD)
+#endif
 
 static struct dev_type_name_map prefix_map[] =
 {
 	{INT_MAIN, 		{INF_MAIN_DEV_NAME, SECOND_INF_MAIN_DEV_NAME}},
 #ifdef CONFIG_AP_SUPPORT
 #ifdef MBSS_SUPPORT
-	{INT_MBSSID, 	{INF_MBSSID_DEV_NAME, SECOND_INF_MBSSID_DEV_NAME}},
+	{INT_MBSSID, 		{INF_MBSSID_DEV_NAME, SECOND_INF_MBSSID_DEV_NAME}},
 #endif /* MBSS_SUPPORT */
 #ifdef APCLI_SUPPORT
 	{INT_APCLI, 		{INF_APCLI_DEV_NAME, SECOND_INF_APCLI_DEV_NAME}},
@@ -88,7 +89,8 @@ void get_dev_config_idx(RTMP_ADAPTER *pAd)
 
 	A2Hex(first_card, FIRST_CHIP_ID);
 	A2Hex(second_card, SECOND_CHIP_ID);
-	DBGPRINT(RT_DEBUG_TRACE, ("chip_id1=0x%x, chip_id2=0x%x, pAd->MACVersion=0x%x\n", first_card, second_card, pAd->MACVersion));
+	DBGPRINT(RT_DEBUG_TRACE, ("chip_id1=0x%x, chip_id2=0x%x, pAd->MACVersion=0x%x\n",
+			first_card, second_card, pAd->MACVersion));
 
 //	if ((pAd->MACVersion & chip_id) == CONFIG_RT_SECOND_CARD)
 //		pAd->flash_offset = SECOND_RF_OFFSET;
@@ -116,8 +118,9 @@ UCHAR *get_dev_name_prefix(RTMP_ADAPTER *pAd, int dev_type)
 	do {
 		map = &prefix_map[type_idx];
 		if (map->type == dev_type) {
-			DBGPRINT(RT_DEBUG_TRACE, ("%s(): dev_idx = %d, dev_name_prefix=%s\n",
-						__FUNCTION__, dev_idx, map->prefix[dev_idx]));
+			DBGPRINT(RT_DEBUG_TRACE, 
+					("%s(): dev_idx = %d, dev_name_prefix=%s\n",
+					__FUNCTION__, dev_idx, map->prefix[dev_idx]));
 			return map->prefix[dev_idx];
 		}
 		type_idx++;
@@ -172,7 +175,6 @@ NDIS_STATUS RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 #ifdef HOSTAPD_SUPPORT
 	int i;
 #endif
-
 	src = get_dev_profile(pAd);
 	if (src && *src) {
 		RtmpOSFSInfoChange(&osFSInfo, TRUE);
@@ -218,14 +220,15 @@ NDIS_STATUS RTMPReadParametersHook(RTMP_ADAPTER *pAd)
 #ifdef HOSTAPD_SUPPORT
 		for (i = 0; i < pAd->ApCfg.BssidNum; i++) {
 			pAd->ApCfg.MBSSID[i].Hostapd=Hostapd_Diable;
-			DBGPRINT(RT_DEBUG_TRACE, ("Reset ra%d hostapd support=FLASE", i));
+			DBGPRINT(RT_DEBUG_TRACE, 
+					("Reset ra%d hostapd support=FLASE",
+					i));
 		}
 #endif /*HOSTAPD_SUPPORT */
 
 #ifdef SINGLE_SKU_V2
 	RTMPSetSingleSKUParameters(pAd);
-#endif /* SINGLE_SKU_V2 */
-
+#endif
 	return retval;
 }
 
@@ -236,9 +239,11 @@ void RTMP_IndicateMediaState(PRTMP_ADAPTER pAd, NDIS_MEDIA_STATE media_state)
 
 #ifdef SYSTEM_LOG_SUPPORT
 	if (pAd->IndicateMediaState == NdisMediaStateConnected) {
-		RTMPSendWirelessEvent(pAd, IW_STA_LINKUP_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
+		RTMPSendWirelessEvent(pAd, IW_STA_LINKUP_EVENT_FLAG, 
+				pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
 	} else {
-		RTMPSendWirelessEvent(pAd, IW_STA_LINKDOWN_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
+		RTMPSendWirelessEvent(pAd, IW_STA_LINKDOWN_EVENT_FLAG, 
+				pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0);
 	}
 #endif /* SYSTEM_LOG_SUPPORT */
 }
@@ -261,7 +266,8 @@ void tbtt_tasklet(unsigned long data)
 	if (pAd->OpMode == OPMODE_AP)
 #endif /* RT_CFG80211_P2P_SUPPORT */
 	{
-		/* step 7 - if DTIM, then move backlogged bcast/mcast frames from PSQ to TXQ whenever DtimCount==0 */
+		/* step 7 - if DTIM, then move backlogged bcast/mcast frames 
+		 * from PSQ to TXQ whenever DtimCount==0 */
 #ifdef RTMP_MAC_USB
 		if ((pAd->ApCfg.DtimCount + 1) == pAd->ApCfg.DtimPeriod)
 #endif /* RTMP_MAC_USB */
@@ -382,9 +388,6 @@ void announce_802_3_packet(void *pAdSrc, PNDIS_PACKET pPacket, UCHAR OpMode)
 	}
 #endif /* APCLI_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
-
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
 
 	/* Push up the protocol stack */
 #ifdef CONFIG_AP_SUPPORT
@@ -540,8 +543,7 @@ void RTMPFreeAdapter(void *pAdSrc)
 
 #ifdef DOT11_N_SUPPORT
 	NdisFreeSpinLock(&pAd->mpdu_blk_pool.lock);
-#endif /* DOT11_N_SUPPORT */
-
+#endif
 	if (pAd->iw_stats) {
 		os_free_mem(pAd->iw_stats);
 		pAd->iw_stats = NULL;
@@ -568,7 +570,7 @@ void RTMPFreeAdapter(void *pAdSrc)
 	RTMP_OS_FREE_SEM(pAd);
 	RTMP_OS_FREE_ATOMIC(pAd);
 
-	RtmpOsVfree(pAd); /* pci_free_consistent(os_cookie->pci_dev,sizeof(RTMP_ADAPTER),pAd,os_cookie->pAd_pa); */
+	RtmpOsVfree(pAd);
 	if (os_cookie)
 		os_free_mem(os_cookie);
 }
@@ -626,7 +628,7 @@ int RTMPSendPackets(NDIS_HANDLE dev_hnd, PPNDIS_PACKET pkt_list, UINT pkt_cnt,
 	if (*(int*)(GET_OS_PKT_CB(pPacket)) == BRIDGE_TAG) {
 		RTMP_SET_PACKET_5VT(pPacket, 1);
 	}
-#endif /* CONFIG_5VT_ENHANCE */
+#endif
 
 	wdev_tx_pkts((NDIS_HANDLE)pAd, (PPNDIS_PACKET) &pPacket, 1, wdev);
 	return 0;
@@ -638,7 +640,7 @@ PNET_DEV get_netdev_from_bssid(RTMP_ADAPTER *pAd, UCHAR FromWhichBSSID)
 	PNET_DEV dev_p = NULL;
 #ifdef CONFIG_AP_SUPPORT
 	UCHAR infRealIdx;
-#endif /* CONFIG_AP_SUPPORT */
+#endif
 
 	do {
 #ifdef CONFIG_STA_SUPPORT
@@ -719,8 +721,7 @@ int RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, void *pCB)
 #ifdef SINGLE_SKU
 				&& (strstr(pConfig->pCmdData, "ModuleTxpower") == NULL)
 #endif /* SINGLE_SKU */
-			)
-			{
+			) {
 				return -ENETDOWN;
 			}
 		} else {
@@ -734,7 +735,7 @@ int RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, void *pCB)
 		pObj->ioctl_if = MAIN_MBSSID;
 	} else if (pConfig->priv_flags == INT_MBSSID) {
 		pObj->ioctl_if_type = INT_MBSSID;
-/*    	if (!RTMPEqualMemory(net_dev->name, pAd->net_dev->name, 3))  // for multi-physical card, no MBSSID */
+		/* if (!RTMPEqualMemory(net_dev->name, pAd->net_dev->name, 3))  // for multi-physical card, no MBSSID */
 		if (strcmp(pConfig->name, RtmpOsGetNetDevName(pAd->net_dev)) != 0) {
 			/* sample */
 			for (index = 1; index < pAd->ApCfg.BssidNum; index++) {
@@ -762,7 +763,9 @@ int RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, void *pCB)
 			}
 
 			if (index == MAX_APCLI_NUM) {
-				DBGPRINT(RT_DEBUG_ERROR, ("%s(): can not find Apcli I/F\n", __FUNCTION__));
+				DBGPRINT(RT_DEBUG_ERROR, 
+						("%s(): can not find Apcli I/F\n", 
+						__FUNCTION__));
 				return -ENETDOWN;
 			}
 		}
@@ -779,7 +782,7 @@ int RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, void *pCB)
 }
 
 
-void AP_E2PROM_IOCTL_PostCtrl(RTMP_IOCTL_INPUT_STRUCT *wrq, PSTRING msg)
+static void AP_E2PROM_IOCTL_PostCtrl(RTMP_IOCTL_INPUT_STRUCT *wrq, PSTRING msg)
 {
 	wrq->u.data.length = strlen(msg);
 	if (copy_to_user(wrq->u.data.pointer, msg, wrq->u.data.length)) {
@@ -788,7 +791,7 @@ void AP_E2PROM_IOCTL_PostCtrl(RTMP_IOCTL_INPUT_STRUCT *wrq, PSTRING msg)
 }
 
 
-void IAPP_L2_UpdatePostCtrl(PRTMP_ADAPTER pAd, IN UINT8 *mac_p, int bssid)
+static void IAPP_L2_UpdatePostCtrl(PRTMP_ADAPTER pAd, IN UINT8 *mac_p, int bssid)
 {
 }
 #endif /* CONFIG_AP_SUPPORT */
