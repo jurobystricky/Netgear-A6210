@@ -69,34 +69,41 @@
 */
 
 // Defines to include optional code.
-//	NOTE: Do not define these options. ETxBfEnCond==3 and
+//	NOTE: Do not define these options.
+//		ETxBfEnCond==3 and
 //		MCS Feedback are not fully implemented
+
 //#define ETXBF_EN_COND3_SUPPORT	// Include ETxBfEnCond==3 code
-//#define MFB_SUPPORT				// Include MCS Feedback code
+//#define MFB_SUPPORT			// Include MCS Feedback code
 
 // MCS FB definitions
 #define MSI_TOGGLE_BF		6
-#define TOGGLE_BF_PKTS		5// the number of packets with inverted BF status
+#define TOGGLE_BF_PKTS		5 // the number of packets with inverted BF status
 
 // TXBF State definitions
-#define READY_FOR_SNDG0		0//jump to WAIT_SNDG_FB0 when channel change or periodically
-#define WAIT_SNDG_FB0		1//jump to WAIT_SNDG_FB1 when bf report0 is received
+#define READY_FOR_SNDG0		0 //jump to WAIT_SNDG_FB0 when channel change or periodically
+#define WAIT_SNDG_FB0		1 //jump to WAIT_SNDG_FB1 when bf report0 is received
 #define WAIT_SNDG_FB1		2
-#define WAIT_MFB			3
+#define WAIT_MFB		3
 #define WAIT_USELESS_RSP	4
 #define WAIT_BEST_SNDG		5
 
-#define NO_SNDG_CNT_THRD	0//send sndg packet if there is no sounding for (NO_SNDG_CNT_THRD+1)*500msec. If this =0, bf matrix is updated at each call of APMlmeDynamicTxRateSwitchingAdapt()
+/*
+ *send sndg packet if there is no sounding for (NO_SNDG_CNT_THRD+1)*500msec. 
+ *If this =0, bf matrix is updated at each call of APMlmeDynamicTxRateSwitchingAdapt()
+*/
+
+#define NO_SNDG_CNT_THRD	0 
 
 // ------------ BEAMFORMING PROFILE HANDLING ------------
 
-#define IMP_MAX_BYTES		14		// Implicit: 14 bytes per subcarrier
+#define IMP_MAX_BYTES		14	// Implicit: 14 bytes per subcarrier
 #define IMP_MAX_BYTES_ONE_COL	7	// Implicit: 7 bytes per subcarrier, when reading first column
-#define EXP_MAX_BYTES		18		// Explicit: 18 bytes per subcarrier
+#define EXP_MAX_BYTES		18	// Explicit: 18 bytes per subcarrier
 #ifdef MT76x2
-#define MAX_BYTES            2      // 2 bytes per subcarrier for implicit and explicit TxBf
+#define MAX_BYTES		2	// 2 bytes per subcarrier for implicit and explicit TxBf
 #endif
-#define IMP_COEFF_SIZE		 9		// 9 bits/coeff
+#define IMP_COEFF_SIZE		 9	// 9 bits/coeff
 #define IMP_COEFF_MASK		0x1FF
 
 #define PROFILE_MAX_CARRIERS_20		56	// Number of subcarriers in 20 MHz mode
@@ -114,7 +121,6 @@ typedef struct {
 	int lwb1, upb1;
 	int lwb2, upb2;
 } SC_TABLE_ENTRY;
-
 
 typedef struct {
 	BOOLEAN impProfile;
@@ -146,7 +152,6 @@ typedef struct {
 } PFMU_DATA;
 #endif
 
-
 typedef struct {
 #ifdef MT76x2
 	UCHAR E1gBeg;
@@ -173,7 +178,7 @@ typedef struct {
 	UCHAR E1aMidMid[3];
 	UCHAR E1aMidEnd[3];
 #endif
-} ITXBF_LNA_PARAMS;			// ITxBF BBP reg LNA calibration parameters
+} ITXBF_LNA_PARAMS;		// ITxBF BBP reg LNA calibration parameters
 
 typedef struct {
 #ifdef MT76x2
@@ -187,124 +192,67 @@ typedef struct {
 	UCHAR E1aMidMid;
 	UCHAR E1aMidEnd;
 #endif
-} ITXBF_DIV_PARAMS;			// ITxBF Divider Calibration parameters
+} ITXBF_DIV_PARAMS;		// ITxBF Divider Calibration parameters
 
-void ITxBFGetEEPROM(
-	IN RTMP_ADAPTER *pAd,
-	IN ITXBF_PHASE_PARAMS *phaseParams,
-	IN ITXBF_LNA_PARAMS *lnaParams,
-	IN ITXBF_DIV_PARAMS *divParams);
+void ITxBFGetEEPROM(RTMP_ADAPTER *pAd, ITXBF_PHASE_PARAMS *phaseParams,
+	ITXBF_LNA_PARAMS *lnaParams, ITXBF_DIV_PARAMS *divParams);
 
 #ifdef MT76x2
-BOOLEAN ITxBFDividerCalibrationStartUp(
-	IN RTMP_ADAPTER *pAd,
-	IN int calFunction,
-	IN int calMethod,
-	OUT UCHAR *divPhase);
+BOOLEAN ITxBFDividerCalibrationStartUp(RTMP_ADAPTER *pAd, int calFunction,
+	int calMethod, UCHAR *divPhase);
 #endif
 
-VOID ITxBFLoadLNAComp(
-	IN RTMP_ADAPTER *pAd);
+void ITxBFLoadLNAComp(RTMP_ADAPTER *pAd);
 
-int ITxBFLNACalibration(
-	IN RTMP_ADAPTER *pAd,
-	IN int calFunction,
-	IN int calMethod,
-	IN BOOLEAN gBand);
+int ITxBFLNACalibration(RTMP_ADAPTER *pAd, int calFunction, int calMethod,
+	BOOLEAN gBand);
 
 #ifdef MT76x2
-VOID mt76x2_ITxBFLoadLNAComp(
-	IN RTMP_ADAPTER *pAd);
+void mt76x2_ITxBFLoadLNAComp(RTMP_ADAPTER *pAd);
 
-BOOLEAN ITxBFLNACalibrationStartUp(
-	IN RTMP_ADAPTER *pAd,
-	IN INT calFunction,
-	IN INT calMethod,
-	IN BOOLEAN gBand);
+BOOLEAN ITxBFLNACalibrationStartUp(RTMP_ADAPTER *pAd, int calFunction,
+	int calMethod, BOOLEAN gBand);
 
-BOOLEAN ITxBFPhaseCalibrationStartUp(
-	IN RTMP_ADAPTER *pAd,
-	IN INT calFunction,
-	IN USHORT ch);
+BOOLEAN ITxBFPhaseCalibrationStartUp(RTMP_ADAPTER *pAd, int calFunction,
+	USHORT ch);
 
-BOOLEAN ITxBFPhaseCalibration(
-	IN RTMP_ADAPTER *pAd,
-	IN INT calFunction,
-	IN USHORT ch);
+BOOLEAN ITxBFPhaseCalibration(RTMP_ADAPTER *pAd, int calFunction, USHORT ch);
 #endif
 
-void Read_TxBfProfile(
-	IN	RTMP_ADAPTER	*pAd,
-	IN	PROFILE_DATA	*prof,
-	IN	int				profileNum,
-	IN	BOOLEAN			implicitProfile);
+void Read_TxBfProfile(RTMP_ADAPTER *pAd, PROFILE_DATA *prof, int profileNum,
+	BOOLEAN implicitProfile);
 
-void Write_TxBfProfile(
-	IN	RTMP_ADAPTER	*pAd,
-	IN	PROFILE_DATA	*prof,
-	IN	int				profileNum);
+void Write_TxBfProfile(RTMP_ADAPTER *pAd, PROFILE_DATA *prof, int profileNum);
 
-void Read_TagField(
-	IN	PRTMP_ADAPTER	pAd,
-	IN  UCHAR	*row,
-	IN  int		profileNum);
+void Read_TagField(PRTMP_ADAPTER pAd, UCHAR *row, int profileNum);
 
 // Write_TagField - write a profile tagfield
-void Write_TagField(
-	IN	RTMP_ADAPTER *pAd,
-	IN  UCHAR	*row,
-	IN  int		profileNum);
+void Write_TagField(RTMP_ADAPTER *pAd, UCHAR *row, int profileNum);
 
 #ifdef MT76x2
-BOOLEAN TxBfProfileTagRead(
-	IN PRTMP_ADAPTER     pAd,
-	IN PFMU_PROFILE      *prof,
-	IN UCHAR             profileIdx);
+BOOLEAN TxBfProfileTagRead(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, UCHAR profileIdx);
 
-BOOLEAN TxBfProfileTagWrite(
-	IN PRTMP_ADAPTER     pAd,
-	IN PFMU_PROFILE      *prof,
-	IN UCHAR             profileIdx);
+BOOLEAN TxBfProfileTagWrite(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, UCHAR profileIdx);
 
-BOOLEAN TxBfProfileDataRead(
-	IN PRTMP_ADAPTER     pAd,
-	IN PFMU_DATA        *pData,
-	IN UCHAR             profileIdx,
-	IN UCHAR             subcarrierIdx);
+BOOLEAN TxBfProfileDataRead(PRTMP_ADAPTER pAd, PFMU_DATA *pData, UCHAR profileIdx,
+	UCHAR subcarrierIdx);
 
-BOOLEAN TxBfProfileDataWrite(
-	IN PRTMP_ADAPTER     pAd,
-	IN PFMU_DATA         *pData,
-	IN UCHAR             profileIdx,
-	IN UCHAR             subcarrierIdx);
+BOOLEAN TxBfProfileDataWrite(PRTMP_ADAPTER pAd, PFMU_DATA *pData, UCHAR profileIdx,
+	UCHAR subcarrierIdx);
 
-BOOLEAN TxBfProfileTagValid(
-	IN PRTMP_ADAPTER     pAd,
-	IN PFMU_PROFILE      *prof,
-	IN UCHAR             profileIdx);
+BOOLEAN TxBfProfileTagValid(PRTMP_ADAPTER pAd, PFMU_PROFILE *prof, UCHAR profileIdx);
 #endif
 
 // displayTagfield - display one tagfield
-void displayTagfield(
-	IN	RTMP_ADAPTER *pAd,
-	IN	int		profileNum,
-	IN	BOOLEAN implicitProfile);
+void displayTagfield(RTMP_ADAPTER *pAd, int profileNum, BOOLEAN implicitProfile);
 
 // Unpack an ITxBF matrix element from a row of bytes
-int Unpack_IBFValue(
-	IN UCHAR *row,
-	IN int elemNum);
+int Unpack_IBFValue(UCHAR *row, int elemNum);
 
-int iCalcCalibration(
-	IN RTMP_ADAPTER *pAd,
-	IN int calParams[2],
-	IN int profileNum);
+int iCalcCalibration(RTMP_ADAPTER *pAd, int calParams[2], int profileNum);
 
-void ITxBFSetEEPROM(
-	IN RTMP_ADAPTER *pAd,
-	IN ITXBF_PHASE_PARAMS *phaseParams,
-	IN ITXBF_LNA_PARAMS *lnaParams,
-	IN ITXBF_DIV_PARAMS *divParams);
+void ITxBFSetEEPROM(RTMP_ADAPTER *pAd, ITXBF_PHASE_PARAMS *phaseParams,
+	ITXBF_LNA_PARAMS *lnaParams, ITXBF_DIV_PARAMS *divParams);
 
 #endif // TXBF_SUPPORT //
 
