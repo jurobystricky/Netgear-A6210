@@ -296,7 +296,7 @@ static void RTMPTkipAppendByte(PTKIP_KEY_INFO pTkip, UCHAR uChar)
 static void RTMPTkipAppend(PTKIP_KEY_INFO pTkip, PUCHAR pSrc, UINT nBytes)
 {
 	/* This is simple */
-	while(nBytes > 0) {
+	while (nBytes > 0) {
 		RTMPTkipAppendByte(pTkip, *pSrc++);
 		nBytes--;
 	}
@@ -553,6 +553,7 @@ static UINT rotr1(UINT a)
 	return b;
 }
 
+//static 
 void RTMPTkipMixKey(UCHAR *key, UCHAR *ta,
 	ULONG pnl, /* Least significant 16 bits of PN */
 	ULONG pnh, /* Most significant 32 bits of PN */
