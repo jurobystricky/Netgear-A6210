@@ -49,7 +49,7 @@ void RTMPDrvOpen(void *pAd);
 void RTMPDrvClose(void *pAd, void *net_dev);
 void RTMPInfClose(void *pAd);
 
-int rt28xx_init(void *pAd, PSTRING pDefaultMac, PSTRING pHostName);
+BOOLEAN rt28xx_init(void *pAd, PSTRING pDefaultMac, PSTRING pHostName);
 
 PNET_DEV RtmpPhyNetDevMainCreate(void *pAd);
 
