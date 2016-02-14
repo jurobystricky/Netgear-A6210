@@ -83,16 +83,13 @@ typedef struct _UAPSD_INFO {
 #include "rt_ate.h"
 #endif
 
-
 // TODO: shiang-6590, remove it after ATE fully re-organized! copy from rtmp_bbp.h
 #ifndef MAX_BBP_ID
 	#define MAX_BBP_ID	136
 #endif
 // TODO: ---End
 
-
 /*#define DBG_DIAGNOSE		1 */
-
 
 /*+++Used for merge MiniportMMRequest() and MiniportDataMMRequest() into one function */
 #define MAX_DATAMM_RETRY	3
@@ -114,8 +111,6 @@ typedef struct _UAPSD_INFO {
 #define MAX_EEPROM_BUFFER_SIZE	1024
 
 extern unsigned char CISCO_OUI[];
-//extern UCHAR BaSizeArray[4];
-
 extern UCHAR BROADCAST_ADDR[MAC_ADDR_LEN];
 extern UCHAR ZERO_MAC_ADDR[MAC_ADDR_LEN];
 
@@ -4860,18 +4855,6 @@ NDIS_STATUS RTMPFreeTXDRequest(
 	 UCHAR NumberRequired,
 	PUCHAR FreeNumberIs);
 
-NDIS_STATUS MlmeHardTransmit(
-	RTMP_ADAPTER *pAd,
-	UCHAR QueIdx,
-	PNDIS_PACKET pPacket,
-	BOOLEAN FlgDataQForce,
-	BOOLEAN FlgIsLocked);
-
-NDIS_STATUS MlmeHardTransmitMgmtRing(
-	RTMP_ADAPTER *pAd,
-	UCHAR QueIdx,
-	PNDIS_PACKET    pPacket);
-
 USHORT RTMPCalcDuration(
 	RTMP_ADAPTER *pAd,
 	UCHAR Rate,
@@ -5764,7 +5747,6 @@ void dbQueueEnqueueRxFrame(UCHAR *pRxWI, UCHAR *pDot11Hdr ULONG flags);
 BOOLEAN Show_DescInfo_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Show_MacTable_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Show_sta_tr_proc(RTMP_ADAPTER *pAd, PSTRING arg);
-BOOLEAN show_stainfo_proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN show_devinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN show_sysinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN show_trinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg);
@@ -5884,9 +5866,6 @@ void Indicate_Legacy_Packet_Hdr_Trns(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 void Indicate_EAPOL_Packet(PRTMP_ADAPTER pAd, RX_BLK *pRxBlk,
 	UCHAR FromWhichBSSID);
 
-UINT deaggregate_AMSDU_announce(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk,
-	PNDIS_PACKET pPacket, PUCHAR pData, ULONG DataSize, UCHAR OpMode);
-
 #ifdef TXBF_SUPPORT
 BOOLEAN clientSupportsETxBF(RTMP_ADAPTER *pAd, HT_BF_CAP *pTxBFCap);
 void setETxBFCap(RTMP_ADAPTER *pAd, HT_BF_CAP *pTxBFCap);
@@ -5895,14 +5874,6 @@ void setETxBFCap(RTMP_ADAPTER *pAd, HT_BF_CAP *pTxBFCap);
 BOOLEAN clientSupportsVHTETxBF(RTMP_ADAPTER *pAd, VHT_CAP_INFO *pTxBFCapInfo);
 void setVHTETxBFCap(RTMP_ADAPTER *pAd, VHT_CAP_INFO *pTxBFCap);
 #endif
-
-#ifdef ETXBF_EN_COND3_SUPPORT
-void txSndgSameMcs(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY * pEnt, UCHAR smoothMfb);
-void txSndgOtherGroup(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry);
-void txMrqInvTxBF(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry);
-void chooseBestMethod(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, UCHAR mfb);
-void rxBestSndg(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry);
-#endif /* ETXBF_EN_COND3_SUPPORT */
 
 void handleBfFb(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk);
 void TxBFInit(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, BOOLEAN supETxBF);
@@ -6241,7 +6212,6 @@ void RTMPIoctlE2PROM(RTMP_ADAPTER *pAd, RTMP_IOCTL_INPUT_STRUCT *wrq);
 
 NDIS_STATUS RTMPWPANoneAddKeyProc(RTMP_ADAPTER *pAd, void *pBuf);
 
-//BOOLEAN Set_FragTest_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_LongRetryLimit_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_ShortRetryLimit_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
 BOOLEAN Set_SiteSurvey_Proc(RTMP_ADAPTER *pAd, PSTRING arg);
@@ -6297,13 +6267,6 @@ NDIS_STATUS RtmpInsertPsQueue(RTMP_ADAPTER *pAd, PNDIS_PACKET pPacket,
 
 void RtmpHandleRxPsPoll(RTMP_ADAPTER *pAd, UCHAR *pAddr, USHORT Aid, BOOLEAN isActive);
 BOOLEAN RtmpPsIndicate(RTMP_ADAPTER *pAd, UCHAR *pAddr, UCHAR wcid, UCHAR Psm);
-
-void RtmpPrepareHwNullFrame(RTMP_ADAPTER *pAd, PMAC_TABLE_ENTRY pEntry,
-	BOOLEAN bQosNull, BOOLEAN bEOSP, UCHAR OldUP, UCHAR OpMode,
-	UCHAR PwrMgmt, BOOLEAN bWaitACK, CHAR Index);
-
-void dev_rx_mgmt_frm(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk);
-void dev_rx_ctrl_frm(RTMP_ADAPTER *pAd, RX_BLK *pRxBlk);
 
 #ifdef CONFIG_STA_SUPPORT
 BOOLEAN RtmpPktPmBitCheck(RTMP_ADAPTER *pAd);
