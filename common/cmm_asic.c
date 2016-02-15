@@ -1,17 +1,17 @@
 /*
  ***************************************************************************
  * Ralink Tech Inc.
- * 4F, No. 2 Technology	5th	Rd.
- * Science-based Industrial	Park
+ * 4F, No. 2 Technology 5th Rd.
+ * Science-based Industrial Park
  * Hsin-chu, Taiwan, R.O.C.
  *
  * (c) Copyright 2002-2004, Ralink Technology, Inc.
  *
- * All rights reserved.	Ralink's source	code is	an unpublished work	and	the
- * use of a	copyright notice does not imply	otherwise. This	source code
- * contains	confidential trade secret material of Ralink Tech. Any attemp
- * or participation	in deciphering,	decoding, reverse engineering or in	any
- * way altering	the	source code	is stricitly prohibited, unless	the	prior
+ * All rights reserved. Ralink's source code is an unpublished work and the
+ * use of a copyright notice does not imply otherwise. This source code
+ * contains confidential trade secret material of Ralink Tech. Any attemp
+ * or participation in deciphering, decoding, reverse engineering or in any
+ * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
  ***************************************************************************
 
@@ -21,16 +21,12 @@
 	Abstract:
 	Functions used to communicate with ASIC
 
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
 */
 
 #include "rt_config.h"
 
-
 #ifdef CONFIG_STA_SUPPORT
-VOID AsicUpdateAutoFallBackTable(PRTMP_ADAPTER pAd, PUCHAR pRateTable)
+void AsicUpdateAutoFallBackTable(PRTMP_ADAPTER pAd, PUCHAR pRateTable)
 {
 	UCHAR i;
 	HT_FBK_CFG0_STRUC HtCfg0;
@@ -86,7 +82,7 @@ VOID AsicUpdateAutoFallBackTable(PRTMP_ADAPTER pAd, PUCHAR pRateTable)
 		pNextTxRate_AGS = (RTMP_RA_AGS_TB *)pRateTable+1;
 		pNextTxRate = (RTMP_RA_LEGACY_TB *)pNextTxRate_AGS;
 	} else
-#endif /* AGS_SUPPORT */
+#endif
 		pNextTxRate = (RTMP_RA_LEGACY_TB *)pRateTable+1;
 
 	for (i = 1; i < *((PUCHAR) pRateTable); i++) {
@@ -95,7 +91,7 @@ VOID AsicUpdateAutoFallBackTable(PRTMP_ADAPTER pAd, PUCHAR pRateTable)
 			pCurrTxRate_AGS = (RTMP_RA_AGS_TB *)pRateTable+1+i;
 			pCurrTxRate = (RTMP_RA_LEGACY_TB *)pCurrTxRate_AGS;
 		} else
-#endif /* AGS_SUPPORT */
+#endif
 			pCurrTxRate = (RTMP_RA_LEGACY_TB *)pRateTable+1+i;
 
 		switch (pCurrTxRate->Mode) {
@@ -219,7 +215,9 @@ VOID AsicUpdateAutoFallBackTable(PRTMP_ADAPTER pAd, PUCHAR pRateTable)
 					}
 				} else
 #endif /* AGS_SUPPORT */
-					DBGPRINT(RT_DEBUG_ERROR, ("AsicUpdateAutoFallBackTable: not support CurrMCS=%d\n", pCurrTxRate->CurrMCS));
+					DBGPRINT(RT_DEBUG_ERROR,
+							("AsicUpdateAutoFallBackTable: not support CurrMCS=%d\n",
+							pCurrTxRate->CurrMCS));
 				}
 			}
 			break;
@@ -254,11 +252,12 @@ skipUpdate:
 #ifdef AGS_SUPPORT
 		|| (bUseAGS == TRUE)
 #endif /* AGS_SUPPORT */
-	)
-	{
+	) {
 		RTMP_IO_WRITE32(pAd, TX_FBK_CFG_3S_0, Ht3SSCfg0.word);
 		RTMP_IO_WRITE32(pAd, TX_FBK_CFG_3S_1, Ht3SSCfg1.word);
-		DBGPRINT(RT_DEBUG_TRACE, ("AsicUpdateAutoFallBackTable: Ht3SSCfg0=0x%x, Ht3SSCfg1=0x%x\n", Ht3SSCfg0.word, Ht3SSCfg1.word));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("AsicUpdateAutoFallBackTable: Ht3SSCfg0=0x%x, Ht3SSCfg1=0x%x\n",
+				Ht3SSCfg0.word, Ht3SSCfg1.word));
 	}
 #endif /* DOT11N_SS3_SUPPORT */
 
@@ -277,22 +276,6 @@ BOOLEAN AsicSetAutoFallBack(RTMP_ADAPTER *pAd, BOOLEAN enable)
 	return TRUE;
 }
 
-#if 0 //JB removed
-static BOOLEAN AsicAutoFallbackInit(RTMP_ADAPTER *pAd)
-{
-#ifdef RANGE_EXTEND
-	RTMP_IO_WRITE32(pAd, HT_FBK_CFG1, 0xedcba980);
-#endif // RANGE_EXTEND //
-#ifdef DOT11N_SS3_SUPPORT
-	if (pAd->CommonCfg.TxStream >= 3) {
-		RTMP_IO_WRITE32(pAd, TX_FBK_CFG_3S_0, 0x12111008);
-		RTMP_IO_WRITE32(pAd, TX_FBK_CFG_3S_1, 0x16151413);
-	}
-#endif /* DOT11N_SS3_SUPPORT */
-
-	return TRUE;
-}
-#endif //0
 
 /*
 	========================================================================
@@ -314,19 +297,15 @@ static BOOLEAN AsicAutoFallbackInit(RTMP_ADAPTER *pAd)
 typedef enum _PROT_REG_IDX_{
 	REG_IDX_CCK = 0,	/* 0x1364 */
 	REG_IDX_OFDM = 1,	/* 0x1368 */
-	REG_IDX_MM20 = 2,  /* 0x136c */
-	REG_IDX_MM40 = 3, /* 0x1370 */
-	REG_IDX_GF20 = 4, /* 0x1374 */
-	REG_IDX_GF40 = 5, /* 0x1378 */
+	REG_IDX_MM20 = 2,	/* 0x136c */
+	REG_IDX_MM40 = 3,	/* 0x1370 */
+	REG_IDX_GF20 = 4,	/* 0x1374 */
+	REG_IDX_GF40 = 5,	/* 0x1378 */
 }PROT_REG_IDX;
 
 
-VOID AsicUpdateProtect(
-	IN PRTMP_ADAPTER pAd,
-	IN USHORT OperationMode,
-	IN UCHAR SetMask,
-	IN BOOLEAN bDisableBGProtect,
-	IN BOOLEAN bNonGFExist)
+void AsicUpdateProtect(PRTMP_ADAPTER pAd, USHORT OperationMode, UCHAR SetMask,
+	BOOLEAN bDisableBGProtect, BOOLEAN bNonGFExist)
 {
 	PROT_CFG_STRUC	ProtCfg, ProtCfg4;
 	UINT32 Protect[6], PhyMode = 0x4000;
@@ -343,7 +322,7 @@ VOID AsicUpdateProtect(
 #ifdef RALINK_ATE
 	if (ATE_ON(pAd))
 		return;
-#endif /* RALINK_ATE */
+#endif
 
 #ifdef DOT11_N_SUPPORT
 	if (!(pAd->CommonCfg.bHTProtect) && (OperationMode != 8))
@@ -359,17 +338,18 @@ VOID AsicUpdateProtect(
 	/* Config ASIC RTS threshold register*/
 	RTMP_IO_READ32(pAd, TX_RTS_CFG, &MacReg);
 	MacReg &= 0xFF0000FF;
-	/* If the user want disable RtsThreshold and enbale Amsdu/Ralink-Aggregation, set the RtsThreshold as 4096*/
-		if ((
+	/* If the user want disable RtsThreshold and enbale Amsdu/Ralink-Aggregation,
+	 *  set the RtsThreshold as 4096*/
+	if ((
 #ifdef DOT11_N_SUPPORT
-			(pAd->CommonCfg.BACapability.field.AmsduEnable) ||
-#endif /* DOT11_N_SUPPORT */
-			(pAd->CommonCfg.bAggregationCapable == TRUE))
-			&& pAd->CommonCfg.RtsThreshold == MAX_RTS_THRESHOLD) {
-			MacReg |= (0x1000 << 8);
-		} else {
-			MacReg |= (pAd->CommonCfg.RtsThreshold << 8);
-		}
+		(pAd->CommonCfg.BACapability.field.AmsduEnable) ||
+#endif
+		(pAd->CommonCfg.bAggregationCapable == TRUE))
+		&& pAd->CommonCfg.RtsThreshold == MAX_RTS_THRESHOLD) {
+		MacReg |= (0x1000 << 8);
+	} else {
+		MacReg |= (pAd->CommonCfg.RtsThreshold << 8);
+	}
 
 	RTMP_IO_WRITE32(pAd, TX_RTS_CFG, MacReg);
 
@@ -390,7 +370,9 @@ VOID AsicUpdateProtect(
 #ifdef RT65xx
 	// TODO: shiang, is that a correct way to set 0x2000 here??
 	if (IS_RT65XX(pAd))
-		PhyMode = 0x2000; /* Bit 15:13, 0:Legacy CCK, 1: Legacy OFDM, 2: HT mix mode, 3: HT green field, 4: VHT mode, 5-7: Reserved */
+		/* Bit 15:13, 0:Legacy CCK, 1: Legacy OFDM, 2: HT mix mode,
+		 * 3: HT green field, 4: VHT mode, 5-7: Reserved */
+		PhyMode = 0x2000;
 #endif /* RT65xx */
 #endif /* DOT11_VHT_AC */
 
@@ -428,9 +410,11 @@ VOID AsicUpdateProtect(
 	} else {
 		if (pAd->CommonCfg.Channel <= 14) {
 			/*ProtCfg.field.ProtectRate = pAd->CommonCfg.RtsRate;*/
-			ProtCfg.field.ProtectCtrl = 0;			/* CCK do not need to be protected*/
+			/* CCK do not need to be protected*/
+			ProtCfg.field.ProtectCtrl = 0;
 			Protect[REG_IDX_CCK] = ProtCfg.word;
-			ProtCfg.field.ProtectCtrl = ASIC_CTS;	/* OFDM needs using CCK to protect*/
+			/* OFDM needs using CCK to protect*/
+			ProtCfg.field.ProtectCtrl = ASIC_CTS;
 			Protect[REG_IDX_OFDM] = ProtCfg.word;
 			pAd->FlgCtsEnabled = 1; /* CTS-self is used */
 		} else {
@@ -484,8 +468,7 @@ VOID AsicUpdateProtect(
 			/* 	PROT_RATE(15:0)  -- 0x4084 (duplicate OFDM 24M)*/
 			Protect[5] = 0x03f44084;
 
-			if (bNonGFExist)
-			{
+			if (bNonGFExist) {
 				/* PROT_NAV(19:18)  -- 01 (Short NAV protectiion)*/
 				/* PROT_CTRL(17:16) -- 01 (RTS/CTS)*/
 				Protect[REG_IDX_GF20] = 0x01754004;
@@ -496,8 +479,7 @@ VOID AsicUpdateProtect(
 #ifdef DOT11_VHT_AC
 #ifdef RT65xx
 			// TODO: shiang-6590, fix me for this protection mechanism
-			if (IS_RT65XX(pAd))
-			{
+			if (IS_RT65XX(pAd)) {
 				RTMP_IO_READ32(pAd, TX_PROT_CFG6, &vht_port_cfg.word);
 				vht_port_cfg.field.ProtectCtrl = 0;
 				RTMP_IO_WRITE32(pAd, TX_PROT_CFG6, vht_port_cfg.word);
@@ -522,11 +504,12 @@ VOID AsicUpdateProtect(
 			/* This is "HT non-member protection mode."*/
 			/* If there may be non-HT STAs my BSS*/
 			ProtCfg.word = 0x01744004;	/* PROT_CTRL(17:16) : 0 (None)*/
-			ProtCfg4.word = 0x03f44084; /* duplicaet legacy 24M. BW set 1.*/
-			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
-			{
-				ProtCfg.word = 0x01740003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
-				ProtCfg4.word = 0x03f40003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083; */
+			ProtCfg4.word = 0x03f44084;	/* duplicate legacy 24M. BW set 1.*/
+			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED)) {
+				/*ERP use Protection bit is set, use protection rate at Clause 18..*/
+				ProtCfg.word = 0x01740003;
+				/* Don't duplicate RTS/CTS in CCK mode. 0x03f40083; */
+				ProtCfg4.word = 0x03f40003;
 			}
 			/*Assign Protection method for 20&40 MHz packets*/
 			ProtCfg.field.ProtectCtrl = ASIC_RTS;
@@ -538,12 +521,10 @@ VOID AsicUpdateProtect(
 			Protect[REG_IDX_GF20] = ProtCfg.word;
 			Protect[REG_IDX_GF40] = ProtCfg4.word;
 			pAd->CommonCfg.IOTestParm.bRTSLongProtOn = TRUE;
-
 #ifdef DOT11_VHT_AC
 #ifdef RT65xx
 			// TODO: shiang-6590, fix me for this protection mechanism
-			if (IS_RT65XX(pAd))
-			{
+			if (IS_RT65XX(pAd)) {
 				// Temporary tuen on RTS in VHT, MAC: TX_PROT_CFG6, TX_PROT_CFG7, TX_PROT_CFG8
 				PROT_CFG_STRUC vht_port_cfg;
 
@@ -573,32 +554,29 @@ VOID AsicUpdateProtect(
 		case 2:
 			/* If only HT STAs are in BSS. at least one is 20MHz. Only protect 40MHz packets*/
 			ProtCfg.word = 0x01744004;  /* PROT_CTRL(17:16) : 0 (None)*/
-			ProtCfg4.word = 0x03f44084; /* duplicaet legacy 24M. BW set 1.*/
-			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
-			{
-				ProtCfg.word = 0x01740003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
-				ProtCfg4.word = 0x03f40003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083; */
+			ProtCfg4.word = 0x03f44084; /* duplicate legacy 24M. BW set 1.*/
+			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED)) {
+				/*ERP use Protection bit is set, use protection rate at Clause 18..*/
+				ProtCfg.word = 0x01740003;
+				/* Don't duplicate RTS/CTS in CCK mode. 0x03f40083; */
+				ProtCfg4.word = 0x03f40003;
 			}
 			/*Assign Protection method for 40MHz packets*/
 			ProtCfg4.field.ProtectCtrl = ASIC_RTS;
 			ProtCfg4.field.ProtectNav = ASIC_SHORTNAV;
 			Protect[REG_IDX_MM20] = ProtCfg.word;
 			Protect[REG_IDX_MM40] = ProtCfg4.word;
-			if (bNonGFExist)
-			{
+			if (bNonGFExist) {
 				ProtCfg.field.ProtectCtrl = ASIC_RTS;
 				ProtCfg.field.ProtectNav = ASIC_SHORTNAV;
 			}
 			Protect[REG_IDX_GF20] = ProtCfg.word;
 			Protect[REG_IDX_GF40] = ProtCfg4.word;
-
 			pAd->CommonCfg.IOTestParm.bRTSLongProtOn = FALSE;
-
 #ifdef DOT11_VHT_AC
 #ifdef RT65xx
 			// TODO: shiang-6590, fix me for this protection mechanism
-			if (IS_RT65XX(pAd))
-			{
+			if (IS_RT65XX(pAd)) {
 				RTMP_IO_READ32(pAd, TX_PROT_CFG6, &vht_port_cfg.word);
 				vht_port_cfg.field.ProtectCtrl = 0;
 				RTMP_IO_WRITE32(pAd, TX_PROT_CFG6, vht_port_cfg.word);
@@ -625,10 +603,9 @@ VOID AsicUpdateProtect(
 				ProtCfg.word = 0x01744004;	/*duplicaet legacy 24M. BW set 1.*/
 				ProtCfg4.word = 0x03f44084;
 				/* both 20MHz and 40MHz are protected. Whether use RTS or CTS-to-self depends on the*/
-				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
-				{
+				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED)) {
 					ProtCfg.word = 0x01740003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
-					ProtCfg4.word = 0x03f40003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083*/
+					ProtCfg4.word = 0x03f40003;	/* Don't duplicate RTS/CTS in CCK mode. 0x03f40083*/
 				}
 				/*Assign Protection method for 20&40 MHz packets*/
 				ProtCfg.field.ProtectCtrl = ASIC_RTS;
@@ -640,12 +617,10 @@ VOID AsicUpdateProtect(
 				Protect[REG_IDX_GF20] = ProtCfg.word;
 				Protect[REG_IDX_GF40] = ProtCfg4.word;
 				pAd->CommonCfg.IOTestParm.bRTSLongProtOn = TRUE;
-
 #ifdef DOT11_VHT_AC
 #ifdef RT65xx
 			// TODO: shiang-6590, fix me for this protection mechanism
-			if (IS_RT65XX(pAd))
-			{
+			if (IS_RT65XX(pAd)) {
 				// Temporary turn on RTS in VHT, MAC: TX_PROT_CFG6, TX_PROT_CFG7, TX_PROT_CFG8
 				RTMP_IO_READ32(pAd, TX_PROT_CFG6, &vht_port_cfg.word);
 				vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
@@ -673,45 +648,41 @@ VOID AsicUpdateProtect(
 			/* Special on for Atheros problem n chip.*/
 			ProtCfg.word = 0x01754004;	/*duplicaet legacy 24M. BW set 1.*/
 			ProtCfg4.word = 0x03f54084;
-			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
-			{
+			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED)) {
 				ProtCfg.word = 0x01750003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
-				ProtCfg4.word = 0x03f50003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083*/
+				ProtCfg4.word = 0x03f50003;	/* Don't duplicate RTS/CTS in CCK mode. 0x03f40083*/
 			}
-
-
 #ifdef DOT11_VHT_AC
 #ifdef RT65xx
-		   if (IS_RT65XX(pAd))
-		   {
-			   // Temporary tuen on RTS in VHT, MAC: TX_PROT_CFG6, TX_PROT_CFG7, TX_PROT_CFG8
-			   PROT_CFG_STRUC vht_port_cfg;
+			if (IS_RT65XX(pAd)) {
+				// Temporary turn on RTS in VHT, MAC: TX_PROT_CFG6, TX_PROT_CFG7, TX_PROT_CFG8
+				PROT_CFG_STRUC vht_port_cfg;
 
-			   RTMP_IO_READ32(pAd, TX_PROT_CFG6, &vht_port_cfg.word);
-			   vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
-			   vht_port_cfg.field.ProtectNav = ASIC_SHORTNAV;
-			   vht_port_cfg.field.ProtectRate = protect_rate;
-			   RTMP_IO_WRITE32(pAd, TX_PROT_CFG6, vht_port_cfg.word);
+				RTMP_IO_READ32(pAd, TX_PROT_CFG6, &vht_port_cfg.word);
+				vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
+				vht_port_cfg.field.ProtectNav = ASIC_SHORTNAV;
+				vht_port_cfg.field.ProtectRate = protect_rate;
+				RTMP_IO_WRITE32(pAd, TX_PROT_CFG6, vht_port_cfg.word);
 
-			   RTMP_IO_READ32(pAd, TX_PROT_CFG7, &vht_port_cfg.word);
-			   vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
-			   vht_port_cfg.field.ProtectNav = ASIC_SHORTNAV;
-			   vht_port_cfg.field.ProtectRate = protect_rate;
-			   RTMP_IO_WRITE32(pAd, TX_PROT_CFG7, vht_port_cfg.word);
+				RTMP_IO_READ32(pAd, TX_PROT_CFG7, &vht_port_cfg.word);
+				vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
+				vht_port_cfg.field.ProtectNav = ASIC_SHORTNAV;
+				vht_port_cfg.field.ProtectRate = protect_rate;
+				RTMP_IO_WRITE32(pAd, TX_PROT_CFG7, vht_port_cfg.word);
 
-			   RTMP_IO_READ32(pAd, TX_PROT_CFG8, &vht_port_cfg.word);
-			   vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
-			   vht_port_cfg.field.ProtectNav = ASIC_SHORTNAV;
-			   vht_port_cfg.field.ProtectRate = protect_rate;
-			   RTMP_IO_WRITE32(pAd, TX_PROT_CFG8, vht_port_cfg.word);
-		   }
+				RTMP_IO_READ32(pAd, TX_PROT_CFG8, &vht_port_cfg.word);
+				vht_port_cfg.field.ProtectCtrl = ASIC_RTS;
+				vht_port_cfg.field.ProtectNav = ASIC_SHORTNAV;
+				vht_port_cfg.field.ProtectRate = protect_rate;
+				RTMP_IO_WRITE32(pAd, TX_PROT_CFG8, vht_port_cfg.word);
+			}
 #endif /* RT65xx */
 #endif /* DOT11_VHT_AC */
 
 			Protect[REG_IDX_MM20] = ProtCfg.word; 	/*0x01754004;*/
-			Protect[REG_IDX_MM40] = ProtCfg4.word; /*0x03f54084;*/
+			Protect[REG_IDX_MM40] = ProtCfg4.word;	/*0x03f54084;*/
 			Protect[REG_IDX_GF20] = ProtCfg.word; 	/*0x01754004;*/
-			Protect[REG_IDX_GF40] = ProtCfg4.word; /*0x03f54084;*/
+			Protect[REG_IDX_GF40] = ProtCfg4.word;	/*0x03f54084;*/
 			pAd->CommonCfg.IOTestParm.bRTSLongProtOn = TRUE;
 			break;
 		}
@@ -719,10 +690,8 @@ VOID AsicUpdateProtect(
 #endif /* DOT11_N_SUPPORT */
 
 	offset = CCK_PROT_CFG;
-	for (i = 0;i < 6;i++)
-	{
-		if ((SetMask & (1<< i)))
-		{
+	for (i = 0;i < 6;i++) {
+		if ((SetMask & (1<< i))) {
 #ifdef RT65xx
 			if (IS_RT65XX(pAd)) {
 				if ((Protect[i] & 0x4000) == 0x4000)
@@ -735,15 +704,12 @@ VOID AsicUpdateProtect(
 
 #ifdef DOT11_VHT_AC
 #ifdef RT65xx
-	if (IS_RT65XX(pAd))
-	{
+	if (IS_RT65XX(pAd)) {
 		UINT32 cfg_reg;
-		for (cfg_reg = TX_PROT_CFG6; cfg_reg <= TX_PROT_CFG8; cfg_reg += 4)
-		{
+		for (cfg_reg = TX_PROT_CFG6; cfg_reg <= TX_PROT_CFG8; cfg_reg += 4) {
 			RTMP_IO_READ32(pAd, cfg_reg, &MacReg);
 			MacReg &= (~0x18000000);
-			if (pAd->CommonCfg.vht_bw_signal)
-			{
+			if (pAd->CommonCfg.vht_bw_signal) {
 				if (pAd->CommonCfg.vht_bw_signal == BW_SIGNALING_STATIC) /* static */
 					MacReg |= 0x08000000;
 				else if (pAd->CommonCfg.vht_bw_signal == BW_SIGNALING_DYNAMIC)/* dynamic */
@@ -757,7 +723,7 @@ VOID AsicUpdateProtect(
 }
 
 
-VOID AsicBBPAdjust(RTMP_ADAPTER *pAd)
+void AsicBBPAdjust(RTMP_ADAPTER *pAd)
 {
 	// TODO: shiang-6590, now this function only used for AP mode, why we need this differentation?
 	if (pAd->chipOps.ChipBBPAdjust != NULL)
@@ -774,7 +740,7 @@ VOID AsicBBPAdjust(RTMP_ADAPTER *pAd)
 
 	==========================================================================
  */
-VOID AsicSwitchChannel(RTMP_ADAPTER *pAd, UCHAR Channel, BOOLEAN bScan)
+void AsicSwitchChannel(RTMP_ADAPTER *pAd, UCHAR Channel, BOOLEAN bScan)
 {
 	UCHAR bw;
 	UINT32 value32;
@@ -792,25 +758,19 @@ VOID AsicSwitchChannel(RTMP_ADAPTER *pAd, UCHAR Channel, BOOLEAN bScan)
 #ifdef CONFIG_STA_SUPPORT
 #ifdef CONFIG_PM
 #ifdef USB_SUPPORT_SELECTIVE_SUSPEND
-
-			if( (RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == 1)
-			{
+			if( (RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == 1) {
 				DBGPRINT(RT_DEBUG_TRACE, ("%s(): autopm_resume success\n", __FUNCTION__));
 				RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_SUSPEND);
-			}
-			else if ((RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == (-1))
-			{
+			} else if ((RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == (-1)) {
 				DBGPRINT(RT_DEBUG_ERROR, ("%s(): autopm_resume fail\n", __FUNCTION__));
 				RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_SUSPEND);
 				return;
-			}
-			else
+			} else {
 				DBGPRINT(RT_DEBUG_TRACE, ("%s(): autopm_resume do nothing\n", __FUNCTION__));
-
+			}
 #endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
 #endif /* CONFIG_PM */
 #endif /* CONFIG_STA_SUPPORT */
-
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef AP_QLOAD_SUPPORT
@@ -822,24 +782,27 @@ VOID AsicSwitchChannel(RTMP_ADAPTER *pAd, UCHAR Channel, BOOLEAN bScan)
 	if (pAd->chipOps.ChipSwitchChannel)
 		pAd->chipOps.ChipSwitchChannel(pAd, Channel, bScan);
 	else
-		DBGPRINT(RT_DEBUG_ERROR, ("For this chip, no specified channel switch function!\n"));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("For this chip, no specified channel switch function!\n"));
 
 	/* R66 should be set according to Channel and use 20MHz when scanning*/
-	if (bScan)
+	if (bScan) {
 		bw = BW_20;
-	else {
+	} else {
 		bw = pAd->CommonCfg.BBPCurrentBW;
 	}
 	RTMPSetAGCInitValue(pAd, bw);
 
 #ifdef TXBF_SUPPORT
-	rtmp_asic_set_bf(pAd); // FW will initialize TxBf HW status. Re-calling this AP could recover previous status
+	/* FW will initialize TxBf HW status. Re-calling this AP could
+	 * recover previous status */
+	rtmp_asic_set_bf(pAd);
 
 #ifdef MT76x2
-	if (IS_MT76x2(pAd))
-	{
+	if (IS_MT76x2(pAd)) {
 		// Disable BF HW to apply profile to packets when nSS == 2.
-		// Maybe it can be initialized at chip init but removing the same CR initialization from FW will be better
+		/* Maybe it can be initialized at chip init but removing the same
+		 * CR initialization from FW will be better */
 		RTMP_IO_READ32(pAd, TXO_R4, &value32);
 		value32 |= 0x2000000;
 		RTMP_IO_WRITE32(pAd, TXO_R4, value32);
@@ -867,9 +830,7 @@ VOID AsicSwitchChannel(RTMP_ADAPTER *pAd, UCHAR Channel, BOOLEAN bScan)
 
 	==========================================================================
  */
-VOID AsicLockChannel(
-	IN PRTMP_ADAPTER pAd,
-	IN UCHAR Channel)
+void AsicLockChannel(PRTMP_ADAPTER pAd, UCHAR Channel)
 {
 }
 
@@ -883,16 +844,16 @@ VOID AsicLockChannel(
 	==========================================================================
  */
 
-VOID AsicResetBBPAgent(RTMP_ADAPTER *pAd)
+void AsicResetBBPAgent(RTMP_ADAPTER *pAd)
 {
-	BBP_CSR_CFG_STRUC	BbpCsr;
+	BBP_CSR_CFG_STRUC BbpCsr;
 
-	/* Still need to find why BBP agent keeps busy, but in fact, hardware still function ok. Now clear busy first.	*/
+	/* Still need to find why BBP agent keeps busy, but in fact, hardware
+	 * still function ok. Now clear busy first. */
 	/* IF chipOps.AsicResetBbpAgent == NULL, run "else" part */
-	if (pAd->chipOps.AsicResetBbpAgent != NULL)
+	if (pAd->chipOps.AsicResetBbpAgent != NULL) {
 		pAd->chipOps.AsicResetBbpAgent(pAd);
-	else if (pAd->chipCap.MCUType != ANDES)
-	{
+	} else if (pAd->chipCap.MCUType != ANDES) {
 		DBGPRINT(RT_DEBUG_INFO, ("Reset BBP Agent busy bit.!! \n"));
 		RTMP_IO_READ32(pAd, H2M_BBP_AGENT, &BbpCsr.word);
 		BbpCsr.field.Busy = 0;
@@ -914,9 +875,7 @@ VOID AsicResetBBPAgent(RTMP_ADAPTER *pAd)
 
 	==========================================================================
  */
-VOID AsicSleepThenAutoWakeup(
-	IN PRTMP_ADAPTER pAd,
-	IN USHORT TbttNumToNextWakeUp)
+void AsicSleepThenAutoWakeup(PRTMP_ADAPTER pAd, USHORT TbttNumToNextWakeUp)
 {
 	RTMP_STA_SLEEP_THEN_AUTO_WAKEUP(pAd, TbttNumToNextWakeUp);
 }
@@ -930,7 +889,7 @@ VOID AsicSleepThenAutoWakeup(
 	==========================================================================
  */
 #if 0 //JB removed
-static VOID AsicForceSleep(PRTMP_ADAPTER pAd)
+static void AsicForceSleep(PRTMP_ADAPTER pAd)
 {
 }
 #endif
@@ -945,7 +904,7 @@ static VOID AsicForceSleep(PRTMP_ADAPTER pAd)
 	IRQL = DISPATCH_LEVEL
 	==========================================================================
  */
-VOID AsicForceWakeup(PRTMP_ADAPTER pAd, BOOLEAN bFromTx)
+void AsicForceWakeup(PRTMP_ADAPTER pAd, BOOLEAN bFromTx)
 {
 	DBGPRINT(RT_DEBUG_INFO, ("--> AsicForceWakeup \n"));
 	RTMP_STA_FORCE_WAKEUP(pAd, bFromTx);
@@ -963,7 +922,7 @@ VOID AsicForceWakeup(PRTMP_ADAPTER pAd, BOOLEAN bFromTx)
 	==========================================================================
  */
  /* CFG_TODO */
-VOID AsicSetBssid(RTMP_ADAPTER *pAd, UCHAR *pBssid)
+void AsicSetBssid(RTMP_ADAPTER *pAd, UCHAR *pBssid)
 {
 	UINT32 Addr4;
 #if defined(P2P_SUPPORT) || defined(RT_CFG80211_P2P_SUPPORT)
@@ -971,7 +930,7 @@ VOID AsicSetBssid(RTMP_ADAPTER *pAd, UCHAR *pBssid)
 #endif /* defined(P2P_SUPPORT) || defined(RT_CFG80211_P2P_SUPPORT) */
 
 	DBGPRINT(RT_DEBUG_TRACE, ("===> AsicSetBssid %x:%x:%x:%x:%x:%x\n",
-				PRINT_MAC(pBssid)));
+			PRINT_MAC(pBssid)));
 
 	Addr4 = (UINT32)(pBssid[0]) |
 			(UINT32)(pBssid[1] << 8)  |
@@ -985,7 +944,6 @@ VOID AsicSetBssid(RTMP_ADAPTER *pAd, UCHAR *pBssid)
 #ifdef HDR_TRANS_SUPPORT
 	RTMP_IO_WRITE32(pAd, HT_MAC_BSSID_DW0, Addr4);
 #endif
-
 	/* always one BSSID in STA mode*/
 	Addr4 = (UINT32)(pBssid[4]) | (ULONG)(pBssid[5] << 8);
 	RTMP_IO_WRITE32(pAd, MAC_BSSID_DW1, Addr4);
@@ -996,7 +954,7 @@ VOID AsicSetBssid(RTMP_ADAPTER *pAd, UCHAR *pBssid)
 #ifdef HDR_TRANS_SUPPORT
 	Addr4 |= 0x18000000;
 	RTMP_IO_WRITE32(pAd, HT_MAC_BSSID_DW1, Addr4);
-#endif /* HDR_TRANS_SUPPORT */
+#endif
 
 #if defined(P2P_SUPPORT) || defined(RT_CFG80211_P2P_CONCURRENT_DEVICE)
 	{
@@ -1023,7 +981,7 @@ VOID AsicSetBssid(RTMP_ADAPTER *pAd, UCHAR *pBssid)
 
 		if (pAd->chipCap.MBSSIDMode == MBSSID_MODE0) {
 			if ((pAd->CurrentAddress[5] % 2 != 0)) {
-				DBGPRINT(RT_DEBUG_ERROR, 
+				DBGPRINT(RT_DEBUG_ERROR,
 					("The 2-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 2\n"));
 			}
 		} else {
@@ -1076,7 +1034,7 @@ BOOLEAN AsicSetDevMac(RTMP_ADAPTER *pAd, UCHAR *addr)
 #ifdef HDR_TRANS_SUPPORT
 	RTMP_IO_WRITE32(pAd, HT_MAC_ADDR_DW0, csr2.word);
 	csr3.word &= 0xff00ffff;
-	csr3.word |= 0x00410000;				// HW test code
+	csr3.word |= 0x00410000;	// HW test code
 	RTMP_IO_WRITE32(pAd, HT_MAC_ADDR_DW1, csr3.word);
 #endif /* HDR_TRANS_SUPPORT */
 
@@ -1084,7 +1042,7 @@ BOOLEAN AsicSetDevMac(RTMP_ADAPTER *pAd, UCHAR *addr)
 }
 
 #ifdef CONFIG_AP_SUPPORT
-VOID AsicSetMbssMode(RTMP_ADAPTER *pAd, UCHAR NumOfBcns)
+void AsicSetMbssMode(RTMP_ADAPTER *pAd, UCHAR NumOfBcns)
 {
 	UCHAR NumOfMacs;
 	UINT32 regValue;
@@ -1093,10 +1051,10 @@ VOID AsicSetMbssMode(RTMP_ADAPTER *pAd, UCHAR NumOfBcns)
 	regValue &= 0x0000FFFF;
 
 	/*
-		Note:
-			1.The MAC address of Mesh and AP-Client link are different from Main BSSID.
-			2.If the Mesh link is included, its MAC address shall follow the last MBSSID's MAC by increasing 1.
-			3.If the AP-Client link is included, its MAC address shall follow the Mesh interface MAC by increasing 1.
+	Note:
+		1.The MAC address of Mesh and AP-Client link are different from Main BSSID.
+		2.If the Mesh link is included, its MAC address shall follow the last MBSSID's MAC by increasing 1.
+		3.If the AP-Client link is included, its MAC address shall follow the Mesh interface MAC by increasing 1.
 	*/
 	NumOfMacs = pAd->ApCfg.BssidNum + MAX_MESH_NUM + MAX_APCLI_NUM;
 
@@ -1107,19 +1065,22 @@ VOID AsicSetMbssMode(RTMP_ADAPTER *pAd, UCHAR NumOfBcns)
 		/*regValue |= 0x0; */
 	} else if (NumOfMacs <= 2) {
 		if ((pAd->CurrentAddress[5] % 2 != 0))
-			DBGPRINT(RT_DEBUG_ERROR, ("The 2-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 2\n"));
+			DBGPRINT(RT_DEBUG_ERROR,
+					("The 2-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 2\n"));
 
 		regValue |= (1<<16);
 		pAd->ApCfg.MacMask = ~(2-1);
 	} else if (NumOfMacs <= 4) {
 		if (pAd->CurrentAddress[5] % 4 != 0)
-			DBGPRINT(RT_DEBUG_ERROR, ("The 4-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 4\n"));
+			DBGPRINT(RT_DEBUG_ERROR,
+					("The 4-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 4\n"));
 
 		regValue |= (2<<16);
 		pAd->ApCfg.MacMask = ~(4-1);
 	} else if (NumOfMacs <= 8) {
 		if (pAd->CurrentAddress[5] % 8 != 0)
-			DBGPRINT(RT_DEBUG_ERROR, ("The 8-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 8\n"));
+			DBGPRINT(RT_DEBUG_ERROR,
+					("The 8-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 8\n"));
 
 		regValue |= (3<<16);
 		pAd->ApCfg.MacMask = ~(8-1);
@@ -1180,7 +1141,8 @@ BOOLEAN AsicSetRxFilter(RTMP_ADAPTER *pAd)
 	}
 #ifdef CONFIG_STA_SUPPORT
 	else {
-		rx_filter_flag = STANORMAL;     /* Staion not drop control frame will fail WiFi Certification.*/
+		/* Staion not drop control frame will fail WiFi Certification.*/
+		rx_filter_flag = STANORMAL;
 	}
 #endif /* CONFIG_STA_SUPPORT */
 	RTMP_IO_WRITE32(pAd, RX_FILTR_CFG, rx_filter_flag);
@@ -1240,9 +1202,9 @@ BOOLEAN AsicSetRDG(RTMP_ADAPTER *pAd, BOOLEAN bEnable)
 
 	========================================================================
 */
-VOID RTMPSetPiggyBack(RTMP_ADAPTER *pAd, BOOLEAN bPiggyBack)
+void RTMPSetPiggyBack(RTMP_ADAPTER *pAd, BOOLEAN bPiggyBack)
 {
-	TX_LINK_CFG_STRUC  TxLinkCfg;
+	TX_LINK_CFG_STRUC TxLinkCfg;
 
 	RTMP_IO_READ32(pAd, TX_LINK_CFG, &TxLinkCfg.word);
 
@@ -1250,7 +1212,7 @@ VOID RTMPSetPiggyBack(RTMP_ADAPTER *pAd, BOOLEAN bPiggyBack)
 	RTMP_IO_WRITE32(pAd, TX_LINK_CFG, TxLinkCfg.word);
 }
 
-VOID AsicCtrlBcnMask(PRTMP_ADAPTER pAd, INT mask)
+void AsicCtrlBcnMask(PRTMP_ADAPTER pAd, int mask)
 {
 	BCN_BYPASS_MASK_STRUC bms;
 
@@ -1259,7 +1221,8 @@ VOID AsicCtrlBcnMask(PRTMP_ADAPTER pAd, INT mask)
 	RTMP_IO_WRITE32(pAd, TX_BCN_BYPASS_MASK, bms.word);
 }
 
-static BOOLEAN AsicSetIntTimerEn(RTMP_ADAPTER *pAd, BOOLEAN enable, UINT32 type, UINT32 timeout)
+static BOOLEAN AsicSetIntTimerEn(RTMP_ADAPTER *pAd, BOOLEAN enable,
+	UINT32 type, UINT32 timeout)
 {
 	UINT32 val, mask, time_mask;
 
@@ -1297,18 +1260,13 @@ BOOLEAN AsicSetPreTbtt(RTMP_ADAPTER *pAd, BOOLEAN enable)
 {
 	UINT32 timeout = 0;
 
-	if (enable == TRUE)
-		timeout = 6 << 4; /* Pre-TBTT is 6ms before TBTT interrupt. 1~10 ms is reasonable. */
+	if (enable == TRUE) {
+		/* Pre-TBTT is 6ms before TBTT interrupt. 1~10 ms is reasonable. */
+		timeout = 6 << 4;
+	}
 
 	return AsicSetIntTimerEn(pAd, enable, INT_TIMER_EN_PRE_TBTT, timeout);
 }
-
-#if 0 //JB removed
-static BOOLEAN AsicSetGPTimer(RTMP_ADAPTER *pAd, BOOLEAN enable, UINT32 timeout)
-{
-	return AsicSetIntTimerEn(pAd, enable, INT_TIMER_EN_GP_TIMER, timeout);
-}
-#endif //0
 
 /*
 	==========================================================================
@@ -1319,7 +1277,7 @@ static BOOLEAN AsicSetGPTimer(RTMP_ADAPTER *pAd, BOOLEAN enable, UINT32 timeout)
 
 	==========================================================================
  */
-VOID AsicDisableSync(PRTMP_ADAPTER pAd)
+void AsicDisableSync(PRTMP_ADAPTER pAd)
 {
 	BCN_TIME_CFG_STRUC csr;
 
@@ -1342,7 +1300,7 @@ VOID AsicDisableSync(PRTMP_ADAPTER pAd)
 
 	==========================================================================
  */
-VOID AsicEnableBssSync(PRTMP_ADAPTER pAd)
+void AsicEnableBssSync(PRTMP_ADAPTER pAd)
 {
 	BCN_TIME_CFG_STRUC csr;
 
@@ -1352,7 +1310,8 @@ VOID AsicEnableBssSync(PRTMP_ADAPTER pAd)
 /*	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, 0x00000000);*/
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
-		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; /* ASIC register in units of 1/16 TU*/
+		/* ASIC register in units of 1/16 TU*/
+		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4;
 		csr.field.bTsfTicking = 1;
 		csr.field.TsfSyncMode = 3; /* sync TSF similar as in ADHOC mode?*/
 		csr.field.bBeaconGen  = 1; /* AP should generate BEACON*/
@@ -1361,7 +1320,8 @@ VOID AsicEnableBssSync(PRTMP_ADAPTER pAd)
 #endif /* CONFIG_AP_SUPPORT */
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
-		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; /* ASIC register in units of 1/16 TU*/
+		/* ASIC register in units of 1/16 TU*/
+		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4;
 		csr.field.bTsfTicking = 1;
 		csr.field.TsfSyncMode = 1; /* sync TSF in INFRASTRUCTURE mode*/
 		csr.field.bBeaconGen  = 0; /* do NOT generate BEACON*/
@@ -1372,7 +1332,7 @@ VOID AsicEnableBssSync(PRTMP_ADAPTER pAd)
 }
 
 /*CFG_TODO*/
-VOID AsicEnableApBssSync(PRTMP_ADAPTER pAd)
+void AsicEnableApBssSync(PRTMP_ADAPTER pAd)
 {
 	BCN_TIME_CFG_STRUC csr;
 
@@ -1380,7 +1340,8 @@ VOID AsicEnableApBssSync(PRTMP_ADAPTER pAd)
 
 	RTMP_IO_READ32(pAd, BCN_TIME_CFG, &csr.word);
 
-	csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; /* ASIC register in units of 1/16 TU*/
+	/* ASIC register in units of 1/16 TU*/
+	csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4;
 	csr.field.bTsfTicking = 1;
 	csr.field.TsfSyncMode = 3; /* sync TSF similar as in ADHOC mode?*/
 	csr.field.bBeaconGen  = 1; /* AP should generate BEACON*/
@@ -1403,7 +1364,7 @@ VOID AsicEnableApBssSync(PRTMP_ADAPTER pAd)
 
 	==========================================================================
  */
-VOID AsicEnableIbssSync(RTMP_ADAPTER *pAd)
+void AsicEnableIbssSync(RTMP_ADAPTER *pAd)
 {
 	BCN_TIME_CFG_STRUC csr9;
 	UCHAR *ptr;
@@ -1417,12 +1378,12 @@ VOID AsicEnableIbssSync(RTMP_ADAPTER *pAd)
 	if (pAd->chipCap.hif_type == HIF_RLT) {
 		beaconLen = pAd->BeaconTxWI.TXWI_N.MPDUtotalByteCnt;
 	}
-#endif /* RLT_MAC */
+#endif
 
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP)
 		beaconLen = pAd->BeaconTxWI.TXWI_O.MPDUtotalByteCnt;
-#endif /* RTMP_MAC */
+#endif
 
 #ifdef RT_BIG_ENDIAN
 	{
@@ -1434,17 +1395,18 @@ VOID AsicEnableIbssSync(RTMP_ADAPTER *pAd)
 		if (pAd->chipCap.hif_type == HIF_RLT) {
 				beaconLen = localTxWI.TXWI_N.MPDUtotalByteCnt;
 		}
-#endif /* RLT_MAC */
+#endif
 
 #ifdef RTMP_MAC
 		if (pAd->chipCap.hif_type == HIF_RTMP)
 			beaconLen = localTxWI.TXWI_O.MPDUtotalByteCnt;
-#endif /* RTMP_MAC */
+#endif
 	}
 #endif /* RT_BIG_ENDIAN */
 
-	DBGPRINT(RT_DEBUG_TRACE, ("--->AsicEnableIbssSync(ADHOC mode, beaconLen=%d)\n",
-				beaconLen));
+	DBGPRINT(RT_DEBUG_TRACE,
+			("--->AsicEnableIbssSync(ADHOC mode, beaconLen=%d)\n",
+			beaconLen));
 
 	RTMP_IO_READ32(pAd, BCN_TIME_CFG, &csr9.word);
 	csr9.field.bBeaconGen = 0;
@@ -1452,7 +1414,6 @@ VOID AsicEnableIbssSync(RTMP_ADAPTER *pAd)
 	csr9.field.bTsfTicking = 0;
 	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, csr9.word);
 	beaconBaseLocation = HW_BEACON_BASE0(pAd);
-
 
 #ifdef RTMP_MAC_USB
 	/* move BEACON TXD and frame content to on-chip memory*/
@@ -1470,7 +1431,7 @@ VOID AsicEnableIbssSync(RTMP_ADAPTER *pAd)
 		RTMP_CHIP_UPDATE_BEACON(pAd, HW_BEACON_BASE0(pAd) + TXWISize + i, longptr, 2);
 		ptr +=2;
 	}
-#endif /* RTMP_MAC_USB */
+#endif
 
 	/*
 		For Wi-Fi faily generated beacons between participating stations.
@@ -1503,7 +1464,7 @@ VOID AsicEnableIbssSync(RTMP_ADAPTER *pAd)
 
 	==========================================================================
  */
-VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
+void AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 {
 	EDCA_AC_CFG_STRUC Ac0Cfg, Ac1Cfg, Ac2Cfg, Ac3Cfg;
 	AC_TXOP_CSR0_STRUC csr0;
@@ -1601,7 +1562,8 @@ VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 		/* Modify Cwmin/Cwmax/Txop on queue[QID_AC_VI], Recommend by Jerry 2005/07/27*/
 		/* To degrade our VIDEO Queue's throughput for WiFi WMM S3T07 Issue.*/
 
-		/*pEdcaParm->Txop[QID_AC_VI] = pEdcaParm->Txop[QID_AC_VI] * 7 / 10;  rt2860c need this		*/
+		/*pEdcaParm->Txop[QID_AC_VI] = pEdcaParm->Txop[QID_AC_VI] * 7 / 10;
+		 *  rt2860c need this */
 
 		Ac0Cfg.field.AcTxop =  pEdcaParm->Txop[QID_AC_BE];
 		Ac0Cfg.field.Cwmin= pEdcaParm->Cwmin[QID_AC_BE];
@@ -1619,7 +1581,8 @@ VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 		Ac2Cfg.field.Cwmax = pEdcaParm->Cwmax[QID_AC_VI];
 
 		/*sync with window 20110524*/
-		Ac2Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_VI] + 1; /* 5.2.27 T6 Pass Tx VI+BE, but will impack 5.2.27/28 T7. Tx VI*/
+		/* 5.2.27 T6 Pass Tx VI+BE, but will impack 5.2.27/28 T7. Tx VI*/
+		Ac2Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_VI] + 1;
 
 #ifdef INF_AMAZON_SE
 #ifdef CONFIG_AP_SUPPORT
@@ -1643,7 +1606,7 @@ VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 				Ac2Cfg.field.AcTxop = 5;
 			}
 		}
-#endif /* CONFIG_STA_SUPPORT */
+#endif
 
 		Ac3Cfg.field.AcTxop = pEdcaParm->Txop[QID_AC_VO];
 		Ac3Cfg.field.Cwmin = pEdcaParm->Cwmin[QID_AC_VO];
@@ -1659,9 +1622,6 @@ VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 			Ac2Cfg.field.AcTxop = pEdcaParm->Txop[QID_AC_VI];
 			}
 		}
-
-#ifdef CONFIG_STA_SUPPORT
-#endif /* CONFIG_STA_SUPPORT */
 
 		RTMP_IO_WRITE32(pAd, EDCA_AC0_CFG, Ac0Cfg.word);
 		RTMP_IO_WRITE32(pAd, EDCA_AC1_CFG, Ac1Cfg.word);
@@ -1686,11 +1646,11 @@ VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 			CwminCsr.field.Cwmin3 = pEdcaParm->Cwmin[QID_AC_VO];
-#endif /* CONFIG_AP_SUPPORT */
+#endif
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 			CwminCsr.field.Cwmin3 = pEdcaParm->Cwmin[QID_AC_VO] - 1; /*for TGn wifi test*/
-#endif /* CONFIG_STA_SUPPORT */
+#endif
 		RTMP_IO_WRITE32(pAd, WMM_CWMIN_CFG, CwminCsr.word);
 
 		CwmaxCsr.word = 0;
@@ -1757,7 +1717,9 @@ VOID AsicSetEdcaParm(RTMP_ADAPTER *pAd, PEDCA_PARM pEdcaParm)
 
 		NdisMoveMemory(&pAd->CommonCfg.APEdcaParm, pEdcaParm, sizeof(EDCA_PARM));
 		if (!ADHOC_ON(pAd)) {
-			DBGPRINT(RT_DEBUG_TRACE,("EDCA [#%d]: AIFSN CWmin CWmax  TXOP(us)  ACM\n", pEdcaParm->EdcaUpdateCount));
+			DBGPRINT(RT_DEBUG_TRACE,
+					("EDCA [#%d]: AIFSN CWmin CWmax  TXOP(us)  ACM\n",
+					pEdcaParm->EdcaUpdateCount));
 			DBGPRINT(RT_DEBUG_TRACE,("     AC_BE      %2d     %2d     %2d      %4d     %d\n",
 					 pEdcaParm->Aifsn[0], pEdcaParm->Cwmin[0],
 					 pEdcaParm->Cwmax[0], pEdcaParm->Txop[0]<<5,
@@ -1819,7 +1781,7 @@ UINT32 AsicGetRetryLimit(RTMP_ADAPTER *pAd, UINT32 type)
 
 	==========================================================================
  */
-VOID AsicSetSlotTime(PRTMP_ADAPTER pAd, BOOLEAN bUseShortSlotTime)
+void AsicSetSlotTime(PRTMP_ADAPTER pAd, BOOLEAN bUseShortSlotTime)
 {
 	ULONG SlotTime;
 	UINT32 RegValue = 0;
@@ -1829,9 +1791,11 @@ VOID AsicSetSlotTime(PRTMP_ADAPTER pAd, BOOLEAN bUseShortSlotTime)
 		bUseShortSlotTime = TRUE;
 #endif /* CONFIG_STA_SUPPORT */
 
-	if (bUseShortSlotTime && OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_SLOT_INUSED))
+	if (bUseShortSlotTime &&
+		OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_SLOT_INUSED))
 		return;
-	else if ((!bUseShortSlotTime) && (!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_SLOT_INUSED)))
+	else if ((!bUseShortSlotTime) &&
+		(!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_SLOT_INUSED)))
 		return;
 
 	if (bUseShortSlotTime)
@@ -1843,14 +1807,15 @@ VOID AsicSetSlotTime(PRTMP_ADAPTER pAd, BOOLEAN bUseShortSlotTime)
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
-		/* force using short SLOT time for FAE to demo performance when TxBurst is ON*/
-		if (((pAd->StaActive.SupportedPhyInfo.bHtEnable == FALSE) && (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED)))
+		/* force using short SLOT time for FAE to demo performance when
+		 *  TxBurst is ON*/
+		if (((pAd->StaActive.SupportedPhyInfo.bHtEnable == FALSE) &&
+			(OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED)))
 #ifdef DOT11_N_SUPPORT
 			|| ((pAd->StaActive.SupportedPhyInfo.bHtEnable == TRUE) &&
 			 (pAd->CommonCfg.BACapability.field.Policy == BA_NOTUSE))
 #endif
-			)
-		{
+			) {
 			/* In this case, we will think it is doing Wi-Fi test*/
 			/* And we will not set to short slot when bEnableTxBurst is TRUE.*/
 		} else if (pAd->CommonCfg.bEnableTxBurst) {
@@ -1880,16 +1845,18 @@ VOID AsicSetSlotTime(PRTMP_ADAPTER pAd, BOOLEAN bUseShortSlotTime)
 
 
 #ifdef CONFIG_AP_SUPPORT
-VOID RTMPGetTxTscFromAsic(RTMP_ADAPTER *pAd, UCHAR apidx, UCHAR *pTxTsc)
+void RTMPGetTxTscFromAsic(RTMP_ADAPTER *pAd, UCHAR apidx, UCHAR *pTxTsc)
 {
 	USHORT Wcid;
 	USHORT offset;
 	UCHAR IvEiv[8];
-	INT i;
+	int i;
 
 	/* Sanity check of apidx */
 	if (apidx >= MAX_MBSSID_NUM(pAd)) {
-		DBGPRINT(RT_DEBUG_ERROR, ("RTMPGetTxTscFromAsic : invalid apidx(%d)\n", apidx));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("RTMPGetTxTscFromAsic : invalid apidx(%d)\n",
+				apidx));
 		return;
 	}
 
@@ -1942,7 +1909,7 @@ VOID RTMPGetTxTscFromAsic(RTMP_ADAPTER *pAd, UCHAR apidx, UCHAR *pTxTsc)
 	/* Record current TxTsc */
 	if (pAd->ApCfg.MBSSID[apidx].wdev.GroupKeyWepStatus == Ndis802_11AESEnable) {
 		/* AES */
-		*pTxTsc 	= IvEiv[0];
+		*pTxTsc = IvEiv[0];
 		*(pTxTsc+1) = IvEiv[1];
 		*(pTxTsc+2) = IvEiv[4];
 		*(pTxTsc+3) = IvEiv[5];
@@ -1950,16 +1917,16 @@ VOID RTMPGetTxTscFromAsic(RTMP_ADAPTER *pAd, UCHAR apidx, UCHAR *pTxTsc)
 		*(pTxTsc+5) = IvEiv[7];
 	} else {
 		/* TKIP */
-		*pTxTsc 	= IvEiv[2];
+		*pTxTsc = IvEiv[2];
 		*(pTxTsc+1) = IvEiv[0];
 		*(pTxTsc+2) = IvEiv[4];
 		*(pTxTsc+3) = IvEiv[5];
 		*(pTxTsc+4) = IvEiv[6];
 		*(pTxTsc+5) = IvEiv[7];
 	}
-	DBGPRINT(RT_DEBUG_TRACE, 
+	DBGPRINT(RT_DEBUG_TRACE,
 			("RTMPGetTxTscFromAsic : WCID(%d) TxTsc 0x%02x-0x%02x-0x%02x-0x%02x-0x%02x-0x%02x \n",
-			Wcid, *pTxTsc, *(pTxTsc+1), *(pTxTsc+2), *(pTxTsc+3), 
+			Wcid, *pTxTsc, *(pTxTsc+1), *(pTxTsc+2), *(pTxTsc+3),
 			*(pTxTsc+4), *(pTxTsc+5)));
 
 }
@@ -1976,36 +1943,41 @@ VOID RTMPGetTxTscFromAsic(RTMP_ADAPTER *pAd, UCHAR apidx, UCHAR *pTxTsc)
 	Return:
 	========================================================================
 */
-VOID AsicAddSharedKeyEntry(
-	IN PRTMP_ADAPTER 	pAd,
-	IN UCHAR		 	BssIndex,
-	IN UCHAR		 	KeyIdx,
-	IN PCIPHER_KEY		pCipherKey)
+void AsicAddSharedKeyEntry(PRTMP_ADAPTER pAd, UCHAR BssIndex, UCHAR KeyIdx,
+	PCIPHER_KEY pCipherKey)
 {
-	ULONG offset; /*, csr0;*/
+	ULONG offset;
 	SHAREDKEY_MODE_STRUC csr1;
 	UCHAR org_bssindex;
 
-	PUCHAR		pKey = pCipherKey->Key;
-	PUCHAR		pTxMic = pCipherKey->TxMic;
-	PUCHAR		pRxMic = pCipherKey->RxMic;
-	UCHAR		CipherAlg = pCipherKey->CipherAlg;
+	PUCHAR pKey = pCipherKey->Key;
+	PUCHAR pTxMic = pCipherKey->TxMic;
+	PUCHAR pRxMic = pCipherKey->RxMic;
+	UCHAR CipherAlg = pCipherKey->CipherAlg;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("AsicAddSharedKeyEntry BssIndex=%d, KeyIdx=%d\n", BssIndex,KeyIdx));
-/*============================================================================================*/
+	DBGPRINT(RT_DEBUG_TRACE,
+			("AsicAddSharedKeyEntry BssIndex=%d, KeyIdx=%d\n",
+			BssIndex,KeyIdx));
 
-	DBGPRINT(RT_DEBUG_TRACE,("AsicAddSharedKeyEntry: %s key #%d\n", CipherName[CipherAlg], BssIndex*4 + KeyIdx));
-	DBGPRINT(RT_DEBUG_TRACE, (" 	Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
-		pKey[0],pKey[1],pKey[2],pKey[3],pKey[4],pKey[5],pKey[6],pKey[7],pKey[8],pKey[9],pKey[10],pKey[11],pKey[12],pKey[13],pKey[14],pKey[15]));
+	DBGPRINT(RT_DEBUG_TRACE,("AsicAddSharedKeyEntry: %s key #%d\n",
+			CipherName[CipherAlg], BssIndex*4 + KeyIdx));
+	DBGPRINT(RT_DEBUG_TRACE,
+			("  Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+			pKey[0], pKey[1], pKey[2], pKey[3], pKey[4], pKey[5],
+			pKey[6], pKey[7], pKey[8], pKey[9], pKey[10], pKey[11],
+			pKey[12], pKey[13], pKey[14], pKey[15]));
 	if (pRxMic) {
-		DBGPRINT(RT_DEBUG_TRACE, (" 	Rx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
-			pRxMic[0],pRxMic[1],pRxMic[2],pRxMic[3],pRxMic[4],pRxMic[5],pRxMic[6],pRxMic[7]));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("  Rx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+				pRxMic[0], pRxMic[1], pRxMic[2], pRxMic[3],
+				pRxMic[4], pRxMic[5], pRxMic[6], pRxMic[7]));
 	}
 	if (pTxMic) {
-		DBGPRINT(RT_DEBUG_TRACE, (" 	Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
-			pTxMic[0],pTxMic[1],pTxMic[2],pTxMic[3],pTxMic[4],pTxMic[5],pTxMic[6],pTxMic[7]));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("  Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+				pTxMic[0], pTxMic[1], pTxMic[2], pTxMic[3],
+				pTxMic[4], pTxMic[5], pTxMic[6], pTxMic[7]));
 	}
-/*============================================================================================*/
 
 	org_bssindex = BssIndex;
 	if (BssIndex >= 8)
@@ -2073,7 +2045,9 @@ VOID AsicAddSharedKeyEntry(
 
 		/* Update cipher algorithm. WSTA always use BSS0*/
 		RTMP_IO_READ32(pAd, share_key_mode_base + 4 * (BssIndex/2), &csr1.word);
-		DBGPRINT(RT_DEBUG_TRACE,("Read: SHARED_KEY_MODE_BASE at this Bss[%d] KeyIdx[%d]= 0x%x \n", BssIndex,KeyIdx, csr1.word));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("Read: SHARED_KEY_MODE_BASE at this Bss[%d] KeyIdx[%d]= 0x%x \n",
+				BssIndex,KeyIdx, csr1.word));
 		if ((BssIndex%2) == 0) {
 			if (KeyIdx == 0)
 				csr1.field.Bss0Key0CipherAlg = CipherAlg;
@@ -2093,25 +2067,28 @@ VOID AsicAddSharedKeyEntry(
 			else
 				csr1.field.Bss1Key3CipherAlg = CipherAlg;
 		}
-		DBGPRINT(RT_DEBUG_TRACE,("Write: SHARED_KEY_MODE_BASE at this Bss[%d] = 0x%x \n", BssIndex, csr1.word));
+		DBGPRINT(RT_DEBUG_TRACE,
+				("Write: SHARED_KEY_MODE_BASE at this Bss[%d] = 0x%x \n",
+				BssIndex, csr1.word));
 		RTMP_IO_WRITE32(pAd, share_key_mode_base+ 4 * (BssIndex/2), csr1.word);
 	}
 }
 
 
-/*	IRQL = DISPATCH_LEVEL*/
-VOID AsicRemoveSharedKeyEntry(PRTMP_ADAPTER pAd, UCHAR BssIndex, UCHAR KeyIdx)
+/* IRQL = DISPATCH_LEVEL*/
+void AsicRemoveSharedKeyEntry(PRTMP_ADAPTER pAd, UCHAR BssIndex, UCHAR KeyIdx)
 {
 	/*ULONG SecCsr0;*/
 	SHAREDKEY_MODE_STRUC csr1;
 	UINT32 share_key_mode_base = 0;
 
-	DBGPRINT(RT_DEBUG_TRACE,("AsicRemoveSharedKeyEntry: #%d \n", BssIndex*4 + KeyIdx));
+	DBGPRINT(RT_DEBUG_TRACE,("AsicRemoveSharedKeyEntry: #%d \n",
+			BssIndex*4 + KeyIdx));
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT)
 		share_key_mode_base= RLT_SHARED_KEY_MODE_BASE;
-#endif 
+#endif
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP)
 		share_key_mode_base = SHARED_KEY_MODE_BASE;
@@ -2137,7 +2114,9 @@ VOID AsicRemoveSharedKeyEntry(PRTMP_ADAPTER pAd, UCHAR BssIndex, UCHAR KeyIdx)
 		else
 			csr1.field.Bss1Key3CipherAlg = 0;
 	}
-	DBGPRINT(RT_DEBUG_TRACE,("Write: SHARED_KEY_MODE_BASE at this Bss[%d] = 0x%x \n", BssIndex, csr1.word));
+	DBGPRINT(RT_DEBUG_TRACE,
+			("Write: SHARED_KEY_MODE_BASE at this Bss[%d] = 0x%x \n",
+			BssIndex, csr1.word));
 	RTMP_IO_WRITE32(pAd, share_key_mode_base+4*(BssIndex/2), csr1.word);
 
 	ASSERT(BssIndex < 4);
@@ -2145,7 +2124,7 @@ VOID AsicRemoveSharedKeyEntry(PRTMP_ADAPTER pAd, UCHAR BssIndex, UCHAR KeyIdx)
 }
 
 
-VOID AsicUpdateWCIDIVEIV(PRTMP_ADAPTER pAd, USHORT WCID, ULONG uIV, ULONG uEIV)
+void AsicUpdateWCIDIVEIV(PRTMP_ADAPTER pAd, USHORT WCID, ULONG uIV, ULONG uEIV)
 {
 	ULONG offset;
 	UINT32 iveiv_tb_base = 0, iveiv_tb_size = 0;
@@ -2174,7 +2153,7 @@ VOID AsicUpdateWCIDIVEIV(PRTMP_ADAPTER pAd, USHORT WCID, ULONG uIV, ULONG uEIV)
 }
 
 
-VOID AsicUpdateRxWCIDTable(PRTMP_ADAPTER pAd, USHORT WCID, PUCHAR pAddr)
+void AsicUpdateRxWCIDTable(PRTMP_ADAPTER pAd, USHORT WCID, PUCHAR pAddr)
 {
 	ULONG offset;
 	ULONG Addr;
@@ -2204,7 +2183,7 @@ VOID AsicUpdateRxWCIDTable(PRTMP_ADAPTER pAd, USHORT WCID, PUCHAR pAddr)
 
 	========================================================================
 */
-VOID AsicUpdateWcidAttributeEntry(PRTMP_ADAPTER pAd, UCHAR BssIdx, UCHAR KeyIdx,
+void AsicUpdateWcidAttributeEntry(PRTMP_ADAPTER pAd, UCHAR BssIdx, UCHAR KeyIdx,
 	UCHAR CipherAlg, UINT8 Wcid, UINT8 KeyTabFlag)
 {
 	WCID_ATTRIBUTE_STRUC WCIDAttri;
@@ -2215,20 +2194,20 @@ VOID AsicUpdateWcidAttributeEntry(PRTMP_ADAPTER pAd, UCHAR BssIdx, UCHAR KeyIdx,
 		wcid_attr_base = RLT_MAC_WCID_ATTRIBUTE_BASE;
 		wcid_attr_size = RLT_HW_WCID_ATTRI_SIZE;
 	}
-#endif /* RLT_MAC */
+#endif
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP) {
 		wcid_attr_base = MAC_WCID_ATTRIBUTE_BASE;
 		wcid_attr_size = HW_WCID_ATTRI_SIZE;
 	}
-#endif /* RTMP_MAC */
-
+#endif
 	/* Initialize the content of WCID Attribue  */
 	WCIDAttri.word = 0;
 
 	/* The limitation of HW WCID table */
 	if (Wcid > 254) {
-		DBGPRINT(RT_DEBUG_WARN, ("%s:Invalid wcid(%d)\n", __FUNCTION__, Wcid));
+		DBGPRINT(RT_DEBUG_WARN, ("%s:Invalid wcid(%d)\n", __FUNCTION__,
+				Wcid));
 		return;
 	}
 
@@ -2249,8 +2228,10 @@ VOID AsicUpdateWcidAttributeEntry(PRTMP_ADAPTER pAd, UCHAR BssIdx, UCHAR KeyIdx,
 	offset = wcid_attr_base + (Wcid * wcid_attr_size);
 	RTMP_IO_WRITE32(pAd, offset, WCIDAttri.word);
 
-	DBGPRINT(RT_DEBUG_TRACE, ("%s:WCID #%d, KeyIdx #%d, WCIDAttri=0x%x, Alg=%s\n",
-			__FUNCTION__, Wcid, KeyIdx, WCIDAttri.word, CipherName[CipherAlg]));
+	DBGPRINT(RT_DEBUG_TRACE,
+			("%s:WCID #%d, KeyIdx #%d, WCIDAttri=0x%x, Alg=%s\n",
+			__FUNCTION__, Wcid, KeyIdx, WCIDAttri.word,
+			CipherName[CipherAlg]));
 }
 
 
@@ -2262,13 +2243,13 @@ VOID AsicUpdateWcidAttributeEntry(PRTMP_ADAPTER pAd, UCHAR BssIdx, UCHAR KeyIdx,
 
 	==========================================================================
  */
-VOID AsicDelWcidTab(RTMP_ADAPTER *pAd, UCHAR wcid_idx)
+void AsicDelWcidTab(RTMP_ADAPTER *pAd, UCHAR wcid_idx)
 {
 	UINT32 offset;
 	UCHAR cnt, cnt_s, cnt_e;
 #ifdef MCS_LUT_SUPPORT
 	UINT32 mcs_tb_offset = 0;
-#endif /* MCS_LUT_SUPPORT */
+#endif
 
 	DBGPRINT(RT_DEBUG_TRACE, ("AsicDelWcidTab==>wcid_idx = 0x%x\n",wcid_idx));
 	if (wcid_idx == WCID_ALL) {
@@ -2278,7 +2259,7 @@ VOID AsicDelWcidTab(RTMP_ADAPTER *pAd, UCHAR wcid_idx)
 #ifdef MCS_LUT_SUPPORT
 		if (RTMP_TEST_MORE_FLAG(pAd, fASIC_CAP_MCS_LUT))
 			mcs_tb_offset = 0x400;
-#endif /* MCS_LUT_SUPPORT */
+#endif
 		cnt_s = cnt_e = wcid_idx;
 	}
 
@@ -2292,7 +2273,7 @@ VOID AsicDelWcidTab(RTMP_ADAPTER *pAd, UCHAR wcid_idx)
 			RTMP_IO_WRITE32(pAd, offset, 0x0);
 			RTMP_IO_WRITE32(pAd, offset + 4, 0x0);
 		}
-#endif /* MCS_LUT_SUPPORT */
+#endif
 	}
 }
 
@@ -2306,9 +2287,9 @@ VOID AsicDelWcidTab(RTMP_ADAPTER *pAd, UCHAR wcid_idx)
 	Return:
 	========================================================================
 */
-VOID AsicAddPairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR WCID, PCIPHER_KEY pCipherKey)
+void AsicAddPairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR WCID, PCIPHER_KEY pCipherKey)
 {
-	INT i;
+	int i;
 	ULONG offset;
 	UINT32 pairwise_key_base = 0, pairwise_key_len = 0;
 	UCHAR *pTxMic = pCipherKey->TxMic;
@@ -2355,18 +2336,25 @@ VOID AsicAddPairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR WCID, PCIPHER_KEY pCipherK
 		RTUSBMultiWrite(pAd, offset, &pCipherKey->RxMic[0], 8, FALSE);
 #endif /* RTMP_MAC_USB */
 	}
-#ifdef RTMP_MAC
-#endif /* RTMP_MAC */
-	DBGPRINT(RT_DEBUG_TRACE,("AsicAddPairwiseKeyEntry: WCID #%d Alg=%s\n",WCID, CipherName[CipherAlg]));
-	DBGPRINT(RT_DEBUG_TRACE,("	Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
-		pKey[0],pKey[1],pKey[2],pKey[3],pKey[4],pKey[5],pKey[6],pKey[7],pKey[8],pKey[9],pKey[10],pKey[11],pKey[12],pKey[13],pKey[14],pKey[15]));
+
+	DBGPRINT(RT_DEBUG_TRACE,("AsicAddPairwiseKeyEntry: WCID #%d Alg=%s\n",
+			WCID, CipherName[CipherAlg]));
+	DBGPRINT(RT_DEBUG_TRACE,
+			(" Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+			pKey[0], pKey[1], pKey[2], pKey[3], pKey[4], pKey[5],
+			pKey[6], pKey[7], pKey[8], pKey[9], pKey[10], pKey[11],
+			pKey[12], pKey[13], pKey[14], pKey[15]));
 	if (pRxMic) {
-		DBGPRINT(RT_DEBUG_TRACE, ("	Rx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
-			pRxMic[0],pRxMic[1],pRxMic[2],pRxMic[3],pRxMic[4],pRxMic[5],pRxMic[6],pRxMic[7]));
+		DBGPRINT(RT_DEBUG_TRACE,
+				(" Rx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+				pRxMic[0], pRxMic[1], pRxMic[2], pRxMic[3],
+				pRxMic[4], pRxMic[5], pRxMic[6], pRxMic[7]));
 	}
 	if (pTxMic) {
-		DBGPRINT(RT_DEBUG_TRACE, ("	Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
-			pTxMic[0],pTxMic[1],pTxMic[2],pTxMic[3],pTxMic[4],pTxMic[5],pTxMic[6],pTxMic[7]));
+		DBGPRINT(RT_DEBUG_TRACE,
+				(" Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+				pTxMic[0], pTxMic[1], pTxMic[2], pTxMic[3],
+				pTxMic[4], pTxMic[5], pTxMic[6], pTxMic[7]));
 	}
 }
 
@@ -2379,10 +2367,11 @@ VOID AsicAddPairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR WCID, PCIPHER_KEY pCipherK
 	Return:
 	========================================================================
 */
-VOID AsicRemovePairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR Wcid)
+void AsicRemovePairwiseKeyEntry(PRTMP_ADAPTER pAd, UCHAR Wcid)
 {
 	/* Set the specific WCID attribute entry as OPEN-NONE */
-	AsicUpdateWcidAttributeEntry(pAd, BSS0, 0, CIPHER_NONE, Wcid, PAIRWISEKEYTABLE);
+	AsicUpdateWcidAttributeEntry(pAd, BSS0, 0, CIPHER_NONE, Wcid,
+			PAIRWISEKEYTABLE);
 }
 
 
@@ -2393,10 +2382,11 @@ BOOLEAN AsicSendCommandToMcu(RTMP_ADAPTER *pAd, UCHAR Command, UCHAR Token,
 	// TODO: shiang-6590, fix me, currently firmware is not ready yet, so ignore it!
 	if (IS_RT65XX(pAd))
 		return TRUE;
-#endif /* RT65xx */
+#endif
 
 	if (pAd->chipOps.sendCommandToMcu)
-		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0, Arg1, in_atomic);
+		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0,
+				Arg1, in_atomic);
 	else
 		return FALSE;
 }
@@ -2420,7 +2410,8 @@ static BOOLEAN AsicSendCommandToMcuBBP(PRTMP_ADAPTER pAd, UCHAR Command,
 #endif /* RT65xx */
 
 	if (pAd->chipOps.sendCommandToMcu)
-		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0, Arg1, FlgIsNeedLocked);
+		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0,
+				Arg1, FlgIsNeedLocked);
 	else
 		return FALSE;
 }
@@ -2437,14 +2428,14 @@ static BOOLEAN AsicSendCommandToMcuBBP(PRTMP_ADAPTER pAd, UCHAR Command,
 	Return:
 	========================================================================
  */
-VOID AsicSetRxAnt(PRTMP_ADAPTER pAd, UCHAR Ant)
+void AsicSetRxAnt(PRTMP_ADAPTER pAd, UCHAR Ant)
 {
 	if (pAd->chipOps.SetRxAnt)
 		pAd->chipOps.SetRxAnt(pAd, Ant);
 }
 
 
-VOID AsicTurnOffRFClk(PRTMP_ADAPTER pAd, UCHAR Channel)
+void AsicTurnOffRFClk(PRTMP_ADAPTER pAd, UCHAR Channel)
 {
 	if (pAd->chipOps.AsicRfTurnOff) {
 		pAd->chipOps.AsicRfTurnOff(pAd);
@@ -2481,11 +2472,15 @@ VOID AsicTurnOffRFClk(PRTMP_ADAPTER pAd, UCHAR Channel)
 					if (1) {
 						RTMP_RF_IO_WRITE32(pAd, R3);
 
-						DBGPRINT(RT_DEBUG_TRACE, ("AsicTurnOffRFClk#%d(RF=%d, ) , R2=0x%08x,  R3 = 0x%08x \n",
-							Channel, pAd->RfIcType, R2, R3));
+						DBGPRINT(RT_DEBUG_TRACE,
+								("AsicTurnOffRFClk#%d(RF=%d, ) , R2=0x%08x,  R3 = 0x%08x \n",
+								Channel,
+								pAd->RfIcType, R2, R3));
 					} else {
-						DBGPRINT(RT_DEBUG_TRACE, ("AsicTurnOffRFClk#%d(RF=%d, ) , R2=0x%08x \n",
-							Channel, pAd->RfIcType, R2));
+						DBGPRINT(RT_DEBUG_TRACE,
+								("AsicTurnOffRFClk#%d(RF=%d, ) , R2=0x%08x \n",
+								Channel,
+								pAd->RfIcType, R2));
 					}
 					break;
 				}
@@ -2534,12 +2529,13 @@ UINT32 StreamModeRegVal(RTMP_ADAPTER *pAd)
 		pAd		 ---
 		pMacAddr ---
 		bClear	 --- disable the stream mode for specific macAddr when
-						(pMacAddr!=NULL)
+				(pMacAddr!=NULL)
 
 	Return:
 	========================================================================
 */
-VOID AsicSetStreamMode(RTMP_ADAPTER *pAd, PUCHAR pMacAddr, INT chainIdx, BOOLEAN bEnabled)
+void AsicSetStreamMode(RTMP_ADAPTER *pAd, PUCHAR pMacAddr, int chainIdx,
+	BOOLEAN bEnabled)
 {
 	UINT32 streamWord;
 	UINT32 regAddr, regVal;
@@ -2568,7 +2564,7 @@ VOID AsicSetStreamMode(RTMP_ADAPTER *pAd, PUCHAR pMacAddr, INT chainIdx, BOOLEAN
 }
 
 
-VOID RtmpStreamModeInit(RTMP_ADAPTER *pAd)
+void RtmpStreamModeInit(RTMP_ADAPTER *pAd)
 {
 	int chainIdx;
 	UCHAR *pMacAddr;
@@ -2584,7 +2580,7 @@ VOID RtmpStreamModeInit(RTMP_ADAPTER *pAd)
 #endif // STREAM_MODE_SUPPORT //
 
 
-VOID AsicSetTxPreamble(RTMP_ADAPTER *pAd, USHORT TxPreamble)
+void AsicSetTxPreamble(RTMP_ADAPTER *pAd, USHORT TxPreamble)
 {
 	AUTO_RSP_CFG_STRUC csr4;
 
@@ -2642,7 +2638,7 @@ BOOLEAN AsicSetRalinkBurstMode(RTMP_ADAPTER *pAd, BOOLEAN enable)
    a) before into WOW mode, switch firmware to WOW-enable firmware
    b) exit from WOW mode, switch firmware to normal firmware
 */
-VOID AsicLoadWOWFirmware(PRTMP_ADAPTER pAd, BOOLEAN WOW)
+void AsicLoadWOWFirmware(PRTMP_ADAPTER pAd, BOOLEAN WOW)
 {
 	if (WOW)
 		pAd->WOW_Cfg.bWOWFirmware = TRUE;
@@ -2653,8 +2649,8 @@ VOID AsicLoadWOWFirmware(PRTMP_ADAPTER pAd, BOOLEAN WOW)
 }
 
 /* In WOW mode, 8051 mcu will send null frame, and pick data from 0x7780
- * the null frame includes TxWI and 802.11 header 						*/
-VOID AsicWOWSendNullFrame(PRTMP_ADAPTER pAd, UCHAR TxRate, BOOLEAN bQosNull)
+ * the null frame includes TxWI and 802.11 header */
+void AsicWOWSendNullFrame(PRTMP_ADAPTER pAd, UCHAR TxRate, BOOLEAN bQosNull)
 {
 	TXWI_STRUC *TxWI;
 	PUCHAR NullFrame;
@@ -2671,14 +2667,14 @@ VOID AsicWOWSendNullFrame(PRTMP_ADAPTER pAd, UCHAR TxRate, BOOLEAN bQosNull)
 	NullFrame = (PUCHAR)&pAd->NullFrame;
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT) {
-			packet_len = TxWI->TXWI_N.MPDUtotalByteCnt;
+		packet_len = TxWI->TXWI_N.MPDUtotalByteCnt;
 	}
 #endif
 
 #ifdef RTMP_MAC
 	if (pAd->chipCap.hif_type == HIF_RTMP)
 		packet_len = TxWI->TXWI_O.MPDUtotalByteCnt;
-#endif 
+#endif
 
 	DBGPRINT(RT_DEBUG_OFF, ("TxWI:\n"));
 	/* copy TxWI to MCU memory */
@@ -2698,7 +2694,8 @@ VOID AsicWOWSendNullFrame(PRTMP_ADAPTER pAd, UCHAR TxRate, BOOLEAN bQosNull)
 		RTMP_IO_WRITE32(pAd, HW_NULL2_BASE + TXWISize + offset, Value);
 	}
 
-	DBGPRINT(RT_DEBUG_OFF, ("Write GroupCipher Mode: %d\n", pAd->StaCfg.GroupCipher));
+	DBGPRINT(RT_DEBUG_OFF, ("Write GroupCipher Mode: %d\n",
+			pAd->StaCfg.GroupCipher));
 
 #ifdef RLT_MAC
 	if (pAd->chipCap.hif_type == HIF_RLT)
@@ -2720,23 +2717,19 @@ VOID AsicWOWSendNullFrame(PRTMP_ADAPTER pAd, UCHAR TxRate, BOOLEAN bQosNull)
 		break;
 	}
 	RTMP_IO_WRITE32(pAd, share_key_mode_base, Value);
-
 }
-
 #endif /* RTMP_MAC_USB */
 #endif /* WOW_SUPPORT */
 
 
 #ifdef MICROWAVE_OVEN_SUPPORT
-VOID AsicMeasureFalseCCA(PRTMP_ADAPTER pAd)
+void AsicMeasureFalseCCA(PRTMP_ADAPTER pAd)
 {
 	if (pAd->chipOps.AsicMeasureFalseCCA)
 		pAd->chipOps.AsicMeasureFalseCCA(pAd);
 }
 
-VOID AsicMitigateMicrowave(
-	IN PRTMP_ADAPTER pAd
-)
+void AsicMitigateMicrowave(PRTMP_ADAPTER pAd)
 {
 	if (pAd->chipOps.AsicMitigateMicrowave)
 		pAd->chipOps.AsicMitigateMicrowave(pAd);
@@ -2761,16 +2754,16 @@ BOOLEAN AsicSetPreTbttInt(RTMP_ADAPTER *pAd, BOOLEAN enable)
 }
 
 
-BOOLEAN AsicWaitPDMAIdle(struct _RTMP_ADAPTER *pAd, INT round, INT wait_us)
+BOOLEAN AsicWaitPDMAIdle(struct _RTMP_ADAPTER *pAd, int round, int wait_us)
 {
-	INT i = 0;
+	int i = 0;
 	WPDMA_GLO_CFG_STRUC GloCfg;
-
 
 	do {
 		RTMP_IO_READ32(pAd, WPDMA_GLO_CFG, &GloCfg.word);
-		if ((GloCfg.field.TxDMABusy == 0)  && (GloCfg.field.RxDMABusy == 0)) {
-			DBGPRINT(RT_DEBUG_TRACE, ("==>  DMAIdle, GloCfg=0x%x\n", GloCfg.word));
+		if ((GloCfg.field.TxDMABusy == 0) && (GloCfg.field.RxDMABusy == 0)) {
+			DBGPRINT(RT_DEBUG_TRACE, ("==>  DMAIdle, GloCfg=0x%x\n",
+					GloCfg.word));
 			return TRUE;
 		}
 		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))
@@ -2814,9 +2807,9 @@ BOOLEAN rtmp_asic_top_init(RTMP_ADAPTER *pAd)
 			AUTO_WAKEUP_STRUC AutoWakeupCfg;
 
 			AsicForceWakeup(pAd, TRUE);
-				AutoWakeupCfg.word = 0;
-				RTMP_IO_WRITE32(pAd, AUTO_WAKEUP_CFG, AutoWakeupCfg.word);
-				OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_DOZE);
+			AutoWakeupCfg.word = 0;
+			RTMP_IO_WRITE32(pAd, AUTO_WAKEUP_CFG, AutoWakeupCfg.word);
+			OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_DOZE);
 		}
 	}
 #endif /* PCIE_PS_SUPPORT */
@@ -2830,7 +2823,7 @@ BOOLEAN rtmp_asic_top_init(RTMP_ADAPTER *pAd)
 }
 
 
-INT StopDmaRx(RTMP_ADAPTER *pAd, UCHAR Level)
+int StopDmaRx(RTMP_ADAPTER *pAd, UCHAR Level)
 {
 	PNDIS_PACKET pRxPacket;
 	RX_BLK RxBlk, *pRxBlk;
@@ -2850,7 +2843,8 @@ INT StopDmaRx(RTMP_ADAPTER *pAd, UCHAR Level)
 		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))
 			return 0;
 		pRxBlk = &RxBlk;
-		pRxPacket = GetPacketFromRxRing(pAd, pRxBlk, &bReschedule, &RxPending, &bCmdRspPacket, 0);
+		pRxPacket = GetPacketFromRxRing(pAd, pRxBlk, &bReschedule,
+				&RxPending, &bCmdRspPacket, 0);
 		if ((RxPending == 0) && (bReschedule == FALSE))
 			break;
 		else
@@ -2879,7 +2873,9 @@ INT StopDmaRx(RTMP_ADAPTER *pAd, UCHAR Level)
 	}
 
 	if (MTxCycle >= 2000) {
-		DBGPRINT(RT_DEBUG_ERROR, ("%s:RX DMA busy!! DMA_CFG = 0x%08x\n", __FUNCTION__, MacReg));
+		DBGPRINT(RT_DEBUG_ERROR,
+				("%s:RX DMA busy!! DMA_CFG = 0x%08x\n",
+				__FUNCTION__, MacReg));
 	}
 
 	if (Level == RTMP_HALT) {
@@ -2892,7 +2888,7 @@ INT StopDmaRx(RTMP_ADAPTER *pAd, UCHAR Level)
 }
 
 
-INT StopDmaTx(RTMP_ADAPTER *pAd, UCHAR Level)
+int StopDmaTx(RTMP_ADAPTER *pAd, UCHAR Level)
 {
 	UINT32 MacReg = 0, MTxCycle = 0;
 #ifdef RTMP_MAC_USB
@@ -2912,7 +2908,6 @@ INT StopDmaTx(RTMP_ADAPTER *pAd, UCHAR Level)
 			RtmpusecDelay(50);
 		}
 #endif
-
 		if (MacReg == 0xFFFFFFFF) {
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST);
 			return 0;
@@ -2923,8 +2918,8 @@ INT StopDmaTx(RTMP_ADAPTER *pAd, UCHAR Level)
 		DBGPRINT(RT_DEBUG_ERROR, ("TX DMA busy!! DMA_CFG(%x)\n", MacReg));
 	}
 
-	if (Level == RTMP_HALT) {
-	}
+//	if (Level == RTMP_HALT) {
+//	}
 
 	DBGPRINT(RT_DEBUG_TRACE, ("<==== %s\n", __FUNCTION__));
 
@@ -2970,12 +2965,17 @@ BOOLEAN AsicReadAggCnt(RTMP_ADAPTER *pAd, ULONG *aggCnt, int cnt_len)
 			if (cnt < (cnt_len -1)) {
 				aggCnt[cnt] = reg_val.field.AggCnt_x;
 				aggCnt[cnt+1] = reg_val.field.AggCnt_y;
-				DBGPRINT(RT_DEBUG_TRACE, ("%s():Get AggSize at Reg(0x%x) with val(0x%08x) [AGG_%d=>%ld, AGG_%d=>%ld]\n",
-						__FUNCTION__, reg_addr, reg_val.word, cnt, aggCnt[cnt], cnt+1, aggCnt[cnt+1]));
+				DBGPRINT(RT_DEBUG_TRACE,
+						("%s():Get AggSize at Reg(0x%x) with val(0x%08x) [AGG_%d=>%ld, AGG_%d=>%ld]\n",
+						__FUNCTION__, reg_addr,
+						reg_val.word, cnt, aggCnt[cnt],
+						cnt+1, aggCnt[cnt+1]));
 				cnt += 2;
 			} else {
-				DBGPRINT(RT_DEBUG_TRACE, ("%s():Get AggSize at Reg(0x%x) failed, no enough buffer(cnt_len=%d, cnt=%d)\n",
-							__FUNCTION__, reg_addr, cnt_len, cnt));
+				DBGPRINT(RT_DEBUG_TRACE,
+						("%s():Get AggSize at Reg(0x%x) failed, no enough buffer(cnt_len=%d, cnt=%d)\n",
+						__FUNCTION__, reg_addr, cnt_len,
+						cnt));
 			}
 		}
 	}
@@ -2986,7 +2986,7 @@ BOOLEAN AsicReadAggCnt(RTMP_ADAPTER *pAd, ULONG *aggCnt, int cnt_len)
 #endif /* DOT11_N_SUPPORT */
 
 
-INT AsicSetChannel(RTMP_ADAPTER *pAd, UCHAR ch, UINT8 bw, UINT8 ext_ch, BOOLEAN bScan)
+int AsicSetChannel(RTMP_ADAPTER *pAd, UCHAR ch, UINT8 bw, UINT8 ext_ch, BOOLEAN bScan)
 {
 	bbp_set_bw(pAd, bw);
 
@@ -3000,8 +3000,7 @@ INT AsicSetChannel(RTMP_ADAPTER *pAd, UCHAR ch, UINT8 bw, UINT8 ext_ch, BOOLEAN 
 
 #ifdef RT28xx
 	RT28xx_ch_tunning(pAd, bw);
-#endif /* RT28xx */
-
+#endif
 	return 0;
 }
 
@@ -3016,12 +3015,12 @@ INT AsicSetChannel(RTMP_ADAPTER *pAd, UCHAR ch, UINT8 bw, UINT8 ext_ch, BOOLEAN 
 
 	==========================================================================
  */
-VOID AsicSetApCliBssid(PRTMP_ADAPTER pAd, PUCHAR pBssid, UCHAR index)
+void AsicSetApCliBssid(PRTMP_ADAPTER pAd, PUCHAR pBssid, UCHAR index)
 {
 	UINT32 Addr4 = 0;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("%s():%x:%x:%x:%x:%x:%x\n",
-			__FUNCTION__, PRINT_MAC(pBssid)));
+	DBGPRINT(RT_DEBUG_TRACE, ("%s():%x:%x:%x:%x:%x:%x\n", __FUNCTION__,
+			PRINT_MAC(pBssid)));
 
 	Addr4 = (UINT32)(pBssid[0]) |
 			(UINT32)(pBssid[1] << 8)  |
@@ -3039,8 +3038,7 @@ VOID AsicSetApCliBssid(PRTMP_ADAPTER pAd, PUCHAR pBssid, UCHAR index)
 #endif /* MAC_APCLI_SUPPORT */
 
 #ifdef NEW_WOW_SUPPORT
-VOID RT28xxAndesWOWEnable(
-	IN PRTMP_ADAPTER pAd)
+void RT28xxAndesWOWEnable(PRTMP_ADAPTER pAd)
 {
 	NEW_WOW_MASK_CFG_STRUCT mask_cfg;
 	NEW_WOW_SEC_CFG_STRUCT sec_cfg;
@@ -3051,7 +3049,6 @@ VOID RT28xxAndesWOWEnable(
 	RTMP_CHIP_CAP *pChipCap = &pAd->chipCap;
 	INT32 Ret;
 	MAC_TABLE_ENTRY *pEntry = NULL;
-
 
 	NdisZeroMemory(&CmdUnit, sizeof(CmdUnit));
 
@@ -3068,8 +3065,8 @@ VOID RT28xxAndesWOWEnable(
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n", __FUNCTION__,
-					CmdUnit.u.ANDES.Type, wow_param.Parameter);
+		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n",
+				__FUNCTION__, CmdUnit.u.ANDES.Type, wow_param.Parameter);
 		return;
 	}
 
@@ -3089,8 +3086,9 @@ VOID RT28xxAndesWOWEnable(
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed!!(%d/%d)\x1b[m\n", __FUNCTION__,
-					CmdUnit.u.ANDES.Type, mask_cfg.Config_Type);
+		printk("\x1b[31m%s: send WOW config command failed!!(%d/%d)\x1b[m\n",
+				__FUNCTION__, CmdUnit.u.ANDES.Type,
+				mask_cfg.Config_Type);
 		return;
 	}
 
@@ -3126,8 +3124,9 @@ VOID RT28xxAndesWOWEnable(
 		Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 		if (Ret != NDIS_STATUS_SUCCESS) {
-			printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n", __FUNCTION__,
-					CmdUnit.u.ANDES.Type, sec_cfg.Config_Type);
+			printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n",
+					__FUNCTION__, CmdUnit.u.ANDES.Type,
+					sec_cfg.Config_Type);
 			return;
 		}
 
@@ -3155,8 +3154,9 @@ VOID RT28xxAndesWOWEnable(
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n", __FUNCTION__,
-					CmdUnit.u.ANDES.Type, infra_cfg.Config_Type);
+		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n",
+				__FUNCTION__, CmdUnit.u.ANDES.Type,
+				infra_cfg.Config_Type);
 		return;
 	}
 
@@ -3189,8 +3189,8 @@ VOID RT28xxAndesWOWEnable(
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n", __FUNCTION__,
-					CmdUnit.u.ANDES.Type, wow_param.Parameter);
+		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n",
+				__FUNCTION__, CmdUnit.u.ANDES.Type, wow_param.Parameter);
 		return;
 	}
 
@@ -3208,8 +3208,9 @@ VOID RT28xxAndesWOWEnable(
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n", __FUNCTION__,
-					CmdUnit.u.ANDES.Type, wow_param.Parameter);
+		printk("\x1b[31m%s: send WOW config command failed(%d/%d)!!\x1b[m\n",
+				__FUNCTION__, CmdUnit.u.ANDES.Type,
+				wow_param.Parameter);
 		return;
 	}
 
@@ -3218,7 +3219,7 @@ VOID RT28xxAndesWOWEnable(
 	RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF);
 }
 
-VOID RT28xxAndesWOWDisable(PRTMP_ADAPTER pAd)
+void RT28xxAndesWOWDisable(PRTMP_ADAPTER pAd)
 {
 	NEW_WOW_PARAM_STRUCT param;
 	struct CMD_UNIT CmdUnit;
@@ -3247,7 +3248,8 @@ VOID RT28xxAndesWOWDisable(PRTMP_ADAPTER pAd)
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed!!\x1b[m\n", __FUNCTION__);
+		printk("\x1b[31m%s: send WOW config command failed!!\x1b[m\n",
+				__FUNCTION__);
 		return;
 	}
 
@@ -3264,7 +3266,8 @@ VOID RT28xxAndesWOWDisable(PRTMP_ADAPTER pAd)
 
 	Ret = AsicSendCmdToAndes(pAd, &CmdUnit);
 	if (Ret != NDIS_STATUS_SUCCESS) {
-		printk("\x1b[31m%s: send WOW config command failed!!\x1b[m\n", __FUNCTION__);
+		printk("\x1b[31m%s: send WOW config command failed!!\x1b[m\n",
+				__FUNCTION__);
 		return;
 	}
 
@@ -3300,7 +3303,7 @@ VOID RT28xxAndesWOWDisable(PRTMP_ADAPTER pAd)
 #endif /* NEW_WOW_SUPPORT */
 
 #ifdef THERMAL_PROTECT_SUPPORT
-VOID thermal_protection(RTMP_ADAPTER *pAd)
+void thermal_protection(RTMP_ADAPTER *pAd)
 {
 	RTMP_CHIP_OP *pChipOps = &pAd->chipOps;
 	INT32 temp_diff = 0, current_temp = 0;
@@ -3309,13 +3312,13 @@ VOID thermal_protection(RTMP_ADAPTER *pAd)
 		return;
 
 	if (pAd->chipOps.ChipGetCurrentTemp != NULL) \
-		pCurrentTemp = pAd->chipOps.ChipGetCurrentTemp(pAd); 
+		pCurrentTemp = pAd->chipOps.ChipGetCurrentTemp(pAd);
 
 	temp_diff = current_temp - pAd->last_thermal_pro_temp;
 	pAd->last_thermal_pro_temp = current_temp;
 
 	DBGPRINT(RT_DEBUG_INFO, ("%s - current temp=%d, temp diff=%d\n",
-					__FUNCTION__, current_temp, temp_diff));
+			__FUNCTION__, current_temp, temp_diff));
 
 	if (temp_diff > 0) {
 		if (current_temp > (pAd->thermal_pro_criteria + 10) /* 90 */)
@@ -3336,7 +3339,7 @@ VOID thermal_protection(RTMP_ADAPTER *pAd)
 #endif /* THERMAL_PROTECT_SUPPORT */
 
 #ifdef DROP_MASK_SUPPORT
-VOID asic_set_drop_mask(PRTMP_ADAPTER ad, USHORT wcid, BOOLEAN enable)
+void asic_set_drop_mask(PRTMP_ADAPTER ad, USHORT wcid, BOOLEAN enable)
 {
 	UINT32 mac_reg = 0, reg_id, group_index;
 	UINT32 drop_mask = (1 << (wcid % 32));
@@ -3351,16 +3354,18 @@ VOID asic_set_drop_mask(PRTMP_ADAPTER ad, USHORT wcid, BOOLEAN enable)
 				(mac_reg | drop_mask):(mac_reg & ~drop_mask));
 	RTMP_IO_WRITE32(ad, reg_id, mac_reg);
 	DBGPRINT(RT_DEBUG_TRACE,
-			("%s(%u):, wcid = %u, reg_id = 0x%08x, mac_reg = 0x%08x, group_index = %u, drop_mask = 0x%08x\n",
-			__FUNCTION__, enable, wcid, reg_id, mac_reg, group_index, drop_mask));
+			("%s(%u):, wcid = %u, reg_id = 0x%08x, mac_reg = 0x%08x,"
+			" group_index = %u, drop_mask = 0x%08x\n",
+			__FUNCTION__, enable, wcid, reg_id, mac_reg,
+			group_index, drop_mask));
 }
 
 
-VOID asic_drop_mask_reset(PRTMP_ADAPTER ad)
+void asic_drop_mask_reset(PRTMP_ADAPTER ad)
 {
 	UINT32 i, reg_id;
 
-	for ( i = 0; i < 8 /* num of drop mask group */; i++) {
+	for (i = 0; i < 8 /* num of drop mask group */; i++) {
 		reg_id = (TX_WCID_DROP_MASK0 + i*4);
 		RTMP_IO_WRITE32(ad, reg_id, 0);
 	}
@@ -3370,20 +3375,22 @@ VOID asic_drop_mask_reset(PRTMP_ADAPTER ad)
 #endif /* DROP_MASK_SUPPORT */
 
 #ifdef MULTI_CLIENT_SUPPORT
-VOID asic_change_tx_retry(PRTMP_ADAPTER pAd, USHORT num)
+void asic_change_tx_retry(PRTMP_ADAPTER pAd, USHORT num)
 {
 	UINT32	TxRtyCfg, MacReg = 0;
 
 	if (pAd->CommonCfg.txRetryCfg == 0) {
 		/* txRetryCfg is invalid, should not be 0 */
-		DBGPRINT(RT_DEBUG_TRACE, ("txRetryCfg=%x\n", pAd->CommonCfg.txRetryCfg));
+		DBGPRINT(RT_DEBUG_TRACE, ("txRetryCfg=%x\n",
+				pAd->CommonCfg.txRetryCfg));
 		return ;
 	}
 
 	if (num < 3) {
 		/* Tx date retry default 15 */
 		RTMP_IO_READ32(pAd, TX_RTY_CFG, &TxRtyCfg);
-		TxRtyCfg = ((TxRtyCfg & 0xffff0000) | (pAd->CommonCfg.txRetryCfg & 0x0000ffff));
+		TxRtyCfg = ((TxRtyCfg & 0xffff0000) |
+				(pAd->CommonCfg.txRetryCfg & 0x0000ffff));
 		RTMP_IO_WRITE32(pAd, TX_RTY_CFG, TxRtyCfg);
 
 		/* Tx RTS retry default 32 */
@@ -3410,7 +3417,7 @@ VOID asic_change_tx_retry(PRTMP_ADAPTER pAd, USHORT num)
 	}
 }
 
-VOID pkt_aggr_num_change(PRTMP_ADAPTER pAd, USHORT num)
+void pkt_aggr_num_change(PRTMP_ADAPTER pAd, USHORT num)
 {
 	if (IS_RT6352(pAd)) {
 		if (num < 5) {
@@ -3429,13 +3436,13 @@ VOID pkt_aggr_num_change(PRTMP_ADAPTER pAd, USHORT num)
 	}
 }
 
-VOID asic_tune_be_wmm(PRTMP_ADAPTER pAd, USHORT num)
+void asic_tune_be_wmm(PRTMP_ADAPTER pAd, USHORT num)
 {
 	UCHAR  bssCwmin = 4, apCwmin = 4, apCwmax = 6;
 
 	if (num <= 4) {
 		/* use profile cwmin */
-		if (pAd->CommonCfg.APCwmin > 0 && pAd->CommonCfg.BSSCwmin > 0 
+		if (pAd->CommonCfg.APCwmin > 0 && pAd->CommonCfg.BSSCwmin > 0
 			&& pAd->CommonCfg.APCwmax > 0) {
 			apCwmin = pAd->CommonCfg.APCwmin;
 			apCwmax = pAd->CommonCfg.APCwmax;
