@@ -34,6 +34,7 @@
 USB_DEVICE_ID rtusb_dev_id[] = {
 #ifdef MT76x2
 	{USB_DEVICE(0x0846, 0x9053), .driver_info = RLT_MAC_BASE}, /* MT7612U, Netgear A6210 */
+	{USB_DEVICE(0x0B05, 0x17EB), .driver_info = RLT_MAC_BASE}, /* ASUS USB-AC55 */
 	{USB_DEVICE(0x0E8D, 0x7612), .driver_info = RLT_MAC_BASE},
 	{USB_DEVICE_AND_INTERFACE_INFO(0x0E8D, 0x7632, 0xff, 0xff, 0xff), .driver_info = RLT_MAC_BASE},
 	{USB_DEVICE_AND_INTERFACE_INFO(0x0E8D, 0x7662, 0xff, 0xff, 0xff), .driver_info = RLT_MAC_BASE},
