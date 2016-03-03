@@ -19,7 +19,6 @@
 #include "rt_os_net.h"
 
 extern USB_DEVICE_ID rtusb_dev_id[];
-extern int const rtusb_usb_id_len;
 
 static BOOLEAN USBDevConfigInit(struct usb_device *dev, struct usb_interface *intf, void *pAd);
 
