@@ -740,7 +740,7 @@ Return Value:
 Note:
 ========================================================================
 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 static int CFG80211_OpsStaGet(struct wiphy *pWiphy, struct net_device *pNdev,
 	const u8 *pMac, struct station_info *pSinfo)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
@@ -1752,7 +1752,7 @@ static void CFG80211_OpsMgmtFrameRegister(
 
 //Supplicant_NEW_TDLS
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 //Transmit a management frame
 //	int	(*mgmt_tx)(struct wiphy *wiphy, struct wireless_dev *wdev,
 //			   struct cfg80211_mgmt_tx_params *params,
@@ -1791,7 +1791,7 @@ static int CFG80211_OpsMgmtTx(struct wiphy *pWiphy, struct net_device *pDev,
 {
 	void *pAd;
 	UINT32 ChanId;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 	size_t Len = params->len;
 	u8 *pBuf = (u8*) params->buf; //prevent "discard const qualifier" warning
 	bool no_cck = params->no_cck;
@@ -2088,9 +2088,12 @@ static int CFG80211_OpsChangeBss(struct wiphy *pWiphy, struct net_device *netdev
 	return 0;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
 static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
 	struct station_del_parameters *params)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
+	const u8 *pMacAddr)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
 	u8 *pMacAddr)
@@ -2118,7 +2121,7 @@ static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
 	return 0;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 static int CFG80211_OpsStaAdd(struct wiphy *wiphy, struct net_device *dev,
 	const u8 *mac, struct station_parameters *params)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
@@ -2133,7 +2136,7 @@ static int CFG80211_OpsStaAdd(struct wiphy *wiphy, struct net_device *dev,
 	return 0;
 }
 
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 static int CFG80211_OpsStaChg(struct wiphy *pWiphy, struct net_device *dev,
 	const u8 *pMacAddr, struct station_parameters *params)
 #elif(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
