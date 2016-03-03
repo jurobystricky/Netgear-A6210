@@ -4839,34 +4839,34 @@ BOOLEAN show_sysinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg)
 
 	DBGPRINT(RT_DEBUG_OFF, ("Memory Statistics:\n"));
 	DBGPRINT(RT_DEBUG_OFF, ("\tsize>\n"));
-	DBGPRINT(RT_DEBUG_OFF, ("\t\tpAd = \t\t%lu bytes\n\n", sizeof(*pAd)));
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tCommonCfg = \t%lu bytes\n", sizeof(pAd->CommonCfg)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\tpAd = \t\t%zu bytes\n\n", sizeof(*pAd)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tCommonCfg = \t%zu bytes\n", sizeof(pAd->CommonCfg)));
 	total_size += sizeof(pAd->CommonCfg);
 #ifdef CONFIG_AP_SUPPORT
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tApCfg = \t%lu bytes\n", sizeof(pAd->ApCfg)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tApCfg = \t%zu bytes\n", sizeof(pAd->ApCfg)));
 	total_size += sizeof(pAd->ApCfg);
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\t\tMBSSID = \t%d B (PerMBSS =%lu B, Total MBSS Num= %d)\n",
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\t\tMBSSID = \t%zu B (PerMBSS =%zu B, Total MBSS Num= %d)\n",
 			sizeof(pAd->ApCfg.MBSSID), sizeof(struct _MULTISSID_STRUCT), HW_BEACON_MAX_NUM));
 #ifdef APCLI_SUPPORT
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\t\t\tAPCLI = \t%lu bytes (PerAPCLI =%lu bytes, Total APCLI Num= %d)\n",
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\t\t\tAPCLI = \t%zu bytes (PerAPCLI =%zu bytes, Total APCLI Num= %d)\n",
 			sizeof(pAd->ApCfg.ApCliTab), sizeof(struct _APCLI_STRUCT), MAX_APCLI_NUM));
 #endif
 #endif /* CONFIG_AP_SUPPORT */
 
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMgmtRing = \t%lu bytes\n", sizeof(pAd->MgmtRing)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMgmtRing = \t%zu bytes\n", sizeof(pAd->MgmtRing)));
 	total_size += sizeof(pAd->MgmtRing);
 
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMlme = \t%lu bytes\n", sizeof(pAd->Mlme)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMlme = \t%zu bytes\n", sizeof(pAd->Mlme)));
 	total_size += sizeof(pAd->Mlme);
 #ifdef CONFIG_STA_SUPPORT
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMlmeAux = \t%lu bytes\n", sizeof(pAd->MlmeAux)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMlmeAux = \t%zu bytes\n", sizeof(pAd->MlmeAux)));
 	total_size += sizeof(pAd->MlmeAux);
 #endif
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMacTab = \t%lu bytes\n", sizeof(pAd->MacTab)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tMacTab = \t%zu bytes\n", sizeof(pAd->MacTab)));
 	total_size += sizeof(pAd->MacTab);
 
 #ifdef DOT11_N_SUPPORT
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tBATable = \t%lu bytes\n", sizeof(pAd->BATable)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tBATable = \t%zu bytes\n", sizeof(pAd->BATable)));
 	total_size += sizeof(pAd->BATable);
 #endif
 	cntr_size = sizeof(pAd->Counters8023) + sizeof(pAd->WlanCounters) +
@@ -4876,10 +4876,10 @@ BOOLEAN show_sysinfo_proc(RTMP_ADAPTER *pAd, PSTRING arg)
 	total_size += cntr_size;
 
 #if defined (AP_SCAN_SUPPORT) || defined (CONFIG_STA_SUPPORT)
-	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tScanTab = \t%lu bytes\n", sizeof(pAd->ScanTab)));
+	DBGPRINT(RT_DEBUG_OFF, ("\t\t\tScanTab = \t%zu bytes\n", sizeof(pAd->ScanTab)));
 	total_size += sizeof(pAd->ScanTab);
 #endif
-	DBGPRINT(RT_DEBUG_OFF, ("\tsize> Total = \t\t%d bytes, Others = %lu bytes\n\n",
+	DBGPRINT(RT_DEBUG_OFF, ("\tsize> Total = \t\t%d bytes, Others = %zu bytes\n\n",
 			total_size, sizeof(*pAd)-total_size));
 
 	return TRUE;
