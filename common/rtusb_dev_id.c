@@ -27,6 +27,7 @@
 /* module table */
 USB_DEVICE_ID rtusb_dev_id[] = {
 #ifdef MT76x2
+	{USB_DEVICE(0x0846, 0x9014), .driver_info = RLT_MAC_BASE}, /* Netgear WNDA3100v3 */
 	{USB_DEVICE(0x0B05, 0x180B), .driver_info = RLT_MAC_BASE}, /* ASUS USB-N53 */
 	{USB_DEVICE(0x0846, 0x9053), .driver_info = RLT_MAC_BASE}, /* MT7612U, Netgear A6210 */
 	{USB_DEVICE(0x0B05, 0x17EB), .driver_info = RLT_MAC_BASE}, /* ASUS USB-AC55 */
