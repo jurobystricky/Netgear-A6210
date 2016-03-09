@@ -2103,7 +2103,7 @@ static int CFG80211_OpsStaDel(struct wiphy *pWiphy, struct net_device *dev,
 #endif
 {
 	void *pAd;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
 	const u8 *pMacAddr = params->mac;
 #endif
 	MAC80211_PAD_GET(pAd, pWiphy);
