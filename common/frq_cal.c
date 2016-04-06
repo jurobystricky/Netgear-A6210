@@ -164,9 +164,9 @@ void FrequencyCalibration(PRTMP_ADAPTER pAd)
 		}
 
 		if (pFrqCal->bApproachFrequency == TRUE) {
-			u32 value = 0;
+			u32 value, value_adj;
 			read_reg(pAd, 0x40, XO_CTRL5, &value);
-			DBGPRINT(RT_DEBUG_TRACE, ("FRQ:  Read Value => %08x\n", value));
+			//DBGPRINT(RT_DEBUG_TRACE, ("FRQ:  Read Value => %08x\n", value));
 			pFrqCal->AdaptiveFreqOffset = (value & ~0xffff80ff) >> 8;
 
 			if (pFrqCal->LatestFreqOffsetOverBeacon > 0) {
@@ -177,9 +177,13 @@ void FrequencyCalibration(PRTMP_ADAPTER pAd)
 					pFrqCal->AdaptiveFreqOffset++;
 			}
 
-			value = (value & 0xffff80ff) | (pFrqCal->AdaptiveFreqOffset << 8);
-			DBGPRINT(RT_DEBUG_TRACE, ("FRQ:  After just Value => %08x\n", value ));
-			write_reg(pAd, 0x40, XO_CTRL5, value);
+			value_adj = (value & 0xffff80ff) | (pFrqCal->AdaptiveFreqOffset << 8);
+			if (value_adj != value) {
+				DBGPRINT(RT_DEBUG_TRACE,
+						("FRQ:  Adjust value: %08x => %08x\n",
+						value, value_adj));
+				write_reg(pAd, 0x40, XO_CTRL5, value_adj);
+			}
 		}
 
 		return;
