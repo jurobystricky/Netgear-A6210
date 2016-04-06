@@ -38,10 +38,10 @@
 
 #define END_OF_ARGS                 -1
 #define LFSR_MASK                   0x80000057
-#define MLME_TASK_EXEC_INTV         100 /*200*/
+#define MLME_TASK_EXEC_INTV         250  /* ms */
 #define LEAD_TIME                   5
 
-#define MLME_TASK_EXEC_MULTIPLE       10  /*5*/       /* MLME_TASK_EXEC_MULTIPLE * MLME_TASK_EXEC_INTV = 1 sec */
+#define MLME_TASK_EXEC_MULTIPLE     4             /* MLME_TASK_EXEC_MULTIPLE * MLME_TASK_EXEC_INTV = 1 sec */
 #define REORDER_EXEC_INTV         	100       /* 0.1 sec */
 #ifdef RTMP_MAC_USB
 #ifdef CONFIG_STA_SUPPORT
