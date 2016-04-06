@@ -1355,9 +1355,9 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 #endif /* DYNAMIC_VGA_SUPPORT */
 
 #ifdef MT76x2
-	if ((pAd->Mlme.OneSecPeriodicRound % 1 == 0) && IS_MT76x2(pAd))
+	if ((pAd->Mlme.OneSecPeriodicRound % 2 == 0) && IS_MT76x2(pAd))
 		mt76x2_get_current_temp(pAd);
-#endif /* MT76x2 */
+#endif
 
 #ifdef RTMP_MAC_USB
 	/* execute every 100ms, update the Tx FIFO Cnt for update Tx Rate.*/
@@ -1372,9 +1372,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 
 	/* by default, execute every 500ms */
 	if ((pAd->ra_interval) &&
-		((pAd->Mlme.PeriodicRound % (pAd->ra_interval / 100)) == 0) &&
-		1 //RTMPAutoRateSwitchCheck(pAd)/*(OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_TX_RATE_SWITCH_ENABLED))*/
-	) {
+		((pAd->Mlme.PeriodicRound % (pAd->ra_interval / 100)) == 0)) {
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 			APMlmeDynamicTxRateSwitching(pAd);
@@ -1384,7 +1382,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
 			if ((OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED)
 #ifdef RT_CFG80211_SUPPORT
-					|| (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP)
+				|| (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP)
 					//CFG_TODO: FOR GC
 #endif /* RT_CFG80211_SUPPORT */
 				)
@@ -1416,7 +1414,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 #endif /* RTMP_FREQ_CALIBRATION_SUPPORT */
 
 	/* Normal 1 second Mlme PeriodicExec.*/
-	if (pAd->Mlme.PeriodicRound %MLME_TASK_EXEC_MULTIPLE == 0) {
+	if (pAd->Mlme.PeriodicRound % MLME_TASK_EXEC_MULTIPLE == 0) {
 		pAd->Mlme.OneSecPeriodicRound ++;
 
 #ifdef CONFIG_AP_SUPPORT
@@ -1453,7 +1451,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 #endif /* RTMP_MAC_USB */
 
 #ifdef DOT11_N_SUPPORT
-   		/* Need statistics after read counter. So put after NICUpdateRawCounters*/
+		/* Need statistics after read counter. So put after NICUpdateRawCounters*/
 		ORIBATimerTimeout(pAd);
 #endif /* DOT11_N_SUPPORT */
 
@@ -1462,7 +1460,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 #ifdef MT76x2
 		if (IS_MT76x2(pAd)) {
 			IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
-				if (pAd->Mlme.OneSecPeriodicRound % 1 == 0)
+				if (pAd->Mlme.OneSecPeriodicRound % 2 == 0)
 					periodic_monitor_false_cca_adjust_vga(pAd);
 			}
 		}
@@ -1472,7 +1470,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 #ifdef CONFIG_STA_SUPPORT
 #ifdef MT76x2
 		if (IS_MT76x2(pAd)) {
-			if (pAd->Mlme.OneSecPeriodicRound % 1 == 0)
+			if (pAd->Mlme.OneSecPeriodicRound % 2 == 0)
 				periodic_monitor_rssi_adjust_vga(pAd);
 
 			/* only g band need to check if disable channel smoothing */
@@ -1484,43 +1482,27 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 
 #endif /* DYNAMIC_VGA_SUPPORT */
 
-	/*
-		if (pAd->RalinkCounters.MgmtRingFullCount >= 2)
-			RTMP_SET_FLAG(pAd, fRTMP_HW_ERR);
-		else
-			pAd->RalinkCounters.MgmtRingFullCount = 0;
-	*/
-
 		/* The time period for checking antenna is according to traffic*/
-		{
-			if (pAd->Mlme.bEnableAutoAntennaCheck) {
-				TxTotalCnt = pAd->RalinkCounters.OneSecTxNoRetryOkCount +
-						pAd->RalinkCounters.OneSecTxRetryOkCount +
-						 pAd->RalinkCounters.OneSecTxFailCount;
+		if (pAd->Mlme.bEnableAutoAntennaCheck) {
+			TxTotalCnt = pAd->RalinkCounters.OneSecTxNoRetryOkCount +
+					pAd->RalinkCounters.OneSecTxRetryOkCount +
+					 pAd->RalinkCounters.OneSecTxFailCount;
 
-				/* dynamic adjust antenna evaluation period according to the traffic*/
-				if (TxTotalCnt > 50) {
-					if (pAd->Mlme.OneSecPeriodicRound % 10 == 0)
-						AsicEvaluateRxAnt(pAd);
-				} else {
-					if (pAd->Mlme.OneSecPeriodicRound % 3 == 0)
-						AsicEvaluateRxAnt(pAd);
-				}
+			/* dynamic adjust antenna evaluation period according to the traffic*/
+			if (TxTotalCnt > 50) {
+				if (pAd->Mlme.OneSecPeriodicRound % 10 == 0)
+					AsicEvaluateRxAnt(pAd);
+			} else {
+				if (pAd->Mlme.OneSecPeriodicRound % 3 == 0)
+					AsicEvaluateRxAnt(pAd);
 			}
 		}
-
-#ifdef VIDEO_TURBINE_SUPPORT
-	/*
-		VideoTurbineUpdate(pAd);
-		VideoTurbineDynamicTune(pAd);
-	*/
-#endif /* VIDEO_TURBINE_SUPPORT */
 
 #ifdef MT76x0_TSSI_CAL_COMPENSATION
 		if (IS_MT76x0(pAd) &&
 			(pAd->chipCap.bInternalTxALC) &&
 			(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF | fRTMP_ADAPTER_DISABLE_DEQUEUEPACKET) == FALSE)) {
-			if ((pAd->Mlme.OneSecPeriodicRound % 1) == 0) {
+			if ((pAd->Mlme.OneSecPeriodicRound % 2) == 0) {
 				/* TSSI compensation */
 				MT76x0_IntTxAlcProcess(pAd);
 			}
@@ -1532,7 +1514,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 			(pAd->chipCap.tssi_enable) && (!pAd->chipCap.temp_tx_alc_enable) &&
 			(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF |
 				fRTMP_ADAPTER_DISABLE_DEQUEUEPACKET) == FALSE)) {
-			if ((pAd->Mlme.OneSecPeriodicRound % 1) == 0) {
+			if ((pAd->Mlme.OneSecPeriodicRound % 2) == 0) {
 #ifdef CONFIG_AP_SUPPORT
 				mt76x2_tssi_compensation(pAd, pAd->hw_cfg.cent_ch);
 #endif
@@ -1543,14 +1525,6 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 			}
 		}
 #endif /* MT76x2 */
-
-		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF | fRTMP_ADAPTER_DISABLE_DEQUEUEPACKET) == FALSE) {
-			if ((pAd->Mlme.OneSecPeriodicRound % 10) == 0) {
-				{
-					//JB WTF?
-				}
-			}
-		}
 
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
@@ -1563,7 +1537,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 					|| (pAd->Dot11_H.RDMode != RD_SILENCE_MODE))
 #ifdef ED_MONITOR
 				&& (pAd->ed_chk == FALSE)
-#endif /* ED_MONITOR */
+#endif
 				)
 				pAd->macwd ++;
 			else
@@ -1602,7 +1576,7 @@ void MlmePeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 
 #ifdef AP_QLOAD_SUPPORT
 				Show_QoSLoad_Proc(pAd, NULL);
-#endif /* AP_QLOAD_SUPPORT */
+#endif
 			}
 		}
 #endif /* CONFIG_AP_SUPPORT */
