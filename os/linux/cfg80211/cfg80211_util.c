@@ -854,13 +854,23 @@ Note:
 */
 void CFG80211OS_ScanEnd(void *pCB, BOOLEAN FlgIsAborted)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+           struct cfg80211_scan_info info = {
+               .aborted = FlgIsAborted
+           };
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30))
 #ifdef CONFIG_STA_SUPPORT
 	CFG80211_CB *pCfg80211_CB = (CFG80211_CB *)pCB;
 	NdisAcquireSpinLock(&pCfg80211_CB->scan_notify_lock);
 	if (pCfg80211_CB->pCfg80211_ScanReq) {
 		CFG80211DBG(RT_DEBUG_TRACE, ("80211> cfg80211_scan_done\n"));
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+		cfg80211_scan_done(pCfg80211_CB->pCfg80211_ScanReq, &info);
+#else
 		cfg80211_scan_done(pCfg80211_CB->pCfg80211_ScanReq, FlgIsAborted);
+#endif
 		pCfg80211_CB->pCfg80211_ScanReq = NULL;
 	} else {
 		CFG80211DBG(RT_DEBUG_WARN, ("80211> cfg80211_scan_done ==> NULL\n"));

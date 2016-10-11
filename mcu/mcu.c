@@ -74,7 +74,7 @@ void ChipOpsMCUHook(PRTMP_ADAPTER pAd, enum MCU_TYPE MCUType)
 			pChipOps->MCUCtrlInit = andes_ctrl_init;
 			pChipOps->MCUCtrlExit = andes_ctrl_exit;
 			pChipOps->Calibration = andes_calibration;
-			pChipOps->BurstWrite =  andes_burst_write;
+			pChipOps->BurstWrite = (VOID*) andes_burst_write;
 			pChipOps->BurstRead = andes_burst_read;
 			pChipOps->RandomRead = andes_random_read;
 			pChipOps->RFRandomRead = andes_rf_random_read;
