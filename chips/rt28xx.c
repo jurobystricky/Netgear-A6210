@@ -393,7 +393,7 @@ VOID RT28xx_ChipSwitchChannel(
 VOID RT28xx_chip_Init(RTMP_ADAPTER *pAd)
 {
 	rtmp_phy_probe(pAd);
-	pAd->ChipOps.ChipSwitchChannel = RT28xx_ChipSwitchChannel;
+	pAd->ChipOps.ChipSwitchChannel = (VOID*) RT28xx_ChipSwitchChannel;
 }
 
 #endif /*RT28xx */
