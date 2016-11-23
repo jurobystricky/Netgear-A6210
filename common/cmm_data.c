@@ -125,7 +125,7 @@ void RTMP_BASetup(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, UINT8 UPriority)
 {
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd) {
-		if (pEntry && (pEntry->NoBADataCountDown == 0) && 
+		if (pEntry && (pEntry->NoBADataCountDown == 0) &&
 			IS_HT_STA(pEntry)) {
 			BOOLEAN isRalink = FALSE;
 			/* Don't care the status of the portSecured status. */
@@ -139,10 +139,10 @@ void RTMP_BASetup(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, UINT8 UPriority)
 #endif /* APCLI_SUPPORT */
 
 			if (((pEntry->TXBAbitmap & (1<<UPriority)) == 0) /*&& (pMacEntry->PortSecured == WPA_802_1X_PORT_SECURED)*/
-				&& ((IS_ENTRY_CLIENT(pEntry) && 
+				&& ((IS_ENTRY_CLIENT(pEntry) &&
 				CLIENT_STATUS_TEST_FLAG(pEntry, fCLIENT_STATUS_RALINK_CHIPSET)) ||
 				IS_ENTRY_MESH(pEntry) || IS_ENTRY_WDS(pEntry) ||
-				(IS_ENTRY_APCLI(pEntry) && (isRalink == TRUE) && 
+				(IS_ENTRY_APCLI(pEntry) && (isRalink == TRUE) &&
 				(pEntry->PortSecured == WPA_802_1X_PORT_SECURED)) ||
 				(pEntry->WepStatus == Ndis802_11WEPDisabled ||
 				pEntry->WepStatus == Ndis802_11AESEnable))) {
@@ -154,13 +154,13 @@ void RTMP_BASetup(RTMP_ADAPTER *pAd, MAC_TABLE_ENTRY *pEntry, UINT8 UPriority)
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd) {
-		if ((pAd->CommonCfg.BACapability.field.AutoBA == TRUE) && 
+		if ((pAd->CommonCfg.BACapability.field.AutoBA == TRUE) &&
 			(pEntry->NoBADataCountDown == 0) && IS_HT_STA(pEntry)) {
 			if (((pEntry->TXBAbitmap & (1 << UPriority)) == 0) &&
 				((pEntry->BADeclineBitmap & (1 << UPriority)) == 0) &&
 				(pEntry->PortSecured == WPA_802_1X_PORT_SECURED) &&
 				((IS_ENTRY_CLIENT(pEntry) && pAd->MlmeAux.APRalinkIe != 0x0) ||
-				(pEntry->WepStatus != Ndis802_11WEPEnabled && 
+				(pEntry->WepStatus != Ndis802_11WEPEnabled &&
 				pEntry->WepStatus != Ndis802_11TKIPEnable)) &&
 				(!(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)))) {
 				BAOriSessionSetUp(pAd, pEntry, UPriority, 0, 10, FALSE);
@@ -846,8 +846,8 @@ static NDIS_STATUS MlmeHardTransmitMgmtRing(RTMP_ADAPTER *pAd, UCHAR QueIdx,
 #endif /* RT_CFG80211_P2P_SUPPORT */
 		   ((pHeader_802_11->FC.Type == FC_TYPE_DATA) &&
 		   (pHeader_802_11->FC.SubType == SUBTYPE_QOS_NULL))) {
-			DBGPRINT(RT_DEBUG_TRACE, 
-					("%s:: Using Low Rate to send QOS NULL!!\n", 
+			DBGPRINT(RT_DEBUG_TRACE,
+					("%s:: Using Low Rate to send QOS NULL!!\n",
 					__FUNCTION__));
 
 			if ((pAd->LatchRfRegs.Channel > 14)) {
@@ -883,7 +883,7 @@ static NDIS_STATUS MlmeHardTransmitMgmtRing(RTMP_ADAPTER *pAd, UCHAR QueIdx,
 				0, wcid, (SrcBufLen - TXINFO_SIZE - TXWISize - TSO_SIZE), PID, 0,
 				tx_rate, IFS_PIFS, transmit);
 		pMacEntry->snd_reqired = FALSE;
-		DBGPRINT(RT_DEBUG_OFF, 
+		DBGPRINT(RT_DEBUG_OFF,
 				("%s():Kick Sounding to %02x:%02x:%02x:%02x:%02x:%02x, dataRate(PhyMode:%s, BW:%sHz, %dSS, MCS%d)\n",
 				__FUNCTION__, PRINT_MAC(pMacEntry->Addr),
 				get_phymode_str(transmit->field.MODE),
@@ -1082,9 +1082,9 @@ static UCHAR TxPktClassification(RTMP_ADAPTER *pAd, PNDIS_PACKET  pPacket, TX_BL
 	/* Currently, our fragment only support when a unicast packet send as NOT-ARALINK, NOT-AMSDU and NOT-AMPDU.*/
 
 	if ((RTMP_GET_PACKET_FRAGMENTS(pPacket) > 1)
-		 && (TxFrameType == TX_LEGACY_FRAME)
+		 && ((TxFrameType == TX_LEGACY_FRAME)
 #ifdef VHT_TXBF_SUPPORT
-		 || (TxFrameType == (TX_LEGACY_FRAME | TX_NDPA_FRAME))
+		 || (TxFrameType == (TX_LEGACY_FRAME | TX_NDPA_FRAME)))
 #endif
 #ifdef DOT11_N_SUPPORT
 		&& ((pMacEntry->TXBAbitmap & (1<<(RTMP_GET_PACKET_UP(pPacket)))) == 0)
