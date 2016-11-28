@@ -562,19 +562,19 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 
 			DBGPRINT(RT_DEBUG_INFO | DBG_FUNC_RA, ("%s: AGS: 2*2, RssiOffsetForAgs=%d\n", __FUNCTION__, RssiOffset));
 
-			if (MCS[15 && (pAGSStatisticsInfo->RSSI > (-69 + RssiOffset)))
+			if (MCS[15] && (pAGSStatisticsInfo->RSSI > (-69 + RssiOffset)))
 				TxRateIdx = MCS[15];
-			else if (MCS[14 && (pAGSStatisticsInfo->RSSI > (-71 + RssiOffset)))
+			else if (MCS[14] && (pAGSStatisticsInfo->RSSI > (-71 + RssiOffset)))
 				TxRateIdx = MCS[14];
-			else if (MCS[13 && (pAGSStatisticsInfo->RSSI > (-74 + RssiOffset)))
+			else if (MCS[13] && (pAGSStatisticsInfo->RSSI > (-74 + RssiOffset)))
 				TxRateIdx = MCS[13];
-			else if (MCS[12 && (pAGSStatisticsInfo->RSSI > (-76 + RssiOffset)))
+			else if (MCS[12] && (pAGSStatisticsInfo->RSSI > (-76 + RssiOffset)))
 				TxRateIdx = MCS[12];
-			else if (MCS[11 && (pAGSStatisticsInfo->RSSI > (-80 + RssiOffset)))
+			else if (MCS[11] && (pAGSStatisticsInfo->RSSI > (-80 + RssiOffset)))
 				TxRateIdx = MCS[11];
-			else if (MCS[10 && (pAGSStatisticsInfo->RSSI > (-82 + RssiOffset)))
+			else if (MCS[10] && (pAGSStatisticsInfo->RSSI > (-82 + RssiOffset)))
 				TxRateIdx = MCS[10];
-			else if (MCS[9 && (pAGSStatisticsInfo->RSSI > (-87 + RssiOffset)))
+			else if (MCS[9] && (pAGSStatisticsInfo->RSSI > (-87 + RssiOffset)))
 				TxRateIdx = MCS[9];
 			else
 				TxRateIdx = MCS[8];
