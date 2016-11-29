@@ -2136,7 +2136,7 @@ int rt28xx_sta_ioctl(struct net_device *net_dev, struct ifreq *rq, int cmd)
 		struct iw_point *erq=&wrqin->u.encoding;
 		if (erq)
 			rt_ioctl_siwencode(net_dev, NULL, erq, erq->pointer);
-			break;
+		break;
 		}
 	case SIOCGIWAP:     /*get access point MAC addresses */
 		{

@@ -32,7 +32,7 @@ VOID mgmt_tb_set_mcast_entry(RTMP_ADAPTER *pAd)
 {
 	MAC_TABLE_ENTRY *pEntry = &pAd->MacTab.Content[MCAST_WCID];
 
-	pEntry->EntryType = ENTRY_WDEV;	
+	pEntry->EntryType = ENTRY_WDEV;
 	pEntry->Sst = SST_ASSOC;
 	pEntry->Aid = MCAST_WCID;	/* Softap supports 1 BSSID and use WCID=0 as multicast Wcid index*/
 	pEntry->wcid = MCAST_WCID;
@@ -87,7 +87,7 @@ MAC_TABLE_ENTRY *MacTableLookup(RTMP_ADAPTER *pAd, UCHAR *pAddr)
 {
 	ULONG HashIdx;
 	MAC_TABLE_ENTRY *pEntry = NULL;
-	
+
 	HashIdx = MAC_ADDR_HASH_INDEX(pAddr);
 	pEntry = pAd->MacTab.Hash[HashIdx];
 
@@ -201,8 +201,8 @@ BOOLEAN StaUpdateMacTableEntry(
 			DBGPRINT(RT_DEBUG_TRACE, ("AP Bfee Cap =%d, AP Bfer Cap =%d!\n",
 							ie_list->vht_cap.vht_cap.bfee_cap_su , ie_list->vht_cap.vht_cap.bfer_cap_su));
 		}
-		else		
-#endif /* VHT_TXBF_SUPPORT */			
+		else
+#endif /* VHT_TXBF_SUPPORT */
 			supportsETxBf = clientSupportsETxBF(pAd, &ht_cap->TxBFCap);
 #endif /* TXBF_SUPPORT */
 
@@ -337,7 +337,7 @@ BOOLEAN StaUpdateMacTableEntry(
 			pAd->cfg80211_ctrl.MyGOwcid = BSSID_WCID;
 		}
 #endif /* RT_CFG80211_P2P_SUPPORT */
-		
+
 		pEntry->pAd = pAd;
 		SET_ENTRY_CLIENT(pEntry);
 		pAd->MacTab.Size ++;
@@ -393,7 +393,7 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
 	if (pAd->MacTab.Size >= MAX_LEN_OF_MAC_TABLE)
 		return NULL;
 
-		FirstWcid = 1;
+	FirstWcid = 1;
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
@@ -565,7 +565,7 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
 						pEntry->WepStatus = pAd->ApCfg.MBSSID[apidx].wdev.WepStatus;
 						pEntry->GroupKeyWepStatus = pAd->ApCfg.MBSSID[apidx].wdev.GroupKeyWepStatus;
 						pEntry->wdev_idx = pEntry->apidx;
-					
+
 						if (pEntry->AuthMode < Ndis802_11AuthModeWPA)
 							pEntry->WpaState = AS_NOTUSE;
 						else
@@ -605,7 +605,7 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
 			{
 				DBGPRINT(RT_DEBUG_ERROR, ("#########SET_ENTRY_TDLS pEntry->mac %02x:%02x:%02x:%02x:%02x:%02x \n",PRINT_MAC(pEntry->Addr))); //Kyle Debug
 			}
-			
+
 			do
 			{
 #ifdef CONFIG_AP_SUPPORT
@@ -729,8 +729,8 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef MULTI_CLIENT_SUPPORT
-	if (pAd->MacTab.Size < MAX_LEN_OF_MAC_TABLE) 
-	{	
+	if (pAd->MacTab.Size < MAX_LEN_OF_MAC_TABLE)
+	{
 		USHORT size;
 
 		size = pAd->ApCfg.EntryClientCount;
@@ -825,16 +825,16 @@ BOOLEAN MacTableDeleteEntry(RTMP_ADAPTER *pAd, USHORT wcid, UCHAR *pAddr)
 			if (IS_ENTRY_CLIENT(pEntry)
 			)
 			{
-#ifdef DOT1X_SUPPORT 
+#ifdef DOT1X_SUPPORT
 				INT PmkCacheIdx = -1;
 #endif /* DOT1X_SUPPORT */
-			
+
 				RTMPReleaseTimer(&pEntry->RetryTimer, &Cancelled);
 
 
-#ifdef DOT1X_SUPPORT    
+#ifdef DOT1X_SUPPORT
 				/* Notify 802.1x daemon to clear this sta info*/
-				if (pEntry->AuthMode == Ndis802_11AuthModeWPA || 
+				if (pEntry->AuthMode == Ndis802_11AuthModeWPA ||
 					pEntry->AuthMode == Ndis802_11AuthModeWPA2 ||
 					pAd->ApCfg.MBSSID[pEntry->apidx].wdev.IEEE8021X)
 					DOT1X_InternalCmdAction(pAd, pEntry, DOT1X_DISCONNECT_ENTRY);
@@ -858,11 +858,11 @@ BOOLEAN MacTableDeleteEntry(RTMP_ADAPTER *pAd, USHORT wcid, UCHAR *pAddr)
 				}
 #endif /* HOSTAPD_SUPPORT */
 #ifdef RT_CFG80211_SUPPORT
-#ifdef RT_CFG80211_P2P_SUPPORT 
-				if (CFG_P2PGO_ON(pAd) || (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP))	
+#ifdef RT_CFG80211_P2P_SUPPORT
+				if (CFG_P2PGO_ON(pAd) || (pAd->cfg80211_ctrl.isCfgInApMode == RT_CMD_80211_IFTYPE_AP))
 					CFG80211_ApStaDelSendEvent(pAd, pEntry->Addr);
-#else 
-				CFG80211_ApStaDelSendEvent(pAd, pEntry->Addr);	
+#else
+				CFG80211_ApStaDelSendEvent(pAd, pEntry->Addr);
 #endif /* RT_CFG80211_P2P_SUPPORT */
 #endif /*RT_CFG80211_SUPPORT*/
 			}
@@ -873,7 +873,7 @@ BOOLEAN MacTableDeleteEntry(RTMP_ADAPTER *pAd, USHORT wcid, UCHAR *pAddr)
 			}
 #endif /* APCLI_SUPPORT */
 #endif /* CONFIG_AP_SUPPORT */
-           
+
 			pPrevEntry = NULL;
 			pProbeEntry = pAd->MacTab.Hash[HashIdx];
 			ASSERT(pProbeEntry);
@@ -976,7 +976,7 @@ BOOLEAN MacTableDeleteEntry(RTMP_ADAPTER *pAd, USHORT wcid, UCHAR *pAddr)
 VOID MacTableReset(RTMP_ADAPTER *pAd)
 {
 	int i;
-	BOOLEAN Cancelled;    
+	BOOLEAN Cancelled;
 #ifdef CONFIG_AP_SUPPORT
 	UCHAR *pOutBuffer = NULL;
 	NDIS_STATUS NStatus;
@@ -1019,7 +1019,7 @@ VOID MacTableReset(RTMP_ADAPTER *pAd)
 					Reason = REASON_NO_LONGER_VALID;
 					DBGPRINT(RT_DEBUG_WARN, ("Send DeAuth (Reason=%d) to %02x:%02x:%02x:%02x:%02x:%02x\n",
 								Reason, PRINT_MAC(pMacEntry->Addr)));
-					MgtMacHeaderInit(pAd, &DeAuthHdr, SUBTYPE_DEAUTH, 0, pMacEntry->Addr, 
+					MgtMacHeaderInit(pAd, &DeAuthHdr, SUBTYPE_DEAUTH, 0, pMacEntry->Addr,
 										pAd->ApCfg.MBSSID[pMacEntry->apidx].wdev.if_addr,
 										pAd->ApCfg.MBSSID[pMacEntry->apidx].wdev.bssid);
 					MakeOutgoingFrame(pOutBuffer, &FrameLen,
@@ -1044,7 +1044,7 @@ VOID MacTableReset(RTMP_ADAPTER *pAd)
 	{
 		for (apidx = MAIN_MBSSID; apidx < pAd->ApCfg.BssidNum; apidx++)
 		{
-			pAd->ApCfg.MBSSID[apidx].StaCount = 0; 
+			pAd->ApCfg.MBSSID[apidx].StaCount = 0;
 		}
 		DBGPRINT(RT_DEBUG_TRACE, ("McastPsQueue.Number %ld...\n", pAd->MacTab.McastPsQueue.Number));
 		if (pAd->MacTab.McastPsQueue.Number > 0)
