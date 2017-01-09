@@ -11,6 +11,14 @@ To build the driver, follow these steps:
     $ make
     $ sudo make install
 
+To build the driver with DKMS
+
+    $ sudo apt-get install dkms  # if you've already installed dkms, skip this step.
+    $ sudo git clone https://github.com/jurobystricky/Netgear-A6210 /usr/src/Netgear-A6210-1.0
+    $ sudo dkms add Netgear-A6210/1.0
+    $ sudo dkms build Netgear-A6210/1.0
+    $ sudo dkms install Netgear-A6210/1.0
+
 The driver is mostly tested on 64 bit Ubuntu 15.10 and Debian 8.3 with NETGEAR AC1200
 High Gain Wifi USB Adapter. 
 Some other distro/dongle combinations work as well, for example
