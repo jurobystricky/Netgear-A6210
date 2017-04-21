@@ -41,11 +41,11 @@ several problems such as frequent dropping of connection, failure to connect, wi
 oscillating signal strength etc. This also seems to depent on the Linux distro
 a lot.
     
-# DKMS Install
+## DKMS Install
 
 On Debian-based distros, you can add the module to DKMS so it will automatically
 build and install on each successive kernel upgrade. To do this, issue the following
-commands:
+commands from within the repo's folder:
 
     $ cd ..
     $ sudo mv Netgear-A6210/ /usr/src/netgear-a6210-2.5.0
