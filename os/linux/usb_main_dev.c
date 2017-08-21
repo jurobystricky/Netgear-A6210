@@ -167,7 +167,10 @@ static int rt2870_probe(struct usb_interface *intf, struct usb_device *usb_dev,
 	return 0;
 
 err_out_free_netdev:
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0))
 	RtmpOSNetDevFree(net_dev);
+#endif
 
 err_out_free_radev:
 	RTMPFreeAdapter(pAd);
