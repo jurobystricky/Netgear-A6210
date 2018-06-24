@@ -546,7 +546,7 @@ static int rt_ioctl_iwaplist(struct net_device *dev, struct iw_request_info *inf
 		set_quality(pAd, &qual[i], pList); /*&pAd->ScanTab.BssEntry[i]); */
 	}
 	data->length = i;
-	memcpy(extra, &addr, i*sizeof(addr[0]));
+	memcpy(extra, addr, i*sizeof(addr[0]));
 	data->flags = 1;		/* signal quality present (sort of) */
 	memcpy(extra + i*sizeof(addr[0]), &qual, i*sizeof(qual[i]));
 
