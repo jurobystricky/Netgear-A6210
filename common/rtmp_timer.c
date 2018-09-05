@@ -326,5 +326,15 @@ void RtmpTimerQInit(RTMP_ADAPTER *pAd)
 		RTMP_INT_UNLOCK(&pAd->TimerQLock, irqFlags);
 	}
 }
+
+void rtmp_timer_task_callback(struct timer_list *tl)
+{
+	RALINK_TIMER_STRUCT *pTimer = from_timer(pTimer, tl, TimerObj);
+	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *) pTimer->pAd;
+	RTMP_TIMER_TASK_ENTRY *pQNode = RtmpTimerQInsert(pAd, pTimer);
+
+	if (!pQNode && (pAd->TimerQ.status & RTMP_TASK_CAN_DO_INSERT))
+		RTMP_OS_Add_Timer(&pTimer->TimerObj, OS_HZ);
+}
 #endif /* RTMP_TIMER_TASK_SUPPORT */
 

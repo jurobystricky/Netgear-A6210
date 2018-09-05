@@ -3056,6 +3056,13 @@ void RTMPInitTimer(RTMP_ADAPTER *pAd, RALINK_TIMER_STRUCT *pTimer,
 	pTimer->State = FALSE;
 	pTimer->cookie = (ULONG) pData;
 	pTimer->pAd = pAd;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+# ifdef RTMP_TIMER_TASK_SUPPORT
+	pTimer->handle = pTimerFunc;
+# else
+	pTimer->handle = pTimerFunc;
+# endif
+#endif
 
 	RTMP_OS_Init_Timer(pAd, &pTimer->TimerObj, pTimerFunc, (PVOID) pTimer,
 			&pAd->RscTimerMemList);
