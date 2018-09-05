@@ -37,11 +37,15 @@
 void GREKEYPeriodicExec(PVOID SystemSpecific1, PVOID FunctionContext,
 	PVOID SystemSpecific2, PVOID SystemSpecific3);
 
-#define DECLARE_TIMER_FUNCTION(_func)			\
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+# define DECLARE_TIMER_FUNCTION(_func)
+# define GET_TIMER_FUNCTION(_func) _func
+#else
+# define DECLARE_TIMER_FUNCTION(_func)          \
 	void rtmp_timer_##_func(unsigned long data)
-
-#define GET_TIMER_FUNCTION(_func)			\
+# define GET_TIMER_FUNCTION(_func)			    \
 	(PVOID)rtmp_timer_##_func
+#endif /* LINUX_VERSION_CODE */
 
 /* ----------------- Timer Related MARCO ---------------*/
 /* In some os or chipset, we have a lot of timer functions and will read/write register, */
@@ -68,6 +72,8 @@ typedef struct _RALINK_TIMER_STRUCT {
 	void *pAd;
 #ifdef RTMP_TIMER_TASK_SUPPORT
 	RTMP_TIMER_TASK_HANDLE handle;
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+    void (*handle)(PVOID, PVOID, PVOID, PVOID);
 #endif
 } RALINK_TIMER_STRUCT, *PRALINK_TIMER_STRUCT;
 
@@ -86,8 +92,12 @@ typedef struct _RTMP_TIMER_TASK_QUEUE_ {
 	RTMP_TIMER_TASK_ENTRY *pQHead;
 	RTMP_TIMER_TASK_ENTRY *pQTail;
 } RTMP_TIMER_TASK_QUEUE;
+#endif /* RTMP_TIMER_TASK_SUPPORT */
 
-#define BUILD_TIMER_FUNCTION(_func)							\
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+# define BUILD_TIMER_FUNCTION(_func)
+#elif defined(RTMP_TIMER_TASK_SUPPORT)
+# define BUILD_TIMER_FUNCTION(_func)							\
 void rtmp_timer_##_func(unsigned long data)						\
 {											\
 	PRALINK_TIMER_STRUCT	_pTimer = (PRALINK_TIMER_STRUCT)data;			\
@@ -101,7 +111,7 @@ void rtmp_timer_##_func(unsigned long data)						\
 		RTMP_OS_Add_Timer(&_pTimer->TimerObj, OS_HZ);				\
 }
 #else /* !RTMP_TIMER_TASK_SUPPORT */
-#define BUILD_TIMER_FUNCTION(_func)							\
+# define BUILD_TIMER_FUNCTION(_func)							\
 void rtmp_timer_##_func(unsigned long data)						\
 {											\
 	PRALINK_TIMER_STRUCT pTimer = (PRALINK_TIMER_STRUCT) data;			\
@@ -110,7 +120,7 @@ void rtmp_timer_##_func(unsigned long data)						\
 	if (pTimer->Repeat)								\
 		RTMP_OS_Add_Timer(&pTimer->TimerObj, pTimer->TimerValue);		\
 }
-#endif /* RTMP_TIMER_TASK_SUPPORT */
+#endif /* LINUX_VERSION_CODE */
 
 DECLARE_TIMER_FUNCTION(MlmePeriodicExec);
 DECLARE_TIMER_FUNCTION(MlmeRssiReportExec);

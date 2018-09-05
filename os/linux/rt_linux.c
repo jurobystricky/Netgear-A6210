@@ -34,6 +34,9 @@
 #include "rtmp_comm.h"
 #include "rt_os_util.h"
 #include "dot11i_wpa.h"
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+# include "rtmp_timer.h"
+#endif
 #include <linux/rtnetlink.h>
 
 #if defined(CONFIG_RA_HW_NAT) || defined(CONFIG_RA_HW_NAT_MODULE)
@@ -98,15 +101,38 @@ static inline void __RTMP_SetPeriodicTimer(struct timer_list * pTimer,
 	add_timer(pTimer);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+# ifdef RTMP_TIMER_TASK_SUPPORT
+void rtmp_timer_task_callback(struct timer_list *);
+# else
+static void rtmp_timer_callback(struct timer_list *tl)
+{
+	RALINK_TIMER_STRUCT *pTimer = from_timer(pTimer, tl, TimerObj);
+
+	pTimer->handle(NULL, (PVOID) pTimer->cookie, NULL, pTimer);
+	if (pTimer->Repeat)
+		RTMP_OS_Add_Timer(&pTimer->TimerObj, pTimer->TimerValue);
+}
+# endif /* RTMP_TIMER_TASK_SUPPORT */
+#endif /* LINUX_VERSION_CODE */
+
 /* convert NdisMInitializeTimer --> RTMP_OS_Init_Timer */
 static inline void __RTMP_OS_Init_Timer(void *pReserved,
 	struct timer_list * pTimer, TIMER_FUNCTION function,
 	PVOID data)
 {
 	if (!timer_pending(pTimer)) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+# ifdef RTMP_TIMER_TASK_SUPPORT
+		timer_setup(pTimer, rtmp_timer_task_callback, 0);
+# else
+		timer_setup(pTimer, rtmp_timer_callback, 0);
+# endif /* RTMP_TIMER_TASK_SUPPORT */
+#else
 		init_timer(pTimer);
 		pTimer->data = (unsigned long)data;
 		pTimer->function = function;
+#endif /* LINUX_VERSION_CODE */
 	}
 }
 
