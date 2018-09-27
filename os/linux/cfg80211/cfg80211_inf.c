@@ -549,7 +549,11 @@ void RTMP_CFG80211_VirtualIF_Init(void *pAdSrc, CHAR *pDevName, UINT32 DevType)
 				RTMP_OS_NETDEV_GET_DEVNAME(new_dev_p)));
 	}
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+	new_dev_p->needs_free_netdev = true;
+#else
 	new_dev_p->destructor = free_netdev;
+#endif /* LINUX_VERSION_CODE */
 	RtmpOsSetNetDevPriv(new_dev_p, pAd);
 	NdisMoveMemory(&pNetDevOps->devAddr[0], &pAd->CurrentAddress[0], MAC_ADDR_LEN);
 
