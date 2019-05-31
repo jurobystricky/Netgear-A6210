@@ -18,6 +18,7 @@
 #include <linux/init.h>
 #include <linux/string.h>
 #include <linux/timer.h>
+#include <linux/timekeeping.h>
 #include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/interrupt.h>

@@ -810,9 +810,9 @@ void CFG80211OS_Scaning(void *pCB, UINT32 ChanId, UCHAR *pFrame, UINT32 FrameLen
 	}
 
 	if (!mgmt->u.probe_resp.timestamp) {
-		struct timeval tv;
-		do_gettimeofday(&tv);
-		mgmt->u.probe_resp.timestamp = ((UINT64) tv.tv_sec * 1000000) + tv.tv_usec;
+		struct timespec tv;
+		getnstimeofday(&tv);
+		mgmt->u.probe_resp.timestamp = ((UINT64) tv.tv_sec * 1000000) + tv.tv_nsec / 1000;
 	}
 
 	/* inform 80211 a scan is got */

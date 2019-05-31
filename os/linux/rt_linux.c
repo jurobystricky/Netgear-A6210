@@ -112,13 +112,14 @@ static void rtmp_timer_callback(struct timer_list *tl)
 
 /* convert NdisMInitializeTimer --> RTMP_OS_Init_Timer */
 static inline void __RTMP_OS_Init_Timer(void *pReserved,
-	struct timer_list * pTimer, TIMER_FUNCTION function,
+	struct timer_list * tl, TIMER_FUNCTION function,
 	PVOID data)
 {
-	if (!timer_pending(pTimer)) {
+	RALINK_TIMER_STRUCT *pTimer = from_timer(pTimer, tl, TimerObj);
+	if (!timer_pending(tl)) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
 		pTimer->timer_callback = function;
-		timer_setup(pTimer, rtmp_timer_callback, 0);
+		timer_setup(tl, rtmp_timer_callback, 0);
 #else
 		init_timer(pTimer);
 		pTimer->data = (unsigned long)data;
@@ -685,7 +686,7 @@ RTMP_OS_FD RtmpOSFileOpen(char *pPath, int flag, int mode)
 		flag = O_TRUNC;
 
 	oldfs = get_fs();
-	set_fs(get_ds());
+	set_fs(KERNEL_DS);
 	filePtr = filp_open(pPath, flag, 0);
 	set_fs(oldfs);
 
@@ -717,8 +718,8 @@ int RtmpOSFileRead(RTMP_OS_FD osfd, char *pDataPtr, int readLen)
 	int ret;
 	mm_segment_t fs = get_fs();
 
-	set_fs(get_ds());
-	ret = vfs_read(osfd, pDataPtr, readLen, &osfd->f_pos);
+	set_fs(KERNEL_DS);
+	ret = kernel_read(osfd, pDataPtr, readLen, &osfd->f_pos);
 	set_fs(fs);
 	return ret;
 }
@@ -729,8 +730,8 @@ int RtmpOSFileWrite(RTMP_OS_FD osfd, char *pDataPtr, int writeLen)
 	int ret;
 	mm_segment_t oldfs = get_fs();
 
-	set_fs(get_ds());
-	ret = vfs_write(osfd, pDataPtr, writeLen, &osfd->f_pos);
+	set_fs(KERNEL_DS);
+	ret = kernel_write(osfd, pDataPtr, writeLen, &osfd->f_pos);
 	set_fs(oldfs);
 	return ret;
 }
