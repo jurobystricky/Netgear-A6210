@@ -36,8 +36,9 @@ PLATFORM = PC
 
 MAKE = make
 
-LINUX_SRC = /lib/modules/$(shell uname -r)/build
-LINUX_SRC_MODULE = /lib/modules/$(shell uname -r)/kernel/drivers/net/wireless/
+KERNELRELEASE = $(shell uname -r)
+LINUX_SRC = /lib/modules/$(KERNELRELEASE)/build
+LINUX_SRC_MODULE = /lib/modules/$(KERNELRELEASE)/kernel/drivers/net/wireless/
 CROSS_COMPILE =
 
 export OSABL RT28xx_DIR RT28xx_MODE LINUX_SRC CROSS_COMPILE CROSS_COMPILE_INCLUDE PLATFORM RELEASE CHIPSET MODULE RTMP_SRC_DIR LINUX_SRC_MODULE TARGET HAS_WOW_SUPPORT

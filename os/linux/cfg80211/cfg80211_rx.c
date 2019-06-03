@@ -65,9 +65,9 @@ BOOLEAN CFG80211_CheckActionFrameType(RTMP_ADAPTER  *pAd, PUCHAR preStr,
 					("CFG80211_PKT: %s ProbeRsp Frame %d\n",
 					preStr, pAd->LatchRfRegs.Channel));
 			if (!mgmt->u.probe_resp.timestamp) {
-				struct timeval tv;
-				do_gettimeofday(&tv);
-				mgmt->u.probe_resp.timestamp = ((UINT64) tv.tv_sec * 1000000) + tv.tv_usec;
+				struct timespec tv;
+				getnstimeofday(&tv);
+				mgmt->u.probe_resp.timestamp = ((UINT64) tv.tv_sec * 1000000) + tv.tv_nsec / 1000;
 			}
 		} else if (ieee80211_is_disassoc(mgmt->frame_control)) {
 			DBGPRINT(RT_DEBUG_ERROR,
